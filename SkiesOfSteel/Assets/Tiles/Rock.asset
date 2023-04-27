@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 13312, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: Grass V3 Hex
+  m_Script: {fileID: 11500000, guid: 5ed75b6c274d5ef499adada19e5f6779, type: 3}
+  m_Name: Rock
   m_EditorClassIdentifier: 
-  m_Sprite: {fileID: 21300000, guid: a154eb17d25a9f348b1f6f77adc10625, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 8e8f541bb5280654dab9c87247968e88, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Transform:
     e00: 1
@@ -34,3 +34,4 @@ MonoBehaviour:
   m_InstancedGameObject: {fileID: 0}
   m_Flags: 1
   m_ColliderType: 1
+  _isWalkable: 0

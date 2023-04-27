@@ -22,8 +22,13 @@ public class Astar : MonoBehaviour
     {
         if (start == goal) return new Node(goal, 0);
 
-        if (_tilemap.GetTile(start) != null && !TileManager.Instance.GetTileInfo(_tilemap.GetTile(start)).IsWalkable ||
-            _tilemap.GetTile(goal) != null && !TileManager.Instance.GetTileInfo(_tilemap.GetTile(goal)).IsWalkable)
+        if (_tilemap.GetTile(start) == null || _tilemap.GetTile(goal) == null)
+        {
+            Debug.Log("Can't start or arrive in a non existing tile!!!");
+            return new Node(start, 0);
+        }
+
+        if (!(_tilemap.GetTile(start) as MapTile).IsWalkable || !(_tilemap.GetTile(goal) as MapTile).IsWalkable)
         {
             //TODO add check if current ship can walk on unwalkable tiles
 
@@ -58,6 +63,8 @@ public class Astar : MonoBehaviour
 
             foreach (Vector3Int pos in currNode.GetAdjacents())
             {
+                if (_tilemap.GetTile(pos) == null) continue; // If tile doesn't exist don't check
+
                 if (pos == goal)
                 {
                     Node newNode = new Node(pos, currNode.G + 1);
@@ -66,10 +73,9 @@ public class Astar : MonoBehaviour
 
                     return newNode;
                 }
-                else if (_tilemap.GetTile(pos) != null && !visited.Contains(pos))
+                else if (!visited.Contains(pos))
                 {
-                    
-                    if (_tilemap.GetTile(pos) != null && !TileManager.Instance.GetTileInfo(_tilemap.GetTile(pos)).IsWalkable)
+                    if (!(_tilemap.GetTile(pos) as MapTile).IsWalkable)
                     {
                         // TODO add check if current ship can walk on unwalkable tiles
                         continue;
