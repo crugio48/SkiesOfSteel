@@ -33,6 +33,9 @@ public class AstarDebugger : MonoBehaviour
     [SerializeField]
     private Color _visitedColor, _frontierColor, _pathColor, _startColor, _goalColor;
 
+    [SerializeField]
+    private int _movementRange;
+
 
     private Camera _mainCamera;
 
@@ -72,6 +75,40 @@ public class AstarDebugger : MonoBehaviour
             ColorTile(_start, _startColor);
 
         }
+
+
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            Vector2 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
+            _start = _debugTilemap.WorldToCell(mousePosition);
+            
+            List<Vector3Int> movRange = _astar.GetPossibleDestinations(_start, _movementRange);
+
+            foreach (Vector3Int cell in movRange)
+            {
+                ColorTile(cell, _pathColor);
+            }
+
+            ColorTile(_start, _startColor);
+        }
+
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            Vector2 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
+            _goal = _debugTilemap.WorldToCell(mousePosition);
+
+            List<Vector3Int> line = _astar.GetLine(_start, _goal);
+
+            foreach (Vector3Int cell in line)
+            {
+                ColorTile(cell, _pathColor);
+            }
+
+            ColorTile(_start, _startColor);
+            ColorTile(_goal, _goalColor);
+
+        }
+
 
 
         if (Input.GetKeyDown(KeyCode.R))

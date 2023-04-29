@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 using UnityEngine.Tilemaps;
 
 
@@ -17,7 +15,12 @@ public class Astar : MonoBehaviour
     private Tilemap _objectsMap;
 
 
-
+    /// <summary>
+    /// Astar search for path between start and goal
+    /// </summary>
+    /// <param name="start"></param>
+    /// <param name="goal"></param>
+    /// <returns></returns>
     public Node Search(Vector3Int start, Vector3Int goal)
     {
         if (start == goal) return new Node(goal, 0);
@@ -61,7 +64,7 @@ public class Astar : MonoBehaviour
             frontier.RemoveAt(0);
 
 
-            foreach (Vector3Int pos in currNode.GetAdjacents())
+            foreach (Vector3Int pos in Node.GetAdjacents(currNode.Position))
             {
                 if (_tilemap.GetTile(pos) == null) continue; // If tile doesn't exist don't check
 
@@ -95,6 +98,91 @@ public class Astar : MonoBehaviour
 
         Debug.Log("Unreachable destination!!!");
         return new Node(start, 0);
+    }
+
+    /// <summary>
+    /// Retuns the set of cells that you can move to with the specified start center cell and movement range
+    /// </summary>
+    /// <param name="center"></param>
+    /// <param name="movementRange"></param>
+    /// <returns></returns>
+    public List<Vector3Int> GetPossibleDestinations(Vector3Int center, int movementRange)
+    {
+        List<Vector3Int> visited = new List<Vector3Int>();
+
+        visited.Add(center);
+
+        List<Vector3Int>[] fringes = new List<Vector3Int>[movementRange + 1]; // fringes[k] is the set of cells that can be reached in k steps
+        for (int k = 0; k <= movementRange; k++)
+            fringes[k] = new List<Vector3Int>();
+
+        fringes[0].Add(center);
+
+
+        for (int k = 1; k <= movementRange; k++)
+        {
+            foreach(Vector3Int reachable in fringes[k-1])
+            {
+                foreach (Vector3Int cell in Node.GetAdjacents(reachable))
+                {
+                    if (_tilemap.GetTile(cell) != null && (_tilemap.GetTile(cell) as MapTile).IsWalkable && !visited.Contains(cell))
+                    {
+                        visited.Add(cell);
+                        fringes[k].Add(cell);
+                    }
+                }
+            }
+        }
+
+        return visited;
+
+    }
+
+    /*
+    public List<Vector3Int> GetLine(Vector3Int start, Vector3Int goal)
+    {
+        int N = Node.HexManhattanDistance(start, goal);
+
+        List<Vector3Int> result = new List<Vector3Int>();
+
+
+        for (int i = 0; i <= N; i++)
+        {
+            result.Add(Node.GetOffsetCoordinates(Node.CubeRound(Node.CubeLerp(
+                Node.GetCubeCoordinates(start),
+                Node.GetCubeCoordinates(goal),
+                1.0f / N * i))));
+        }
+
+        return result;
+
+    }
+    */
+
+
+    // These 2 GetLine functions do the same thing but are not FINAL for determining the line of sight
+    public List<Vector3Int> GetLine(Vector3Int start, Vector3Int goal)
+    {
+        int N = Node.HexManhattanDistance(start, goal) * 2;
+        
+        Vector3 startWorldPos = _tilemap.CellToWorld(start);
+        Vector3 goalWorldPos = _tilemap.CellToWorld(goal);
+
+        float distance = Vector3.Distance(startWorldPos, goalWorldPos);
+        float offset = distance / N;
+        Vector3 dir = (goalWorldPos - startWorldPos).normalized;
+
+        List<Vector3Int> result = new List<Vector3Int>();
+
+        for (float i = 0; i <= distance; i += offset)
+        {
+            Vector3Int cell = _tilemap.WorldToCell(startWorldPos + dir * i);
+            if (!result.Contains(cell))
+                result.Add(cell);
+        }
+
+        return result;
+
     }
 
 
@@ -136,7 +224,7 @@ public class Node
     /// <param name="a"></param>
     /// <param name="b"></param>
     /// <returns></returns>
-    private int HexManhattanDistance(Vector3Int a, Vector3Int b)
+    public static int HexManhattanDistance(Vector3Int a, Vector3Int b)
     {
         Vector3Int aCubeCoord = GetCubeCoordinates(a);
         Vector3Int bCubeCoord = GetCubeCoordinates(b);
@@ -150,7 +238,7 @@ public class Node
     /// </summary>
     /// <param name="offsetCoord"></param>
     /// <returns></returns>
-    private Vector3Int GetCubeCoordinates(Vector3Int offsetCoord)
+    public static Vector3Int GetCubeCoordinates(Vector3Int offsetCoord)
     {
         int q = offsetCoord.y;
         int r = offsetCoord.x - (offsetCoord.y - (offsetCoord.y & 1)) / 2;
@@ -159,22 +247,35 @@ public class Node
     }
 
 
-
-
-    public List<Vector3Int> GetAdjacents()
+    /// <summary>
+    /// This method converts the input cube coordinate in offset coordinates for the hex grid flat top of unity
+    /// </summary>
+    /// <param name="cubeCoordinates"></param>
+    /// <returns></returns>
+    public static Vector3Int GetOffsetCoordinates(Vector3Int cubeCoordinates)
     {
-        int parity = Position.y & 1; // parity = 0 means we are on an even column, parity = 1 means we are on an odd column
+        int column = cubeCoordinates.x;
+        int row = cubeCoordinates.y + (cubeCoordinates.x - (cubeCoordinates.x & 1)) / 2;
+        return new Vector3Int(row, column, 0);
+    }
+
+
+
+
+    public static List<Vector3Int> GetAdjacents(Vector3Int pos)
+    {
+        int parity = pos.y & 1; // parity = 0 means we are on an even column, parity = 1 means we are on an odd column
 
         if (parity == 0)
         {
             return new List<Vector3Int>
             {
-                Position + new Vector3Int(0, 1, 0),
-                Position + new Vector3Int(-1, 1, 0),
-                Position + new Vector3Int(-1, 0, 0),
-                Position + new Vector3Int(-1, -1, 0),
-                Position + new Vector3Int(0, -1, 0),
-                Position + new Vector3Int(1, 0, 0),
+                pos + new Vector3Int(0, 1, 0),
+                pos + new Vector3Int(-1, 1, 0),
+                pos + new Vector3Int(-1, 0, 0),
+                pos + new Vector3Int(-1, -1, 0),
+                pos + new Vector3Int(0, -1, 0),
+                pos + new Vector3Int(1, 0, 0),
             };
 
         }
@@ -182,14 +283,44 @@ public class Node
         {
             return new List<Vector3Int>
             {
-                Position + new Vector3Int(1, 1, 0),
-                Position + new Vector3Int(0, 1, 0),
-                Position + new Vector3Int(-1, 0, 0),
-                Position + new Vector3Int(0, -1, 0),
-                Position + new Vector3Int(1, -1, 0),
-                Position + new Vector3Int(1, 0, 0),
+                pos + new Vector3Int(1, 1, 0),
+                pos + new Vector3Int(0, 1, 0),
+                pos + new Vector3Int(-1, 0, 0),
+                pos + new Vector3Int(0, -1, 0),
+                pos + new Vector3Int(1, -1, 0),
+                pos + new Vector3Int(1, 0, 0),
             };
         }
+    }
+
+
+
+
+    public static Vector3 CubeLerp(Vector3Int a, Vector3Int b, float t)
+    {
+        return new Vector3(Mathf.Lerp(a.x, b.x, t), Mathf.Lerp(a.y, b.y, t), Mathf.Lerp(a.z, b.z, t));
+    }
+
+    public static Vector3Int CubeRound(Vector3 fractional)
+    {
+
+        float q = Mathf.Round(fractional.x);
+        float r = Mathf.Round(fractional.y);
+        float s = Mathf.Round(fractional.z);
+
+        float qDiff = Mathf.Abs(q - fractional.x);
+        float rDiff = Mathf.Abs(r - fractional.y);
+        float sDiff = Mathf.Abs(s - fractional.z);
+
+        if (qDiff > rDiff && qDiff > sDiff)
+            q = -r - s;
+        else if (rDiff > sDiff)
+            r = -q - s;
+        else
+            s = -q - r;
+
+
+        return new Vector3Int((int) q, (int) r, (int) s);
     }
 
 }
