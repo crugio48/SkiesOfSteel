@@ -42,6 +42,9 @@ public class AstarDebugger : MonoBehaviour
 
     private Vector3Int _start, _goal;
 
+    private bool _drawLine = false;
+    private List<Vector3> _line;
+
 
     private void Start()
     {
@@ -92,20 +95,18 @@ public class AstarDebugger : MonoBehaviour
             ColorTile(_start, _startColor);
         }
 
+
         if (Input.GetKeyDown(KeyCode.L))
         {
             Vector2 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
             _goal = _debugTilemap.WorldToCell(mousePosition);
 
-            List<Vector3Int> line = _astar.GetLine(_start, _goal);
-
-            foreach (Vector3Int cell in line)
-            {
-                ColorTile(cell, _pathColor);
-            }
-
+            _line = _astar.GetLineOfSight(_start, _goal);
+            
             ColorTile(_start, _startColor);
             ColorTile(_goal, _goalColor);
+
+            _drawLine = true;
 
         }
 
@@ -140,5 +141,17 @@ public class AstarDebugger : MonoBehaviour
     private void ResetTilemap()
     {
         _debugTilemap.ClearAllTiles();
+    }
+
+
+
+    private void OnDrawGizmos()
+    {
+        if (_drawLine && _line != null)
+        {
+            Gizmos.color = Color.green;
+
+            Gizmos.DrawLine(_line[0], _line[1]);
+        }
     }
 }

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.UIElements;
 
 
 // Super link: https://www.redblobgames.com/grids/hexagons/
@@ -13,6 +14,14 @@ public class Astar : MonoBehaviour
 
     [SerializeField]
     private Tilemap _objectsMap;
+
+    [Space]
+
+    [SerializeField]
+    private bool _debugTileVertices;
+    [SerializeField]
+    private Vector3[] _verticesDiff;
+
 
 
     /// <summary>
@@ -138,45 +147,21 @@ public class Astar : MonoBehaviour
 
     }
 
-    /*
-    public List<Vector3Int> GetLine(Vector3Int start, Vector3Int goal)
+
+
+    public List<Vector3Int> GetLine(Vector3 start, Vector3 goal)
     {
-        int N = Node.HexManhattanDistance(start, goal);
+        int N = Node.HexManhattanDistance(_tilemap.WorldToCell(start), _tilemap.WorldToCell(goal)) * 2;
 
-        List<Vector3Int> result = new List<Vector3Int>();
-
-
-        for (int i = 0; i <= N; i++)
-        {
-            result.Add(Node.GetOffsetCoordinates(Node.CubeRound(Node.CubeLerp(
-                Node.GetCubeCoordinates(start),
-                Node.GetCubeCoordinates(goal),
-                1.0f / N * i))));
-        }
-
-        return result;
-
-    }
-    */
-
-
-    // These 2 GetLine functions do the same thing but are not FINAL for determining the line of sight
-    public List<Vector3Int> GetLine(Vector3Int start, Vector3Int goal)
-    {
-        int N = Node.HexManhattanDistance(start, goal) * 2;
-        
-        Vector3 startWorldPos = _tilemap.CellToWorld(start);
-        Vector3 goalWorldPos = _tilemap.CellToWorld(goal);
-
-        float distance = Vector3.Distance(startWorldPos, goalWorldPos);
+        float distance = Vector3.Distance(start, goal);
         float offset = distance / N;
-        Vector3 dir = (goalWorldPos - startWorldPos).normalized;
+        Vector3 dir = (goal - start).normalized;
 
         List<Vector3Int> result = new List<Vector3Int>();
 
         for (float i = 0; i <= distance; i += offset)
         {
-            Vector3Int cell = _tilemap.WorldToCell(startWorldPos + dir * i);
+            Vector3Int cell = _tilemap.WorldToCell(start + dir * i);
             if (!result.Contains(cell))
                 result.Add(cell);
         }
@@ -185,6 +170,64 @@ public class Astar : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// This method checks wheter there is a line of sight between cell start and cell goal
+    /// </summary>
+    /// <param name="start"></param>
+    /// <param name="goal"></param>
+    /// <returns>null if there is no line of sight, returns the start world point and goal world point of there is sight
+    /// This return is done like this for now just for debug, in future convert this return to a boolean</returns>
+    public List<Vector3> GetLineOfSight(Vector3Int start, Vector3Int goal)
+    {
+        foreach(Vector3 diff in _verticesDiff)
+        {
+            foreach(Vector3 diff2 in _verticesDiff)
+            {
+                List<Vector3Int> straightPath = GetLine(_tilemap.GetCellCenterWorld(start) + diff, _tilemap.GetCellCenterWorld(goal) + diff2);
+
+                bool lineOfSightExists = true;
+
+                foreach (Vector3Int cell in straightPath)
+                {
+                    if (_tilemap.HasTile(cell) && (_tilemap.GetTile(cell) as MapTile).IsWalkable)
+                        continue;
+                    else
+                    {
+                        lineOfSightExists = false;
+                        break;
+                    }      
+                }
+
+                if (lineOfSightExists)
+                    return new List<Vector3>
+                    {
+                        _tilemap.GetCellCenterWorld(start) + diff,
+                        _tilemap.GetCellCenterWorld(goal) + diff2
+                    };
+            }
+        }
+        
+        // If no line of sight return null
+        return null;
+    }
+
+ 
+
+    private void OnDrawGizmos()
+    {
+        if (_debugTileVertices)
+        {
+            Gizmos.color = Color.yellow;
+
+            foreach (Vector3 diff in _verticesDiff)
+            {
+                Vector3 position = _tilemap.GetCellCenterWorld(new Vector3Int(0, 0, 0)) + diff;
+
+                Gizmos.DrawSphere(position, 0.05f);
+
+            }
+        }
+    }
 
 }
 
