@@ -151,7 +151,7 @@ public class Astar : MonoBehaviour
 
     public List<Vector3Int> GetLine(Vector3 start, Vector3 goal)
     {
-        int N = Node.HexManhattanDistance(_tilemap.WorldToCell(start), _tilemap.WorldToCell(goal)) * 2;
+        int N = Node.HexManhattanDistance(_tilemap.WorldToCell(start), _tilemap.WorldToCell(goal)) * 3;
 
         float distance = Vector3.Distance(start, goal);
         float offset = distance / N;
