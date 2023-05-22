@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName ="ShipScriptableObject", menuName="ScriptableObjects/Ship1")]
+[CreateAssetMenu(fileName ="ShipScriptableObject", menuName="ScriptableObjects/Ship")]
 public class ShipScriptableObject : ScriptableObject
 {
     public int maxHealth;
@@ -15,6 +15,6 @@ public class ShipScriptableObject : ScriptableObject
     // Add more sprites for the different angles and add logic to switch between them in ShipUnit TODO
     public Sprite sprite;
 
-    //Actions TODO
-    public List<Attack> actions;
+
+    public List<Action> actions;
 }

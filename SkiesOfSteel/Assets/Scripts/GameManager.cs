@@ -6,9 +6,8 @@ using UnityEngine;
 
 public enum BattleState { START, PLAYERTURN, WON, LOST};
 
-public class BattleSystem : MonoBehaviour
+public class GameManager : MonoBehaviour
 {
-
     public int numOfPlayers;
 
     public List<List<ShipUnit>> playersUnits;
@@ -76,4 +75,6 @@ public class BattleSystem : MonoBehaviour
     {
         currentPlayer = (currentPlayer + 1) % numOfPlayers;
     }
+
+
 }

@@ -637,7 +637,7 @@ GameObject:
   - component: {fileID: 569196573}
   - component: {fileID: 569196574}
   m_Layer: 0
-  m_Name: BattleSystem
+  m_Name: GameManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
