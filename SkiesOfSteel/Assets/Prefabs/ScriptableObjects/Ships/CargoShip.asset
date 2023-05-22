@@ -10,10 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 91503da15c085cd4d8fec1e127d751c1, type: 3}
-  m_Name: CargoShipScriptableObject
+  m_Name: CargoShip
   m_EditorClassIdentifier: 
-  health: 0
-  speed: 0
-  attackDamage: 0
-  attackRange: 0
-  maxFuel: 0
+  maxHealth: 120
+  maxFuel: 50
+  speed: 2
+  attack: 30
+  defense: 30
+  battleCost: 0
+  sprite: {fileID: 0}

@@ -5,14 +5,16 @@ using UnityEngine;
 [CreateAssetMenu(fileName ="ShipScriptableObject", menuName="ScriptableObjects/Ship1")]
 public class ShipScriptableObject : ScriptableObject
 {
-    public int health;
+    public int maxHealth;
+    public int maxFuel;
     public int speed;
-    //sprites
-    //current tile position
+    public int attack;
+    public int defense;
+    public int battleCost;
 
-    public int attackDamage;
-    public int attackRange;
+    // Add more sprites for the different angles and add logic to switch between them in ShipUnit TODO
+    public Sprite sprite;
 
-    public float maxFuel;
-
+    //Actions TODO
+    public List<Attack> actions;
 }
