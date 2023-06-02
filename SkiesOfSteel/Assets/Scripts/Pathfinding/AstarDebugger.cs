@@ -33,11 +33,17 @@ public class AstarDebugger : MonoBehaviour
     [SerializeField]
     private Color _visitedColor, _frontierColor, _pathColor, _startColor, _goalColor;
 
+    [SerializeField]
+    private int _movementRange;
+
 
     private Camera _mainCamera;
 
 
     private Vector3Int _start, _goal;
+
+    private bool _drawLine = false;
+    private List<Vector3> _line;
 
 
     private void Start()
@@ -74,6 +80,38 @@ public class AstarDebugger : MonoBehaviour
         }
 
 
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            Vector2 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
+            _start = _debugTilemap.WorldToCell(mousePosition);
+            
+            List<Vector3Int> movRange = _astar.GetPossibleDestinations(_start, _movementRange);
+
+            foreach (Vector3Int cell in movRange)
+            {
+                ColorTile(cell, _pathColor);
+            }
+
+            ColorTile(_start, _startColor);
+        }
+
+
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            Vector2 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
+            _goal = _debugTilemap.WorldToCell(mousePosition);
+
+            _line = _astar.GetLineOfSight(_start, _goal);
+            
+            ColorTile(_start, _startColor);
+            ColorTile(_goal, _goalColor);
+
+            _drawLine = true;
+
+        }
+
+
+
         if (Input.GetKeyDown(KeyCode.R))
         {
             ResetTilemap();
@@ -103,5 +141,17 @@ public class AstarDebugger : MonoBehaviour
     private void ResetTilemap()
     {
         _debugTilemap.ClearAllTiles();
+    }
+
+
+
+    private void OnDrawGizmos()
+    {
+        if (_drawLine && _line != null)
+        {
+            Gizmos.color = Color.green;
+
+            Gizmos.DrawLine(_line[0], _line[1]);
+        }
     }
 }
