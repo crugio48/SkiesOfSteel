@@ -7,7 +7,19 @@ public class Action : ScriptableObject
     public new string name;
     public int fuelCost;
 
-    public virtual void Activate(ShipUnit thisShip) { }
+    public virtual void Activate(ShipUnit thisShip)
+    {
+        if (thisShip.GetCurrentFuel() < fuelCost)
+        {
+            Debug.LogError("Trying to use an action that cost more fuel than current amount " + thisShip.name);
+            return;
+        }
+        else
+        {
+            thisShip.RemoveFuel(fuelCost);
+        }
+
+    }
 
 
     public bool AccuracyHit(int accuracy)

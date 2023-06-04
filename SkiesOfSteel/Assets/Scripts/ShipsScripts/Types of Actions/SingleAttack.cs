@@ -14,6 +14,9 @@ public class SingleAttack : Action
 
     public override void Activate(ShipUnit thisShip)
     {
+        base.Activate(thisShip);
+
+
         ShipUnit enemyShip = new ShipUnit() /*TODO select target of attack given the range value*/;
 
         if (AccuracyHit(accuracy))

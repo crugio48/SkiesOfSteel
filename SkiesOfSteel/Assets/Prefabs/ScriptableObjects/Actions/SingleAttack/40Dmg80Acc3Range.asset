@@ -9,15 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 97d1343693c424b4495f3b8b7bec4d64, type: 3}
-  m_Name: +2DefOther
+  m_Script: {fileID: 11500000, guid: 394ebc6594bc90c4f9ec307f0a0bac9a, type: 3}
+  m_Name: 40Dmg80Acc3Range
   m_EditorClassIdentifier: 
-  name: Shield Up
-  fuelCost: 10
-  selfOnly: 0
-  range: 1
-  modifyAttack: 0
-  attackModification: 0
-  modifyDefense: 1
-  defenseModification: 2
-  accuracy: 100
+  name: Longshot
+  fuelCost: 6
+  power: 40
+  range: 3
+  accuracy: 80

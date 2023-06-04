@@ -6,6 +6,7 @@ using UnityEngine;
 public class ModifyStats : Action
 {
     public bool selfOnly;
+    public int range;
 
     public bool modifyAttack;
     public int attackModification;
@@ -18,6 +19,8 @@ public class ModifyStats : Action
 
     public override void Activate(ShipUnit thisShip)
     {
+        base.Activate(thisShip);
+
         ShipUnit target = thisShip;
         if (!selfOnly)
         {
