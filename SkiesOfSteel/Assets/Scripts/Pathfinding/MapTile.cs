@@ -15,4 +15,5 @@ public class MapTile : Tile
 
 
     public bool IsWalkable { get { return _isWalkable; } }
+
 }

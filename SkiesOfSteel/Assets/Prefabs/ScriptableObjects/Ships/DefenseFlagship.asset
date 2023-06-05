@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91503da15c085cd4d8fec1e127d751c1, type: 3}
   m_Name: DefenseFlagship
   m_EditorClassIdentifier: 
+  isFlagship: 1
   maxHealth: 150
   maxFuel: 50
   speed: 2

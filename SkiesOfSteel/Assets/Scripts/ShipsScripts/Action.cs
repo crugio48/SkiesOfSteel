@@ -5,6 +5,7 @@ using UnityEngine;
 public class Action : ScriptableObject
 {
     public new string name;
+    public Sprite sprite;
     public int fuelCost;
 
     public virtual void Activate(ShipUnit thisShip)

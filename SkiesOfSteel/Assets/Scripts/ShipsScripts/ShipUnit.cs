@@ -169,6 +169,9 @@ public class ShipUnit : MonoBehaviour
     }
 
 
-
+    public List<Action> GetActions()
+    {
+        return shipScriptableValues.actions;
+    }
 
 }

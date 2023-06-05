@@ -8,11 +8,11 @@ public class PlayerShipUI : MonoBehaviour
 
     void ButtonGeneration()
     {
-        ship.
+// ship.
     }
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
