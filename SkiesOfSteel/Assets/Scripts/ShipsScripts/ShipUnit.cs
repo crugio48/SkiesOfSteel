@@ -14,6 +14,8 @@ public class ShipUnit : MonoBehaviour
 
     private SpriteRenderer spriteRenderer;
 
+    //TODO add hold item parameter
+
     public bool CanDoAction { get; set; }
 
     public bool CanMove { get; set; }
@@ -121,9 +123,23 @@ public class ShipUnit : MonoBehaviour
     }
 
 
-    public void RefuelToMax()
+    public void RefuelToMaxAtPortAction()
     {
         currentFuel = shipScriptableValues.maxFuel;
+    }
+
+
+    public void HealAtPortAction()
+    {
+        float healPercentage = 0.2f;
+
+        currentHealth += (int) Mathf.Floor(shipScriptableValues.maxHealth * healPercentage);
+
+        if (currentHealth > shipScriptableValues.maxHealth)
+        {
+            currentHealth = shipScriptableValues.maxHealth;
+        }
+
     }
 
 
@@ -151,5 +167,8 @@ public class ShipUnit : MonoBehaviour
             Debug.LogError("Tried to add too much fuel to ship " + this.name);
         }
     }
+
+
+
 
 }
