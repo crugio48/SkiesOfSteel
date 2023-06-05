@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 91503da15c085cd4d8fec1e127d751c1, type: 3}
-  m_Name: FastShip
+  m_Name: DefenseFlagship
   m_EditorClassIdentifier: 
-  maxHealth: 60
-  maxFuel: 20
-  speed: 3
-  attack: 70
-  defense: 40
+  maxHealth: 150
+  maxFuel: 50
+  speed: 2
+  attack: 40
+  defense: 60
   battleCost: 0
   sprite: {fileID: 0}
   actions:
-  - {fileID: 11400000, guid: f6e03ae245d9e01479cfe6d87049b32d, type: 2}
-  - {fileID: 11400000, guid: 50cf6470391b9a041af4c778966be4a8, type: 2}
+  - {fileID: 11400000, guid: d5509a7a4555f9c41a72822a127a2883, type: 2}
+  - {fileID: 11400000, guid: 69719adf24b48ff4eaa8ab67dc1e5aac, type: 2}

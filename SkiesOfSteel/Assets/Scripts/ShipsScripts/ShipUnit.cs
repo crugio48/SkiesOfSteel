@@ -14,6 +14,8 @@ public class ShipUnit : MonoBehaviour
 
     private SpriteRenderer spriteRenderer;
 
+    //TODO add hold item parameter
+
     public bool CanDoAction { get; set; }
 
     public bool CanMove { get; set; }
@@ -119,4 +121,54 @@ public class ShipUnit : MonoBehaviour
             currentHealth -= roundedDamage;
         }
     }
+
+
+    public void RefuelToMaxAtPortAction()
+    {
+        currentFuel = shipScriptableValues.maxFuel;
+    }
+
+
+    public void HealAtPortAction()
+    {
+        float healPercentage = 0.2f;
+
+        currentHealth += (int) Mathf.Floor(shipScriptableValues.maxHealth * healPercentage);
+
+        if (currentHealth > shipScriptableValues.maxHealth)
+        {
+            currentHealth = shipScriptableValues.maxHealth;
+        }
+
+    }
+
+
+    public int GetCurrentFuel()
+    {
+        return currentFuel;
+    }
+
+    public void RemoveFuel(int amount)
+    {
+        currentFuel -= amount;
+        if (currentFuel < 0)
+        {
+            currentFuel += amount;
+            Debug.LogError("Tried to remove too much fuel from ship " + this.name);
+        }
+    }
+
+    public void AddFuel(int amount)
+    {
+        currentFuel += amount;
+        if (currentFuel > shipScriptableValues.maxFuel)
+        {
+            currentFuel -= amount;
+            Debug.LogError("Tried to add too much fuel to ship " + this.name);
+        }
+    }
+
+
+
+
 }
