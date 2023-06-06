@@ -22,7 +22,7 @@ public class AstarDebugger : MonoBehaviour
     }
 
     [SerializeField]
-    private Astar _astar;
+    private Pathfinding _pathfinding;
 
     [SerializeField]
     private Tilemap _debugTilemap;
@@ -63,7 +63,7 @@ public class AstarDebugger : MonoBehaviour
 
             ColorTile(_goal, _goalColor);
                 
-            Node path = _astar.Search(_start, _goal);
+            Node path = _pathfinding.AStarSearch(_start, _goal);
             
             CreateTiles(path);
             
@@ -85,7 +85,7 @@ public class AstarDebugger : MonoBehaviour
             Vector2 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
             _start = _debugTilemap.WorldToCell(mousePosition);
             
-            List<Vector3Int> movRange = _astar.GetPossibleDestinations(_start, _movementRange);
+            List<Vector3Int> movRange = _pathfinding.GetPossibleDestinations(_start, _movementRange);
 
             foreach (Vector3Int cell in movRange)
             {
@@ -101,7 +101,7 @@ public class AstarDebugger : MonoBehaviour
             Vector2 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
             _goal = _debugTilemap.WorldToCell(mousePosition);
 
-            _line = _astar.GetLineOfSight(_start, _goal);
+            _line = _pathfinding.GetLineOfSight(_start, _goal);
             
             ColorTile(_start, _startColor);
             ColorTile(_goal, _goalColor);
