@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class ShipUnit : MonoBehaviour
 {
@@ -14,11 +17,16 @@ public class ShipUnit : MonoBehaviour
 
     private SpriteRenderer spriteRenderer;
 
+    private Vector3Int currentPosition;
+
+    private Pathfinding pathfinding;
+    private Tilemap tilemap;
+
     //TODO add hold item parameter
 
     public bool CanDoAction { get; set; }
 
-    public bool CanMove { get; set; }
+    public int MovementLeft { get; set; }
 
     public float GetAttack
     {
@@ -36,6 +44,12 @@ public class ShipUnit : MonoBehaviour
         }
     }
 
+    private void Awake()
+    {
+        pathfinding = FindObjectOfType<Pathfinding>();
+        tilemap = FindObjectOfType<Tilemap>();
+    }
+
     private void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -47,14 +61,14 @@ public class ShipUnit : MonoBehaviour
         defenseStage = 0;
 
         CanDoAction = false;
-        CanMove = false;
+        MovementLeft = 0;
     }
 
 
     public void EnableShip()
     {
         CanDoAction = true;
-        CanMove = true;
+        MovementLeft = shipScriptableValues.speed;
     }
 
     public void ModifyAttack(int stageModification)
@@ -172,6 +186,53 @@ public class ShipUnit : MonoBehaviour
     public List<Action> GetActions()
     {
         return shipScriptableValues.actions;
+    }
+
+
+    public void SetInitialPosition(Vector3Int pos)
+    {
+        currentPosition = pos;
+        transform.position = tilemap.GetCellCenterWorld(currentPosition);
+    }
+
+    public void Move(Vector3Int destination)
+    {
+
+        if (Node.HexManhattanDistance(currentPosition, destination) > MovementLeft)
+        {
+            Debug.Log("mahnattan = " + Node.HexManhattanDistance(currentPosition, destination));
+            Debug.Log("MovementLeft = " + MovementLeft);
+            Debug.LogError("Trying to move too far for how much movement this ship has left " + this);
+            return;
+        }
+
+        Node destinationNode = pathfinding.AStarSearch(currentPosition, destination);
+
+        if (destinationNode == null)
+        {
+            Debug.LogError("AStarSearch was called on a bad couple of tiles " +  this);
+            return;
+        }
+
+        Sequence moveSequence = DOTween.Sequence();
+
+        for (Node step = destinationNode; step != null; step = step.Parent)
+        {
+            if (step.Position == currentPosition) // We don't want to add a move command towards the starting tile
+            {
+                continue;
+            }
+
+            Vector3 worldPos = tilemap.GetCellCenterWorld(step.Position);
+
+            moveSequence.Prepend(transform.DOMove(worldPos, 1)); // Customize here the DOMove to get different moving stiles
+        }
+
+
+        // Update this ship position for the data structures
+        ShipsPositions.instance.Move(this, currentPosition, destination);
+        currentPosition = destination;
+
     }
 
 }

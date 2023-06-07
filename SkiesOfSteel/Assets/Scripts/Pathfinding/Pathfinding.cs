@@ -41,25 +41,25 @@ public class Pathfinding : MonoBehaviour
         // Checking possible errors:
         if (start == goal)
         {
-            return new Node(start, 0);
+            return null;
         }
 
         if (!_tilemap.HasTile(start) || !_tilemap.HasTile(goal))
         {
             Debug.Log("Can't start or arrive in a non existing tile!!!");
-            return new Node(start, 0);
+            return null;
         }
 
         if (!(_tilemap.GetTile(start) as MapTile).IsWalkable || !(_tilemap.GetTile(goal) as MapTile).IsWalkable)
         {
             Debug.Log("Can't start or arrive in an Unwalkable cell!!!");
-            return new Node(start, 0);
+            return null;
         }
 
         if (ShipsPositions.instance.GetShip(goal) != null)
         {
             Debug.Log("The destination is already occupied by another ship");
-            return new Node(start, 0);
+            return null;
         }
 
 
