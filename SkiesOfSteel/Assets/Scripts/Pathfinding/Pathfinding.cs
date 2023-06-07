@@ -44,7 +44,7 @@ public class Pathfinding : MonoBehaviour
             return new Node(start, 0);
         }
 
-        if (_tilemap.GetTile(start) == null || _tilemap.GetTile(goal) == null)
+        if (!_tilemap.HasTile(start) || !_tilemap.HasTile(goal))
         {
             Debug.Log("Can't start or arrive in a non existing tile!!!");
             return new Node(start, 0);
@@ -80,7 +80,7 @@ public class Pathfinding : MonoBehaviour
 
             foreach (Vector3Int pos in Node.GetAdjacents(currNode.Position))
             {
-                if (_tilemap.GetTile(pos) == null) continue; // If tile doesn't exist don't check
+                if (!_tilemap.HasTile(pos)) continue; // If tile doesn't exist don't check
 
                 if (pos == goal)
                 {
@@ -142,10 +142,11 @@ public class Pathfinding : MonoBehaviour
             {
                 foreach (Vector3Int pos in Node.GetAdjacents(reachable))
                 {
-                    // Checks if tile is a good tile
+                    // Checks if tile is a good tile:
+
                     if (visited.Contains(pos)) continue;
 
-                    if (_tilemap.GetTile(pos) == null) continue;
+                    if (!_tilemap.HasTile(pos)) continue;
 
                     if (!(_tilemap.GetTile(pos) as MapTile).IsWalkable) continue; // For now this method is for ships that can travel on walkable tiles only
 
@@ -191,7 +192,8 @@ public class Pathfinding : MonoBehaviour
     /// <param name="start"></param>
     /// <param name="goal"></param>
     /// <returns>null if there is no line of sight, returns the start world point and goal world point of there is sight
-    /// This return is done like this for now just for debug, in future convert this return to a boolean</returns>
+    /// This return is done like this for now just for debug, in future convert this return to a boolean
+    /// TODO decide if we keep line of sight like this or change it</returns>
     public List<Vector3> GetLineOfSight(Vector3Int start, Vector3Int goal)
     {
         foreach(Vector3 diff in _verticesDiff)
@@ -202,17 +204,30 @@ public class Pathfinding : MonoBehaviour
 
                 bool lineOfSightExists = true;
 
-                foreach (Vector3Int cell in straightPath)
+                foreach (Vector3Int pos in straightPath)
                 {
-                    if (_tilemap.HasTile(cell) && (_tilemap.GetTile(cell) as MapTile).IsWalkable)
-                        continue;
-                    else
+                    // Checks to see if this line of sight is not clear:
+
+                    if (!_tilemap.HasTile(pos))
                     {
                         lineOfSightExists = false;
                         break;
-                    }      
+                    }
+
+                    if (!(_tilemap.GetTile(pos) as MapTile).IsWalkable)
+                    {
+                        lineOfSightExists = false;
+                        break;
+                    }
+
+                    if (ShipsPositions.instance.GetShip(pos) != null && pos != start && pos != goal)
+                    {
+                        lineOfSightExists = false;
+                        break;
+                    }     
                 }
 
+                // If the line of sight considered passed all the checks then we return true TODO
                 if (lineOfSightExists)
                     return new List<Vector3>
                     {
@@ -222,7 +237,7 @@ public class Pathfinding : MonoBehaviour
             }
         }
         
-        // If no line of sight return null
+        // If no line of sight return false TODO
         return null;
     }
 
