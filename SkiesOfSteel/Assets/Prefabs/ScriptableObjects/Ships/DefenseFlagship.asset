@@ -21,5 +21,6 @@ MonoBehaviour:
   battleCost: 0
   sprite: {fileID: 0}
   actions:
+  - {fileID: 11400000, guid: 4fdfd7a313b09c2419ef503b4d3ae084, type: 2}
   - {fileID: 11400000, guid: d5509a7a4555f9c41a72822a127a2883, type: 2}
   - {fileID: 11400000, guid: 69719adf24b48ff4eaa8ab67dc1e5aac, type: 2}
