@@ -25,6 +25,8 @@ public class Pathfinding : MonoBehaviour
     private Vector3[] _verticesDiff;
 
 
+    // TODO you can pass through your ships but not enemy ships
+
 
     /// <summary>
     /// Astar search for path between start and goal

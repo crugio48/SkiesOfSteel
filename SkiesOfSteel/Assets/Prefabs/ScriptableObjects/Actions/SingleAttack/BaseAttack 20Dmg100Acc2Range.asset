@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: Base Attack
   sprite: {fileID: 0}
-  fuelCost: 0
+  fuelCost: 1
   power: 20
   range: 2
   accuracy: 100

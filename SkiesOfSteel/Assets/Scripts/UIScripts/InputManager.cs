@@ -6,7 +6,7 @@ using UnityEngine.Tilemaps;
 public class InputManager : MonoBehaviour
 {
     [SerializeField]
-    private Astar _astar;
+    private Pathfinding _pathfinding;
 
     [SerializeField]
     private Tilemap _debugTilemap;
