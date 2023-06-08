@@ -375,7 +375,7 @@ PrefabInstance:
     - target: {fileID: 1022513343650396748, guid: abd2cec6d88bd504bb221c520edcc0a3, type: 3}
       propertyPath: m_Icon
       value: 
-      objectReference: {fileID: -5397416234189338067, guid: 0000000000000000d000000000000000, type: 0}
+      objectReference: {fileID: 0}
     - target: {fileID: 1022513343650396748, guid: abd2cec6d88bd504bb221c520edcc0a3, type: 3}
       propertyPath: m_Name
       value: ShipUnit
