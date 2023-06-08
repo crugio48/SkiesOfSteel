@@ -197,35 +197,39 @@ public class ShipUnit : MonoBehaviour
 
     public void Move(Vector3Int destination)
     {
-
-        if (Node.HexManhattanDistance(currentPosition, destination) > MovementLeft)
-        {
-            Debug.Log("mahnattan = " + Node.HexManhattanDistance(currentPosition, destination));
-            Debug.Log("MovementLeft = " + MovementLeft);
-            Debug.LogError("Trying to move too far for how much movement this ship has left " + this);
-            return;
-        }
-
         Node destinationNode = pathfinding.AStarSearch(currentPosition, destination);
 
         if (destinationNode == null)
         {
-            Debug.LogError("AStarSearch was called on a bad couple of tiles " +  this);
+            Debug.LogError("AStarSearch was called on a bad couple of tiles " + this);
             return;
         }
 
+        //Calculate the lenght of the path
+        int pathLenght = 0;
+        for (Node step = destinationNode; step.Parent != null; step = step.Parent)
+        {
+            pathLenght++;
+        }
+
+        if (pathLenght > MovementLeft)
+        {
+            Debug.Log("pathLenght = " + pathLenght);
+            Debug.Log("MovementLeft = " + MovementLeft);
+            Debug.LogError("Trying to move too far for how much movement this ship has left " + this);
+            return;
+        }
+        
+        // Here we passed all checks:
+
         Sequence moveSequence = DOTween.Sequence();
 
-        for (Node step = destinationNode; step != null; step = step.Parent)
+        for (Node step = destinationNode; step.Parent != null; step = step.Parent)
         {
-            if (step.Position == currentPosition) // We don't want to add a move command towards the starting tile
-            {
-                continue;
-            }
-
             Vector3 worldPos = tilemap.GetCellCenterWorld(step.Position);
 
-            moveSequence.Prepend(transform.DOMove(worldPos, 1)); // Customize here the DOMove to get different moving stiles
+            moveSequence.Prepend(transform.DOMove(worldPos, 0.5f).SetEase(Ease.Linear));
+            
         }
 
 

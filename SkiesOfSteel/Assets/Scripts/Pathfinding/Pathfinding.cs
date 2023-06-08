@@ -191,9 +191,7 @@ public class Pathfinding : MonoBehaviour
     /// </summary>
     /// <param name="start"></param>
     /// <param name="goal"></param>
-    /// <returns>null if there is no line of sight, returns the start world point and goal world point of there is sight
-    /// This return is done like this for now just for debug, in future convert this return to a boolean
-    /// TODO decide if we keep line of sight like this or change it</returns>
+    /// <returns>null if there is no line of sight, returns the start world point and goal world point of there is sight</returns>
     public List<Vector3> GetLineOfSight(Vector3Int start, Vector3Int goal)
     {
         foreach(Vector3 diff in _verticesDiff)
@@ -227,7 +225,7 @@ public class Pathfinding : MonoBehaviour
                     }     
                 }
 
-                // If the line of sight considered passed all the checks then we return true TODO
+                // If the line of sight considered passed all the checks then we return the vertices of the line of sight found
                 if (lineOfSightExists)
                     return new List<Vector3>
                     {
@@ -237,11 +235,26 @@ public class Pathfinding : MonoBehaviour
             }
         }
         
-        // If no line of sight return false TODO
+        // If no line of sight return null
         return null;
     }
 
- 
+
+    public bool IsThereLineOfSight(Vector3Int start, Vector3Int goal)
+    {
+        if (GetLineOfSight(start, goal) == null)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+
+
+
 
     private void OnDrawGizmos()
     {
