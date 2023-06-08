@@ -1,19 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UIElements;
+using static UnityEditor.PlayerSettings;
 
 
 // Super link: https://www.redblobgames.com/grids/hexagons/
 
-public class Astar : MonoBehaviour
+public class Pathfinding : MonoBehaviour
 {
     [SerializeField]
     private Tilemap _tilemap;
 
     [SerializeField]
-    private Tilemap _objectsMap;
+    private Tilemap _portsMap;
 
     [Space]
 
@@ -26,44 +28,48 @@ public class Astar : MonoBehaviour
 
     /// <summary>
     /// Astar search for path between start and goal
+    /// 
+    /// This method is used by ships that can only travel on walkable tiles
+    /// 
+    /// In future add functionality for the ships that can also travel on unwalkable tiles
     /// </summary>
     /// <param name="start"></param>
     /// <param name="goal"></param>
     /// <returns></returns>
-    public Node Search(Vector3Int start, Vector3Int goal)
+    public Node AStarSearch(Vector3Int start, Vector3Int goal)
     {
-        if (start == goal) return new Node(goal, 0);
+        // Checking possible errors:
+        if (start == goal)
+        {
+            return null;
+        }
 
-        if (_tilemap.GetTile(start) == null || _tilemap.GetTile(goal) == null)
+        if (!_tilemap.HasTile(start) || !_tilemap.HasTile(goal))
         {
             Debug.Log("Can't start or arrive in a non existing tile!!!");
-            return new Node(start, 0);
+            return null;
         }
 
         if (!(_tilemap.GetTile(start) as MapTile).IsWalkable || !(_tilemap.GetTile(goal) as MapTile).IsWalkable)
         {
-            //TODO add check if current ship can walk on unwalkable tiles
-
             Debug.Log("Can't start or arrive in an Unwalkable cell!!!");
-            return new Node(start, 0);
+            return null;
         }
 
-
-        if (_objectsMap.GetTile(goal) != null)
+        if (ShipsPositions.instance.GetShip(goal) != null)
         {
-            //TODO add check if current ship can stay in an occupied destination
-
-            Debug.Log("Occupied destination!!!");
-            return new Node(start, 0);
+            Debug.Log("The destination is already occupied by another ship");
+            return null;
         }
+
+
+        // We passed all the initial checks, now the real search starts:
 
         List<Node> frontier = new List<Node>();
         List<Vector3Int> visited = new List<Vector3Int>();
 
-
         frontier.Add(new Node(start, 0));
         visited.Add(start);
-
 
         while(frontier.Count > 0)
         {
@@ -72,30 +78,24 @@ public class Astar : MonoBehaviour
             Node currNode = frontier[0];
             frontier.RemoveAt(0);
 
-
             foreach (Vector3Int pos in Node.GetAdjacents(currNode.Position))
             {
-                if (_tilemap.GetTile(pos) == null) continue; // If tile doesn't exist don't check
+                if (!_tilemap.HasTile(pos)) continue; // If tile doesn't exist don't check
 
                 if (pos == goal)
                 {
                     Node newNode = new Node(pos, currNode.G + 1);
-
                     newNode.Parent = currNode;
 
                     return newNode;
                 }
                 else if (!visited.Contains(pos))
                 {
-                    if (!(_tilemap.GetTile(pos) as MapTile).IsWalkable)
-                    {
-                        // TODO add check if current ship can walk on unwalkable tiles
-                        continue;
-                    }
+                    if (ShipsPositions.instance.GetShip(pos) != null) continue; // We cannot move over another ship (TODO decide if only with enemy ships or also with ally ships like it is now the check)
+
+                    if (!(_tilemap.GetTile(pos) as MapTile).IsWalkable) continue; // For now this method is for ships that can travel on walkable tiles only
                     
-
                     Node newNode = new Node(pos, currNode.G + 1);
-
                     newNode.Parent = currNode;
 
                     frontier.Add(newNode);
@@ -105,12 +105,17 @@ public class Astar : MonoBehaviour
         }
 
 
+        // If we get here it means that there was no available path from start to goal
         Debug.Log("Unreachable destination!!!");
         return new Node(start, 0);
     }
 
     /// <summary>
     /// Retuns the set of cells that you can move to with the specified start center cell and movement range
+    /// 
+    /// This method is used by ships that can only travel on walkable tiles
+    /// 
+    /// In future add functionality for the ships that can also travel on unwalkable tiles
     /// </summary>
     /// <param name="center"></param>
     /// <param name="movementRange"></param>
@@ -122,8 +127,11 @@ public class Astar : MonoBehaviour
         visited.Add(center);
 
         List<Vector3Int>[] fringes = new List<Vector3Int>[movementRange + 1]; // fringes[k] is the set of cells that can be reached in k steps
+
         for (int k = 0; k <= movementRange; k++)
+        {
             fringes[k] = new List<Vector3Int>();
+        }
 
         fringes[0].Add(center);
 
@@ -132,24 +140,33 @@ public class Astar : MonoBehaviour
         {
             foreach(Vector3Int reachable in fringes[k-1])
             {
-                foreach (Vector3Int cell in Node.GetAdjacents(reachable))
+                foreach (Vector3Int pos in Node.GetAdjacents(reachable))
                 {
-                    if (_tilemap.GetTile(cell) != null && (_tilemap.GetTile(cell) as MapTile).IsWalkable && !visited.Contains(cell))
-                    {
-                        visited.Add(cell);
-                        fringes[k].Add(cell);
-                    }
+                    // Checks if tile is a good tile:
+
+                    if (visited.Contains(pos)) continue;
+
+                    if (!_tilemap.HasTile(pos)) continue;
+
+                    if (!(_tilemap.GetTile(pos) as MapTile).IsWalkable) continue; // For now this method is for ships that can travel on walkable tiles only
+
+                    if (ShipsPositions.instance.GetShip(pos) != null) continue; // We cannot move over another ship (TODO decide if only with enemy ships or also with ally ships like it is now the check)
+
+                    // Checks passed
+                    visited.Add(pos);
+                    fringes[k].Add(pos);
                 }
             }
         }
 
-        return visited;
+        visited.RemoveAll(pos => ShipsPositions.instance.GetShip(pos) != null); // Here we remove every position in which there is any ship because we cannot end the movement on another ship
 
+        return visited;
     }
 
 
 
-    public List<Vector3Int> GetLine(Vector3 start, Vector3 goal)
+    private List<Vector3Int> GetLine(Vector3 start, Vector3 goal)
     {
         int N = Node.HexManhattanDistance(_tilemap.WorldToCell(start), _tilemap.WorldToCell(goal)) * 3;
 
@@ -167,7 +184,6 @@ public class Astar : MonoBehaviour
         }
 
         return result;
-
     }
 
     /// <summary>
@@ -175,8 +191,7 @@ public class Astar : MonoBehaviour
     /// </summary>
     /// <param name="start"></param>
     /// <param name="goal"></param>
-    /// <returns>null if there is no line of sight, returns the start world point and goal world point of there is sight
-    /// This return is done like this for now just for debug, in future convert this return to a boolean</returns>
+    /// <returns>null if there is no line of sight, returns the start world point and goal world point of there is sight</returns>
     public List<Vector3> GetLineOfSight(Vector3Int start, Vector3Int goal)
     {
         foreach(Vector3 diff in _verticesDiff)
@@ -187,17 +202,30 @@ public class Astar : MonoBehaviour
 
                 bool lineOfSightExists = true;
 
-                foreach (Vector3Int cell in straightPath)
+                foreach (Vector3Int pos in straightPath)
                 {
-                    if (_tilemap.HasTile(cell) && (_tilemap.GetTile(cell) as MapTile).IsWalkable)
-                        continue;
-                    else
+                    // Checks to see if this line of sight is not clear:
+
+                    if (!_tilemap.HasTile(pos))
                     {
                         lineOfSightExists = false;
                         break;
-                    }      
+                    }
+
+                    if (!(_tilemap.GetTile(pos) as MapTile).IsWalkable)
+                    {
+                        lineOfSightExists = false;
+                        break;
+                    }
+
+                    if (ShipsPositions.instance.GetShip(pos) != null && pos != start && pos != goal)
+                    {
+                        lineOfSightExists = false;
+                        break;
+                    }     
                 }
 
+                // If the line of sight considered passed all the checks then we return the vertices of the line of sight found
                 if (lineOfSightExists)
                     return new List<Vector3>
                     {
@@ -211,7 +239,22 @@ public class Astar : MonoBehaviour
         return null;
     }
 
- 
+
+    public bool IsThereLineOfSight(Vector3Int start, Vector3Int goal)
+    {
+        if (GetLineOfSight(start, goal) == null)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+
+
+
 
     private void OnDrawGizmos()
     {

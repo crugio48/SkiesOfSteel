@@ -15,6 +15,7 @@ public class ShipsPositions : MonoBehaviour
         if (instance == null)
         {
             instance = this;
+            shipsPositions = new Dictionary<Vector3Int, ShipUnit>();
         }
         else if (instance != this)
         {
@@ -23,11 +24,6 @@ public class ShipsPositions : MonoBehaviour
         }
     }
 
-
-    private void Start()
-    {
-        shipsPositions = new Dictionary<Vector3Int, ShipUnit>();
-    }
 
 
 
