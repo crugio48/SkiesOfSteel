@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91503da15c085cd4d8fec1e127d751c1, type: 3}
   m_Name: FastShip
   m_EditorClassIdentifier: 
+  isFlagship: 0
   maxHealth: 60
   maxFuel: 20
   speed: 3
@@ -20,5 +21,6 @@ MonoBehaviour:
   battleCost: 0
   sprite: {fileID: 0}
   actions:
+  - {fileID: 11400000, guid: 4fdfd7a313b09c2419ef503b4d3ae084, type: 2}
   - {fileID: 11400000, guid: f6e03ae245d9e01479cfe6d87049b32d, type: 2}
   - {fileID: 11400000, guid: 50cf6470391b9a041af4c778966be4a8, type: 2}
