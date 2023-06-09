@@ -423,7 +423,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _tilemap: {fileID: 624527627}
-  _objectsMap: {fileID: 126639762}
+  _portsMap: {fileID: 0}
+  _debugTileVertices: 0
+  _verticesDiff: []
 --- !u!1 &391477352
 GameObject:
   m_ObjectHideFlags: 0
@@ -670,11 +672,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 602956eaa40b8604daefed392ef5affe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numOfPlayers: 2
-  debugListPlayer1:
-  - {fileID: 1434504164}
-  debugListPlayer2:
-  - {fileID: 1123616483}
+  shipUnitPrefab: {fileID: 0}
 --- !u!1 &624527624
 GameObject:
   m_ObjectHideFlags: 0
@@ -3503,6 +3501,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1022513343650396737, guid: abd2cec6d88bd504bb221c520edcc0a3, type: 3}
+      propertyPath: shipSO
+      value: 
+      objectReference: {fileID: 11400000, guid: 001d7f636168be14e8b83554123fb65b, type: 2}
+    - target: {fileID: 1022513343650396737, guid: abd2cec6d88bd504bb221c520edcc0a3, type: 3}
       propertyPath: shipScriptableValues
       value: 
       objectReference: {fileID: 11400000, guid: 001d7f636168be14e8b83554123fb65b, type: 2}
@@ -3556,17 +3558,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: abd2cec6d88bd504bb221c520edcc0a3, type: 3}
---- !u!114 &1123616483 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1022513343650396737, guid: abd2cec6d88bd504bb221c520edcc0a3, type: 3}
-  m_PrefabInstance: {fileID: 1123616482}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7751baf6605cf7e439f66a069ef78431, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1225736029
 GameObject:
   m_ObjectHideFlags: 0
@@ -3659,6 +3650,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1022513343650396737, guid: abd2cec6d88bd504bb221c520edcc0a3, type: 3}
+      propertyPath: shipSO
+      value: 
+      objectReference: {fileID: 11400000, guid: 1b6c8665c7b02f6418eb70bced33ac79, type: 2}
+    - target: {fileID: 1022513343650396737, guid: abd2cec6d88bd504bb221c520edcc0a3, type: 3}
       propertyPath: shipScriptableValues
       value: 
       objectReference: {fileID: 11400000, guid: 1b6c8665c7b02f6418eb70bced33ac79, type: 2}
@@ -3712,17 +3707,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: abd2cec6d88bd504bb221c520edcc0a3, type: 3}
---- !u!114 &1434504164 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1022513343650396737, guid: abd2cec6d88bd504bb221c520edcc0a3, type: 3}
-  m_PrefabInstance: {fileID: 1434504163}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7751baf6605cf7e439f66a069ef78431, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1700280647
 GameObject:
   m_ObjectHideFlags: 0

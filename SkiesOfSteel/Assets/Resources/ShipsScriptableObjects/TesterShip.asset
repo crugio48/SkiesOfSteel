@@ -10,17 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 91503da15c085cd4d8fec1e127d751c1, type: 3}
-  m_Name: CargoShip
+  m_Name: TesterShip
   m_EditorClassIdentifier: 
   isFlagship: 0
-  maxHealth: 120
-  maxFuel: 50
-  speed: 2
-  attack: 30
-  defense: 30
-  battleCost: 0
-  sprite: {fileID: 0}
-  actions:
+  maxHealth: 10
+  maxFuel: 10
+  speed: 8
+  attack: 10
+  defense: 10
+  battleCost: 2
+  sprite: {fileID: 21300000, guid: c22340e383b54c44196cb7765328e79d, type: 3}
+  actionList:
   - {fileID: 11400000, guid: 4fdfd7a313b09c2419ef503b4d3ae084, type: 2}
-  - {fileID: 11400000, guid: f6e03ae245d9e01479cfe6d87049b32d, type: 2}
-  - {fileID: 11400000, guid: af03029b72f6e8f4cb1c5073331d4134, type: 2}

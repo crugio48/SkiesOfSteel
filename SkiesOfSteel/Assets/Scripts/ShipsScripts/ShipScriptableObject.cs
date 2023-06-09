@@ -18,5 +18,5 @@ public class ShipScriptableObject : ScriptableObject
     public Sprite sprite;
 
 
-    public List<Action> actions;
+    public List<Action> actionList;
 }

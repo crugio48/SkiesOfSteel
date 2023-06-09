@@ -2,37 +2,69 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
+using Unity.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class ShipUnit : MonoBehaviour
+
+[RequireComponent(typeof(SpriteRenderer))]
+public class ShipUnit : NetworkBehaviour
 {
-    [SerializeField]
-    private ShipScriptableObject shipScriptableValues;
+    [SerializeField] private ShipScriptableObject shipSO;
 
-    private int currentHealth;
-    private int currentFuel;
-    private int attackStage;
-    private int defenseStage;
+    private int _currentHealth;
+    private int _currentFuel;
+    private int _attackStage;
+    private int _defenseStage;
 
-    private SpriteRenderer spriteRenderer;
+    private SpriteRenderer _spriteRenderer;
 
-    private Vector3Int currentPosition;
+    private Vector3Int _currentPosition;
 
-    private Pathfinding pathfinding;
-    private Tilemap tilemap;
+    private Pathfinding _pathfinding;
+    private Tilemap _tilemap;
 
     //TODO add hold item parameter
+
+    // Only the server will be running this function
+    public void SetShipScriptableObject(string shipSOpath)
+    {
+        SetInitialValuesFromSO(shipSOpath);
+
+        // Make clients also set the shipSO
+        SetShipScriptableObjectClientRpc(shipSOpath);
+    }
+
+    [ClientRpc]
+    private void SetShipScriptableObjectClientRpc(string shipSOpath)
+    {
+        SetInitialValuesFromSO(shipSOpath);
+    }
+
+
+    private void SetInitialValuesFromSO(string shipSOpath)
+    {
+        if (shipSOpath != null)
+        {
+            shipSO = Resources.Load<ShipScriptableObject>(shipSOpath);
+        }
+
+        _spriteRenderer.sprite = shipSO.sprite; // TODO implement logic for more sprites
+        _currentHealth = shipSO.maxHealth;
+        _currentFuel = shipSO.maxFuel;
+    }
 
     public bool CanDoAction { get; set; }
 
     public int MovementLeft { get; set; }
 
+
     public float GetAttack
     {
         get
         {
-            return Mathf.Floor(shipScriptableValues.attack * GetMultiplier(attackStage));
+            return Mathf.Floor(shipSO.attack * GetMultiplier(_attackStage));
         }
     }
 
@@ -40,58 +72,61 @@ public class ShipUnit : MonoBehaviour
     {
         get
         {
-            return Mathf.Floor(shipScriptableValues.defense * GetMultiplier(defenseStage));
+            return Mathf.Floor(shipSO.defense * GetMultiplier(_defenseStage));
         }
     }
 
     private void Awake()
     {
-        pathfinding = FindObjectOfType<Pathfinding>();
-        tilemap = FindObjectOfType<Tilemap>();
+        _pathfinding = FindObjectOfType<Pathfinding>();
+        _tilemap = FindObjectOfType<Tilemap>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     private void Start()
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        spriteRenderer.sprite = shipScriptableValues.sprite;
-
-        currentHealth = shipScriptableValues.maxHealth;
-        currentFuel = shipScriptableValues.maxFuel;
-        attackStage = 0;
-        defenseStage = 0;
-
         CanDoAction = false;
         MovementLeft = 0;
+
+        _attackStage = 0;
+        _defenseStage = 0;
+
+
+        // If we are testing the game in a custom scene then the shipSO will be set from unity so we enter here
+        if (shipSO != null)
+        {
+            SetInitialValuesFromSO(null);
+        }
     }
 
 
     public void EnableShip()
     {
         CanDoAction = true;
-        MovementLeft = shipScriptableValues.speed;
+        MovementLeft = shipSO.speed;
     }
 
     public void ModifyAttack(int stageModification)
     {
-        attackStage += stageModification;
+        _attackStage += stageModification;
 
-        if (attackStage > 2)
-            attackStage = 2;
+        if (_attackStage > 2)
+            _attackStage = 2;
 
-        if (attackStage < -2)
-            attackStage = -2;
+        if (_attackStage < -2)
+            _attackStage = -2;
     }
 
 
     public void ModifyDefense(int stageModification)
     {
-        defenseStage += stageModification;
+        _defenseStage += stageModification;
 
-        if (defenseStage > 2)
-            defenseStage = 2;
+        if (_defenseStage > 2)
+            _defenseStage = 2;
 
-        if (defenseStage < -2)
-            defenseStage = -2;
+        if (_defenseStage < -2)
+            _defenseStage = -2;
     }
 
     private float GetMultiplier(int stage)
@@ -125,21 +160,21 @@ public class ShipUnit : MonoBehaviour
         int roundedDamage = (int) Mathf.Floor(damage);
 
 
-        if (currentHealth < roundedDamage)
+        if (_currentHealth < roundedDamage)
         {
             //TODO add death animation and logic
             Debug.Log(this + " is destroyed");
         }
         else
         {
-            currentHealth -= roundedDamage;
+            _currentHealth -= roundedDamage;
         }
     }
 
 
     public void RefuelToMaxAtPortAction()
     {
-        currentFuel = shipScriptableValues.maxFuel;
+        _currentFuel = shipSO.maxFuel;
     }
 
 
@@ -147,11 +182,11 @@ public class ShipUnit : MonoBehaviour
     {
         float healPercentage = 0.2f;
 
-        currentHealth += (int) Mathf.Floor(shipScriptableValues.maxHealth * healPercentage);
+        _currentHealth += (int) Mathf.Floor(shipSO.maxHealth * healPercentage);
 
-        if (currentHealth > shipScriptableValues.maxHealth)
+        if (_currentHealth > shipSO.maxHealth)
         {
-            currentHealth = shipScriptableValues.maxHealth;
+            _currentHealth = shipSO.maxHealth;
         }
 
     }
@@ -159,25 +194,25 @@ public class ShipUnit : MonoBehaviour
 
     public int GetCurrentFuel()
     {
-        return currentFuel;
+        return _currentFuel;
     }
 
     public void RemoveFuel(int amount)
     {
-        currentFuel -= amount;
-        if (currentFuel < 0)
+        _currentFuel -= amount;
+        if (_currentFuel < 0)
         {
-            currentFuel += amount;
+            _currentFuel += amount;
             Debug.LogError("Tried to remove too much fuel from ship " + this.name);
         }
     }
 
     public void AddFuel(int amount)
     {
-        currentFuel += amount;
-        if (currentFuel > shipScriptableValues.maxFuel)
+        _currentFuel += amount;
+        if (_currentFuel > shipSO.maxFuel)
         {
-            currentFuel -= amount;
+            _currentFuel -= amount;
             Debug.LogError("Tried to add too much fuel to ship " + this.name);
         }
     }
@@ -185,19 +220,19 @@ public class ShipUnit : MonoBehaviour
 
     public List<Action> GetActions()
     {
-        return shipScriptableValues.actions;
+        return shipSO.actionList;
     }
 
 
     public void SetInitialPosition(Vector3Int pos)
     {
-        currentPosition = pos;
-        transform.position = tilemap.GetCellCenterWorld(currentPosition);
+        _currentPosition = pos;
+        transform.position = _tilemap.GetCellCenterWorld(_currentPosition);
     }
 
     public void Move(Vector3Int destination)
     {
-        Node destinationNode = pathfinding.AStarSearch(currentPosition, destination);
+        Node destinationNode = _pathfinding.AStarSearch(_currentPosition, destination);
 
         if (destinationNode == null)
         {
@@ -226,7 +261,7 @@ public class ShipUnit : MonoBehaviour
 
         for (Node step = destinationNode; step.Parent != null; step = step.Parent)
         {
-            Vector3 worldPos = tilemap.GetCellCenterWorld(step.Position);
+            Vector3 worldPos = _tilemap.GetCellCenterWorld(step.Position);
 
             moveSequence.Prepend(transform.DOMove(worldPos, 0.5f).SetEase(Ease.Linear));
             
@@ -234,8 +269,8 @@ public class ShipUnit : MonoBehaviour
 
 
         // Update this ship position for the data structures
-        ShipsPositions.Instance.Move(this, currentPosition, destination);
-        currentPosition = destination;
+        ShipsPositions.Instance.Move(this, _currentPosition, destination);
+        _currentPosition = destination;
 
     }
 

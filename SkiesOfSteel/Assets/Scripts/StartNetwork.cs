@@ -6,17 +6,15 @@ public class StartNetwork : MonoBehaviour
 {
     [SerializeField] private GameManager gameManager;
 
-    public void StartServer(ushort numOfPlayers)
+    public void StartServer(int numOfPlayers)
     {
         NetworkManager.Singleton.StartServer();
 
-        gameManager.SetNumOfPlayers(numOfPlayers);
+        gameManager.SetNumOfPlayers((ushort) numOfPlayers);
     }
 
     public void StartClient()
     {
         NetworkManager.Singleton.StartClient();
-
-        gameManager.NewClientConnectedServerRpc();
     }
 }
