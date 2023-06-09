@@ -1,10 +1,7 @@
-using System.Collections;
+
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using UnityEngine.UIElements;
-using static UnityEditor.PlayerSettings;
 
 
 // Super link: https://www.redblobgames.com/grids/hexagons/
@@ -58,7 +55,7 @@ public class Pathfinding : MonoBehaviour
             return null;
         }
 
-        if (ShipsPositions.instance.GetShip(goal) != null)
+        if (ShipsPositions.Instance.GetShip(goal) != null)
         {
             Debug.Log("The destination is already occupied by another ship");
             return null;
@@ -93,7 +90,7 @@ public class Pathfinding : MonoBehaviour
                 }
                 else if (!visited.Contains(pos))
                 {
-                    if (ShipsPositions.instance.GetShip(pos) != null) continue; // We cannot move over another ship (TODO decide if only with enemy ships or also with ally ships like it is now the check)
+                    if (ShipsPositions.Instance.GetShip(pos) != null) continue; // We cannot move over another ship (TODO decide if only with enemy ships or also with ally ships like it is now the check)
 
                     if (!(_tilemap.GetTile(pos) as MapTile).IsWalkable) continue; // For now this method is for ships that can travel on walkable tiles only
                     
@@ -152,7 +149,7 @@ public class Pathfinding : MonoBehaviour
 
                     if (!(_tilemap.GetTile(pos) as MapTile).IsWalkable) continue; // For now this method is for ships that can travel on walkable tiles only
 
-                    if (ShipsPositions.instance.GetShip(pos) != null) continue; // We cannot move over another ship (TODO decide if only with enemy ships or also with ally ships like it is now the check)
+                    if (ShipsPositions.Instance.GetShip(pos) != null) continue; // We cannot move over another ship (TODO decide if only with enemy ships or also with ally ships like it is now the check)
 
                     // Checks passed
                     visited.Add(pos);
@@ -161,7 +158,7 @@ public class Pathfinding : MonoBehaviour
             }
         }
 
-        visited.RemoveAll(pos => ShipsPositions.instance.GetShip(pos) != null); // Here we remove every position in which there is any ship because we cannot end the movement on another ship
+        visited.RemoveAll(pos => ShipsPositions.Instance.GetShip(pos) != null); // Here we remove every position in which there is any ship because we cannot end the movement on another ship
 
         return visited;
     }
@@ -220,7 +217,7 @@ public class Pathfinding : MonoBehaviour
                         break;
                     }
 
-                    if (ShipsPositions.instance.GetShip(pos) != null && pos != start && pos != goal)
+                    if (ShipsPositions.Instance.GetShip(pos) != null && pos != start && pos != goal)
                     {
                         lineOfSightExists = false;
                         break;

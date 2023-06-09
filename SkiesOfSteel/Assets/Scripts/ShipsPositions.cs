@@ -2,29 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ShipsPositions : MonoBehaviour
+public class ShipsPositions : Singleton<ShipsPositions>
 {
-    // Make Singleton of this class
-    public static ShipsPositions instance = null;
-
     private Dictionary<Vector3Int, ShipUnit> shipsPositions;
 
 
-    private void Awake()
+    private void Start()
     {
-        if (instance == null)
-        {
-            instance = this;
-            shipsPositions = new Dictionary<Vector3Int, ShipUnit>();
-        }
-        else if (instance != this)
-        {
-            Debug.Log(this.name + ": There shouldn't be another instance of me");
-            Destroy(gameObject);
-        }
+        shipsPositions = new Dictionary<Vector3Int, ShipUnit>();
     }
-
-
 
 
     public void Place(ShipUnit ship, Vector3Int position)

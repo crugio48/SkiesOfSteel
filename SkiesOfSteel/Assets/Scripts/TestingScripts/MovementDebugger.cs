@@ -8,18 +8,30 @@ public class MovementDebugger : MonoBehaviour
     public Tilemap tilemap;
     public ShipUnit shipToMove;
 
+    private bool _debuggerStarted = false;
+
     private void Start()
     {
-        Vector3Int initialPosition = new Vector3Int(0,-2,0);
+        StartCoroutine(MovementDebuggerStartCoroutine());
+    }
+
+    private IEnumerator MovementDebuggerStartCoroutine()
+    {
+        yield return new WaitForSeconds(1);
+
+        Vector3Int initialPosition = new Vector3Int(0, -2, 0);
 
         shipToMove.SetInitialPosition(initialPosition);
-        ShipsPositions.instance.Place(shipToMove, initialPosition);
+        ShipsPositions.Instance.Place(shipToMove, initialPosition);
 
+        _debuggerStarted = true;
     }
 
 
     private void Update()
     {
+        if (!_debuggerStarted) return;
+
         if (Input.GetMouseButtonDown(1))
         {
             shipToMove.EnableShip();

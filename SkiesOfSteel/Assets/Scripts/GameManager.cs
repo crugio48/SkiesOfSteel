@@ -1,51 +1,52 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using JetBrains.Annotations;
+using Unity.Netcode;
 using UnityEngine;
 
 
-public enum BattleState { START, PLAYERTURN, WON, LOST};
+public enum BattleState { START, PLAYERTURN};
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
-    public int numOfPlayers;
+    private NetworkVariable<ushort> _numOfPlayers = new NetworkVariable<ushort>();
 
-    public List<List<ShipUnit>> playersUnits;
+    private NetworkVariable<ushort> _currentPlayer = new NetworkVariable<ushort>();
 
-    public List<ShipUnit> debugListPlayer1;
-    public List<ShipUnit> debugListPlayer2;
+    private NetworkVariable<BattleState> _battleState = new NetworkVariable<BattleState>(BattleState.START);
 
-    private BattleState battleState;
+    private ushort _lastPlayer = 0;
 
-    private int currentPlayer;
 
-    private int lastPlayer;
+    private readonly ulong[] _singleTargetClientArray = new ulong[1];   // This array is used to sent call the clientRpc on one particular client
 
-    private void Start()
+    [CanBeNull] public static event System.Action StartGameEvent;
+    [CanBeNull] public static event System.Action LostGameEvent;
+    [CanBeNull] public static event System.Action WonGameEvent;
+
+
+
+    public void SetNumOfPlayers(ushort numOfPlayers)
     {
-        battleState = BattleState.START;
-
-        StartCoroutine(SetupBattle());
-                
+        _numOfPlayers.Value = numOfPlayers;
     }
 
-    private IEnumerator SetupBattle()
+    [ServerRpc]
+    public void NewClientConnectedServerRpc(ServerRpcParams serverRpcParams = default)
     {
-        currentPlayer = 0;
-        lastPlayer = 0;
+        Debug.Log("GameManager:NewClientConnected: clientId = " + serverRpcParams.Receive.SenderClientId);
+    }
 
-        playersUnits = new List<List<ShipUnit>>();
-        //SetupShips dinamically when real game TODO
-        playersUnits.Append(debugListPlayer1);
-        playersUnits.Append(debugListPlayer2);
+    private void SetupGame()
+    {
+        //TODO setup ships
+        for (int i = 0; i < _numOfPlayers.Value; i++)
+        {
 
+        }
 
-        yield return 2f;
+        Debug.Log("Setupping game");
 
-        battleState = BattleState.PLAYERTURN;
-
-        //continue setup
-
+        _currentPlayer.Value = 0;
+        _battleState.Value = BattleState.PLAYERTURN;
 
         EnableCurrentPlayer();
     }
@@ -53,28 +54,64 @@ public class GameManager : MonoBehaviour
 
     private void EnableCurrentPlayer()
     {
+        /*
         foreach (ShipUnit unit in playersUnits[currentPlayer])
         {
             unit.EnableShip();
         }
+        */
     }
 
-
+    [ClientRpc]
+    private void StartGameClientRpc()
+    {
+        StartGameEvent.Invoke();
+    }
 
     private void Update()
     {
-        if (battleState == BattleState.PLAYERTURN && lastPlayer != currentPlayer)
+        // At the start of the game, when the lobby is complete, the server setups the game
+        if (IsServer && _battleState.Value == BattleState.START && _numOfPlayers.Value == NetworkManager.ConnectedClients.Count)
         {
-            lastPlayer = currentPlayer;
-            EnableCurrentPlayer();
+            SetupGame();
+            StartGameClientRpc();
         }
+
+        
+        if (_battleState.Value == BattleState.PLAYERTURN && _lastPlayer != _currentPlayer.Value)
+        {
+            _lastPlayer = _currentPlayer.Value;
+            EnableCurrentPlayer();
+
+            Debug.Log("Enabling next player");
+        }
+
     }
 
 
     public void EndTurn()
     {
-        currentPlayer = (currentPlayer + 1) % numOfPlayers;
+        _currentPlayer.Value = (ushort) ((_currentPlayer.Value + 1) % _numOfPlayers.Value);
     }
 
 
+    [ClientRpc]
+    private void GameLostClientRpc(ClientRpcParams clientRpcParams = default)
+    {
+        Debug.Log("You lose!");
+
+        LostGameEvent?.Invoke();
+
+        NetworkManager.Singleton.Shutdown();
+    }
+
+    [ClientRpc]
+    private void GameWonClientRpc(ClientRpcParams clientRpcParams = default)
+    {
+        Debug.Log("You won!");
+
+        WonGameEvent?.Invoke();
+
+        NetworkManager.Singleton.Shutdown();
+    }
 }

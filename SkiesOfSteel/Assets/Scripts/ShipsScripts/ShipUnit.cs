@@ -234,7 +234,7 @@ public class ShipUnit : MonoBehaviour
 
 
         // Update this ship position for the data structures
-        ShipsPositions.instance.Move(this, currentPosition, destination);
+        ShipsPositions.Instance.Move(this, currentPosition, destination);
         currentPosition = destination;
 
     }
