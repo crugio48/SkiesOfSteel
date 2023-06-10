@@ -23,11 +23,13 @@ public class ConnectionApprovalHandler : MonoBehaviour
         Debug.Log("Connect Approval");
 
         response.Approved = true;
-        response.CreatePlayerObject = false;
+        response.CreatePlayerObject = true;
+        response.PlayerPrefabHash = null;
 
         if (NetworkManager.Singleton.ConnectedClients.Count >= _maxPlayers)
         {
             response.Approved = false;
+            response.CreatePlayerObject = false;
             response.Reason = "Server is full";
         }
 

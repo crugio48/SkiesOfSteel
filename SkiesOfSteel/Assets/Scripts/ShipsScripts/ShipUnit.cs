@@ -22,7 +22,8 @@ public class ShipUnit : NetworkBehaviour
 
     private SpriteRenderer _spriteRenderer;
 
-    private Vector3Int _currentPosition;
+    private static Vector3Int NOT_SET_POSITION = new Vector3Int(-1000, -1000, -1000);
+    private NetworkVariable<Vector3IntSerializable> _currentPosition = new NetworkVariable<Vector3IntSerializable>(NOT_SET_POSITION);
 
     private Pathfinding _pathfinding;
     private Tilemap _tilemap;
@@ -36,11 +37,28 @@ public class ShipUnit : NetworkBehaviour
 
         // Run both on server and on clients
         _ownerUsername.OnValueChanged += RegisterShipOfOwner;
+        _currentPosition.OnValueChanged += PositionChangedCallback;
     }
 
     private void RegisterShipOfOwner(FixedString32Bytes previousValue, FixedString32Bytes newValue)
     {
         PlayersShips.Instance.SetShip(newValue, this);
+    }
+
+    private void PositionChangedCallback(Vector3IntSerializable previousValue, Vector3IntSerializable newValue)
+    {
+        if (previousValue.GetValues() == NOT_SET_POSITION)
+        {
+            Debug.Log("Placing the ship = " + this.name + " in grid position  = " + newValue.GetValues());
+
+            ShipsPositions.Instance.Place(this, newValue.GetValues());
+        }
+        else
+        {
+            Debug.Log("Moving the ship = " + this.name + " from grid position = " + previousValue.GetValues() + " to grid position = " + newValue.GetValues());
+
+            ShipsPositions.Instance.Move(this, previousValue.GetValues(), newValue.GetValues());
+        }
     }
 
     // Only the server will be running this function
@@ -75,6 +93,12 @@ public class ShipUnit : NetworkBehaviour
     public void SetOwnerUsername(FixedString32Bytes username)
     {
         _ownerUsername.Value = username;
+    }
+
+    // This will only be called on the server gameObject by server gameManager
+    public void SetInitialGridPosition(Vector3Int gridPos)
+    {
+        _currentPosition.Value = gridPos;
     }
 
 
@@ -249,13 +273,13 @@ public class ShipUnit : NetworkBehaviour
 
     public void SetInitialPosition(Vector3Int pos)
     {
-        _currentPosition = pos;
-        transform.position = _tilemap.GetCellCenterWorld(_currentPosition);
+        _currentPosition.Value = pos;
+        transform.position = _tilemap.GetCellCenterWorld(_currentPosition.Value.GetValues());
     }
 
     public void Move(Vector3Int destination)
     {
-        Node destinationNode = _pathfinding.AStarSearch(_currentPosition, destination);
+        Node destinationNode = _pathfinding.AStarSearch(_currentPosition.Value.GetValues(), destination);
 
         if (destinationNode == null)
         {
@@ -292,9 +316,52 @@ public class ShipUnit : NetworkBehaviour
 
 
         // Update this ship position for the data structures
-        ShipsPositions.Instance.Move(this, _currentPosition, destination);
-        _currentPosition = destination;
+        //ShipsPositions.Instance.Move(this, _currentPosition.Value.GetValues(), destination);
+        _currentPosition.Value = destination;
+    }
+
+}
+
+
+
+public struct Vector3IntSerializable : INetworkSerializable
+{
+    private int x;
+    private int y;
+    private int z;
+
+    public Vector3IntSerializable(Vector3Int values)
+    {
+        this.x = values.x;
+        this.y = values.y;
+        this.z = values.z;
+    }
+
+    public static implicit operator Vector3IntSerializable(Vector3Int newValue)
+    {
+        return new Vector3IntSerializable(newValue);
+    }
+
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref x);
+        serializer.SerializeValue(ref y);
+        serializer.SerializeValue(ref z);
 
     }
 
+
+    public void SetValues(Vector3Int values)
+    {
+        this.x = values.x;
+        this.y = values.y;
+        this.z = values.z;
+    }
+
+
+    public Vector3Int GetValues()
+    {
+        return new Vector3Int(x, y, z);
+    }
 }

@@ -1,5 +1,6 @@
 
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -9,13 +10,11 @@ public class PlayersShips : Singleton<PlayersShips>
     private Dictionary<FixedString32Bytes, List<ShipUnit>> shipsOfPlayer;
 
 
-    public override void Awake()
+    public void Start()
     {
-        base.Awake();
-
         shipsOfPlayer = new Dictionary<FixedString32Bytes, List<ShipUnit>>();
-
     }
+
 
     public void SetShip(FixedString32Bytes username, ShipUnit ship)
     {
@@ -25,9 +24,10 @@ public class PlayersShips : Singleton<PlayersShips>
         }
         List<ShipUnit> currList = shipsOfPlayer[username];
 
-        currList.Add(ship);
+        currList.Append(ship);
 
         shipsOfPlayer[username] = currList;
+
     }
 
 

@@ -24,6 +24,7 @@ public class ShipsPositions : Singleton<ShipsPositions>
         // We passed all the checks
 
         shipsPositions.Add(position, ship);
+        Debug.Log("Placing ship in position");
         
     }
 

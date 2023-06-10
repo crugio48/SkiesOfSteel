@@ -6,7 +6,7 @@ using System.Reflection;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
-
+using UnityEngine.Tilemaps;
 
 public enum BattleState { START, PLAYERTURN};
 
@@ -14,6 +14,7 @@ public class GameManager : NetworkBehaviour
 {
     [SerializeField] private GameObject shipUnitPrefab;
     [SerializeField] private ConnectionApprovalHandler connectionApprovalHandler;
+    [SerializeField] private Tilemap tilemap;
 
     private NetworkVariable<ushort> _numOfPlayers = new NetworkVariable<ushort>();
 
@@ -115,23 +116,24 @@ public class GameManager : NetworkBehaviour
 
     private void SetupGame()
     {
+        StartingPositionsSO startingPositionsForDemo = Resources.Load<StartingPositionsSO>("DemoStartingPositions");
 
         //Setup ships for demo match
         for (int i = 0; i < _numOfPlayers.Value; i++)
         {
             Debug.Log("Spawning ships for player = " + _playerUsernames[i]);
+            GameObject newShip;
 
-            
-            GameObject testShip = Instantiate(shipUnitPrefab, new Vector3(i,i,0), Quaternion.identity);
-            testShip.GetComponent<NetworkObject>().Spawn();
-            ShipUnit testShipUnit = testShip.GetComponent<ShipUnit>();
-            testShipUnit.SetShipScriptableObject("ShipsScriptableObjects/TesterShip");
-            testShipUnit.SetOwnerUsername(_playerUsernames[i]);
+            newShip = Instantiate(shipUnitPrefab, tilemap.GetCellCenterWorld(startingPositionsForDemo.flagshipsPositions[i]), Quaternion.identity);
+            newShip.GetComponent<NetworkObject>().Spawn();
+            ShipUnit flagshipUnit = newShip.GetComponent<ShipUnit>();
+            flagshipUnit.SetShipScriptableObject("ShipsScriptableObjects/DefenseFlagship");
+            flagshipUnit.SetInitialGridPosition(startingPositionsForDemo.flagshipsPositions[i]);
+            flagshipUnit.SetOwnerUsername(_playerUsernames[i]);
+
 
             
         }
-
-        Debug.Log(NetworkManager.Singleton.ConnectedClients);
 
         _currentPlayer.Value = 0;
         _battleState.Value = BattleState.PLAYERTURN;
