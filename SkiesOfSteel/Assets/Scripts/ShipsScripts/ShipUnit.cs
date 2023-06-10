@@ -13,6 +13,8 @@ public class ShipUnit : NetworkBehaviour
 {
     [SerializeField] private ShipScriptableObject shipSO;
 
+    private NetworkVariable<FixedString32Bytes> _ownerUsername = new NetworkVariable<FixedString32Bytes>();
+
     private int _currentHealth;
     private int _currentFuel;
     private int _attackStage;
@@ -26,6 +28,20 @@ public class ShipUnit : NetworkBehaviour
     private Tilemap _tilemap;
 
     //TODO add hold item parameter
+
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+
+        // Run both on server and on clients
+        _ownerUsername.OnValueChanged += RegisterShipOfOwner;
+    }
+
+    private void RegisterShipOfOwner(FixedString32Bytes previousValue, FixedString32Bytes newValue)
+    {
+        PlayersShips.Instance.SetShip(newValue, this);
+    }
 
     // Only the server will be running this function
     public void SetShipScriptableObject(string shipSOpath)
@@ -54,6 +70,13 @@ public class ShipUnit : NetworkBehaviour
         _currentHealth = shipSO.maxHealth;
         _currentFuel = shipSO.maxFuel;
     }
+    
+    // This will only be called on the server gameObject by server gameManager
+    public void SetOwnerUsername(FixedString32Bytes username)
+    {
+        _ownerUsername.Value = username;
+    }
+
 
     public bool CanDoAction { get; set; }
 

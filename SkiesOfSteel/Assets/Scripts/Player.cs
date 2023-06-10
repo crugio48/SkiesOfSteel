@@ -1,16 +1,18 @@
 
-using System.Collections.Generic;
+using Unity.Collections;
 using Unity.Netcode;
-using UnityEngine;
 
 public class Player : NetworkBehaviour
 {
-    private List<ShipUnit> _myShips;
+    private NetworkVariable<FixedString32Bytes> _username = new NetworkVariable<FixedString32Bytes>();
 
-
-
-    public void SetShips(List<ShipUnit> ships)
+    public void SetUsername(FixedString32Bytes username)
     {
-        _myShips = ships;
+        _username.Value = username;
+    }
+
+    public FixedString32Bytes GetUsername()
+    {
+        return _username.Value;
     }
 }

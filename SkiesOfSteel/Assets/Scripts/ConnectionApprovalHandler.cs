@@ -4,7 +4,7 @@ using Unity.Netcode;
 
 public class ConnectionApprovalHandler : MonoBehaviour
 {
-    private const int MaxPlayers = 4;
+    private int _maxPlayers = 4;
 
 
     private void Start()
@@ -12,15 +12,20 @@ public class ConnectionApprovalHandler : MonoBehaviour
         NetworkManager.Singleton.ConnectionApprovalCallback = ApprovalCheck;
     }
 
+
+    public void SetMaxPlayers(int maxPlayers)
+    {
+        _maxPlayers = maxPlayers;
+    }
+
     private void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
     {
         Debug.Log("Connect Approval");
 
         response.Approved = true;
-        response.CreatePlayerObject = true;
-        response.PlayerPrefabHash = null;
+        response.CreatePlayerObject = false;
 
-        if (NetworkManager.Singleton.ConnectedClients.Count >= MaxPlayers)
+        if (NetworkManager.Singleton.ConnectedClients.Count >= _maxPlayers)
         {
             response.Approved = false;
             response.Reason = "Server is full";
