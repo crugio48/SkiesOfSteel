@@ -316,7 +316,6 @@ public class ShipUnit : NetworkBehaviour
 
 
         // Update this ship position for the data structures
-        //ShipsPositions.Instance.Move(this, _currentPosition.Value.GetValues(), destination);
         _currentPosition.Value = destination;
     }
 
@@ -351,13 +350,6 @@ public struct Vector3IntSerializable : INetworkSerializable
 
     }
 
-
-    public void SetValues(Vector3Int values)
-    {
-        this.x = values.x;
-        this.y = values.y;
-        this.z = values.z;
-    }
 
 
     public Vector3Int GetValues()

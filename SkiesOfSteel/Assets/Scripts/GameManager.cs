@@ -89,7 +89,7 @@ public class GameManager : NetworkBehaviour
 
         Debug.Log("Received: " + username);
 
-        if (!_playerUsernames.Contains(username) && username.Length < 32)
+        if (!_playerUsernames.Contains(username) && username.Length < 30)
         {
             _playerUsernames.Add(username);
 
@@ -113,7 +113,7 @@ public class GameManager : NetworkBehaviour
     }
 
 
-
+    // This will be executd only by the server once to setup the game
     private void SetupGame()
     {
         StartingPositionsSO startingPositionsForDemo = Resources.Load<StartingPositionsSO>("DemoStartingPositions");

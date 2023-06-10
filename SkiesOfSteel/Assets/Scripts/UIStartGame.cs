@@ -74,4 +74,13 @@ public class UIStartGame : MonoBehaviour
         }
     }
 
+
+    public void ServerIsFull()
+    {
+        waitingPlayersText.GetComponent<TextMeshProUGUI>().text = "Server is already full!";
+
+        waitingPlayersText.SetActive(true);
+        selectUsernameMenu.SetActive(false);
+    }
+
 }

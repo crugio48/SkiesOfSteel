@@ -5986,6 +5986,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameManager: {fileID: 1844875884}
+  uiStartGame: {fileID: 188772495}
 --- !u!1 &1599079672
 GameObject:
   m_ObjectHideFlags: 0

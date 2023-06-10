@@ -6,6 +6,7 @@ using UnityEngine;
 public class StartNetwork : MonoBehaviour
 {
     [SerializeField] private GameManager gameManager;
+    [SerializeField] private UIStartGame uiStartGame;
 
     private Canvas _startNetworkCanvas;
 
@@ -24,6 +25,11 @@ public class StartNetwork : MonoBehaviour
 
     public void StartClient()
     {
-        NetworkManager.Singleton.StartClient();
+        bool outcome = NetworkManager.Singleton.StartClient();
+
+        if (outcome == false)
+        {
+            uiStartGame.ServerIsFull();
+        }
     }
 }
