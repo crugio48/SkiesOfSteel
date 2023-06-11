@@ -49,8 +49,8 @@ public class PlayerShipUI : MonoBehaviour
     public void ToggleShip() {//change sprite to Ship + Attributes 
     }
     public void HealShip(){_shipSelected.HealAtPortAction();}
-    public void BasicAttack() { shipActions[0].Activate(_shipSelected);}
+    //public void BasicAttack() { shipActions[0].Activate(_shipSelected);}
     public void Refuel(){_shipSelected.RefuelToMaxAtPortAction();}
-    public void Action1(){shipActions[1].Activate(_shipSelected);}
-    public void Action2(){shipActions[2].Activate(_shipSelected);}
+    //public void Action1(){shipActions[1].Activate(_shipSelected);}
+    //public void Action2(){shipActions[2].Activate(_shipSelected);}
 }

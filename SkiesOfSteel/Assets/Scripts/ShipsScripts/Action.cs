@@ -8,11 +8,11 @@ public class Action : ScriptableObject
     public Sprite sprite;
     public int fuelCost;
 
-    public virtual void Activate(ShipUnit thisShip)
+    public virtual void Activate(ShipUnit thisShip, List<ShipUnit> targets, int customParam)
     {
         if (thisShip.GetCurrentFuel() < fuelCost)
         {
-            Debug.LogError("Trying to use an action that cost more fuel than current amount " + thisShip.name);
+            Debug.Log("Trying to use an action that cost more fuel than current amount " + thisShip.name);
             return;
         }
         else

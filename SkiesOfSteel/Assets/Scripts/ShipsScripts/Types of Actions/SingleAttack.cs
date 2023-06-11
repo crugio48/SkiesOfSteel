@@ -12,23 +12,30 @@ public class SingleAttack : Action
     [Range(1, 100)]
     public int accuracy;
 
-    public override void Activate(ShipUnit thisShip)
+    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, int customParam)
     {
-        base.Activate(thisShip);
+        base.Activate(thisShip, targets, customParam);
 
+        if (targets.Count > 1)
+        {
+            Debug.Log(thisShip.name + " Is trying to attack too many ships with the action: " + this.name);
+            return;
+        }
 
-        ShipUnit enemyShip = new ShipUnit() /*TODO select target of attack given the range value*/;
+        ShipUnit target = targets[0];
+
 
         if (AccuracyHit(accuracy))
         {
             //TODO show animation of attack
-            enemyShip.TakeHit(thisShip, power);
-            Debug.Log(thisShip + " hit " + enemyShip);
+            target.TakeHit(thisShip, power);
+
+            Debug.Log(thisShip + " hit " + target);
         }
         else
         {
             //TODO show animation of miss
-            Debug.Log(thisShip + " missed " + enemyShip);
+            Debug.Log(thisShip + " missed " + target);
         }
     }
 }

@@ -14,25 +14,22 @@ public class AreaAttack : Action
 
 
 
-    public override void Activate(ShipUnit thisShip)
+    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, int customParam)
     {
-        base.Activate(thisShip);
+        base.Activate(thisShip, targets, customParam);
 
-        List<ShipUnit> enemyShips = new List<ShipUnit>()/*TODO select target of attack and rotation given the range value*/;
-
-
-        foreach (ShipUnit enemy in enemyShips)
+        foreach (ShipUnit target in targets)
         {
             if (AccuracyHit(accuracy))
             {
                 //TODO show animation of attack
-                enemy.TakeHit(thisShip, power);
-                Debug.Log(thisShip + " hit " + enemy);
+                target.TakeHit(thisShip, power);
+                Debug.Log(thisShip.name + " hit " + target.name);
             }
             else
             {
                 //TODO show animation of miss
-                Debug.Log(thisShip + " missed " + enemy);
+                Debug.Log(thisShip.name + " missed " + target.name);
             }
         }
     }

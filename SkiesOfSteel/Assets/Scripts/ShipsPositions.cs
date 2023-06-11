@@ -64,4 +64,10 @@ public class ShipsPositions : Singleton<ShipsPositions>
         }
     }
 
+
+    public void RemoveShip(Vector3Int position)
+    {
+        shipsPositions.Remove(position);
+    }
+
 }
