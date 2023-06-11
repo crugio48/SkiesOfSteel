@@ -26,14 +26,21 @@ public class UIStartGame : MonoBehaviour
 
     private void OnEnable()
     {
+        StartNetwork.ClientConnectedCorrectly += EnableCanvas;
         GameManager.StartGameEvent += DisableCanvas;
         GameManager.UsernameSelected += UsernameSelected;
     }
 
     private void OnDisable()
     {
+        StartNetwork.ClientConnectedCorrectly -= EnableCanvas;
         GameManager.StartGameEvent -= DisableCanvas;
         GameManager.UsernameSelected -= UsernameSelected;
+    }
+
+    private void EnableCanvas()
+    {
+        _waitingStartCanvas.enabled = true;
     }
 
     private void DisableCanvas()
@@ -72,15 +79,6 @@ public class UIStartGame : MonoBehaviour
             waitingPlayersText.SetActive(true);
             selectUsernameMenu.SetActive(false);
         }
-    }
-
-
-    public void ServerIsFull()
-    {
-        waitingPlayersText.GetComponent<TextMeshProUGUI>().text = "Server is already full!";
-
-        waitingPlayersText.SetActive(true);
-        selectUsernameMenu.SetActive(false);
     }
 
 }

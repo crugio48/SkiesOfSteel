@@ -1,14 +1,22 @@
 
+using JetBrains.Annotations;
+using System;
+using System.Net;
+using TMPro;
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 
 [RequireComponent(typeof(Canvas))]
 public class StartNetwork : MonoBehaviour
 {
     [SerializeField] private GameManager gameManager;
-    [SerializeField] private UIStartGame uiStartGame;
+    [SerializeField] private TextMeshProUGUI errorTextField;
+    [SerializeField] private TMP_InputField inputIP;
 
     private Canvas _startNetworkCanvas;
+
+    [CanBeNull] public static event System.Action ClientConnectedCorrectly;
 
     private void Start()
     {
@@ -25,11 +33,61 @@ public class StartNetwork : MonoBehaviour
 
     public void StartClient()
     {
-        bool outcome = NetworkManager.Singleton.StartClient();
+        string ip = "127.0.0.1";
+        ushort port = 7777;
 
+        if (!string.IsNullOrEmpty(inputIP.text))
+        {
+            if (IPAddress.TryParse(inputIP.text, out IPAddress address))
+            {
+                ip = address.ToString();
+            }
+            else
+            {
+                errorTextField.text = "Not a real IP address!";
+                return;
+            }
+        }
+
+
+        // TODO get inputfield to change the ip address to connect to
+        NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(
+            ip,  // The IP address is a string
+            port // The port number is an unsigned short
+        );
+
+        NetworkManager.Singleton.OnClientConnectedCallback += ConnectionSucceded;
+        NetworkManager.Singleton.OnClientDisconnectCallback += ConnectionFailed;
+
+        
+        bool outcome = NetworkManager.Singleton.StartClient();
+        
         if (outcome == false)
         {
-            uiStartGame.ServerIsFull();
+            errorTextField.text = "No server found at that IP address!";
+
+            NetworkManager.Singleton.OnClientConnectedCallback -= ConnectionSucceded;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= ConnectionFailed;
         }
+
+    }
+
+
+    private void ConnectionSucceded(ulong param)
+    {
+        _startNetworkCanvas.enabled = false;
+        ClientConnectedCorrectly?.Invoke();
+
+        NetworkManager.Singleton.OnClientConnectedCallback -= ConnectionSucceded;
+        NetworkManager.Singleton.OnClientDisconnectCallback -= ConnectionFailed;
+    }
+
+
+    private void ConnectionFailed(ulong param)
+    {
+        errorTextField.text = "Sorry but server is already full!";
+
+        NetworkManager.Singleton.OnClientConnectedCallback -= ConnectionSucceded;
+        NetworkManager.Singleton.OnClientDisconnectCallback -= ConnectionFailed;
     }
 }

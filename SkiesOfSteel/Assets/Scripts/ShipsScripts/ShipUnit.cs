@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
+using JetBrains.Annotations;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -27,6 +28,9 @@ public class ShipUnit : NetworkBehaviour
 
     private Pathfinding _pathfinding;
     private Tilemap _tilemap;
+
+    [CanBeNull] public static event System.Action<ShipUnit> ShipIsDestroyed;
+
 
     //TODO add hold item parameter
 
@@ -275,6 +279,16 @@ public class ShipUnit : NetworkBehaviour
     {
         _currentPosition.Value = pos;
         transform.position = _tilemap.GetCellCenterWorld(_currentPosition.Value.GetValues());
+    }
+
+    public bool IsFlagship()
+    {
+        return shipSO.isFlagship;
+    }
+
+    public FixedString32Bytes GetOwnerUsername()
+    {
+        return _ownerUsername.Value;
     }
 
     public void Move(Vector3Int destination)
