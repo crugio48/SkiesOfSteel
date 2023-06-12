@@ -1,12 +1,8 @@
 using JetBrains.Annotations;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 public enum BattleState { START, PLAYERTURN};
 
@@ -23,7 +19,6 @@ public class GameManager : NetworkBehaviour
 
     private BattleState _battleState = BattleState.START;
 
-    // This list of usernames will also be used as turn order so if a player quits or looses it needs to be removed from here TODO
     private NetworkList<FixedString32Bytes> _playerUsernames; // NetworkList must be initialized in awake
 
     private int _lastPlayer = 0;
@@ -31,8 +26,6 @@ public class GameManager : NetworkBehaviour
     // This dictionary is created only on server
     private Dictionary<FixedString32Bytes, ulong> _usernameToClientIds;
 
-
-    private readonly ulong[] _singleTargetClientArray = new ulong[1];   // This array is used to sent call the clientRpc on one particular client
 
     [CanBeNull] public static event System.Action<bool> UsernameSelected;
     [CanBeNull] public static event System.Action StartGameEvent;
@@ -58,6 +51,7 @@ public class GameManager : NetworkBehaviour
         if (IsServer)
         {
             ShipUnit.ShipIsDestroyed += ShipGotDestroyed;
+            ShipUnit.ShipRetrievedTheTreasureAndWonGame += ShipRetrievedTreasure;
         }
     }
 
@@ -70,6 +64,7 @@ public class GameManager : NetworkBehaviour
         if (IsServer)
         {
             ShipUnit.ShipIsDestroyed -= ShipGotDestroyed;
+            ShipUnit.ShipRetrievedTheTreasureAndWonGame -= ShipRetrievedTreasure;
         }
     }
 
@@ -96,7 +91,7 @@ public class GameManager : NetworkBehaviour
     {
         ulong senderId = serverRpcParams.Receive.SenderClientId;
 
-        ClientRpcParams clientRpcParams = CreateClientRpcParamsToSingleTargetClient(senderId);
+        ClientRpcParams clientRpcParams = CreateClientRpcParamsTargetClients(new ulong[] {senderId});
 
         Debug.Log("Received: " + username);
 
@@ -130,7 +125,7 @@ public class GameManager : NetworkBehaviour
     private void SetupGame()
     {
         // Spawn the ships
-        _demoBattleSpawner.SpawnDemoShips(_playerUsernames, _numOfPlayers.Value);
+        _demoBattleSpawner.SpawnDemoShips(_playerUsernames, _numOfPlayers.Value, _usernameToClientIds);
 
         // Set first player
         _currentPlayer.Value = 0;
@@ -212,21 +207,97 @@ public class GameManager : NetworkBehaviour
         {
             FixedString32Bytes usernameOfPlayerThatLost = shipUnit.GetOwnerUsername();
 
-            ClientRpcParams clientRpcParams = CreateClientRpcParamsToSingleTargetClient(_usernameToClientIds[usernameOfPlayerThatLost]);
+            ClientRpcParams clientRpcParams = CreateClientRpcParamsTargetClients(new ulong[] { _usernameToClientIds[usernameOfPlayerThatLost] });
 
-            _numOfPlayers.Value -= 1;
+            foreach (ShipUnit ship in PlayersShips.Instance.GetShips(usernameOfPlayerThatLost))
+            {
+                ship.SetDestroyed();
+            }
 
-            _playerUsernames.Remove(usernameOfPlayerThatLost);
-
-            //TODO destroy all remaining ships of that player
+            RemovePlayerFromTurnLogic(usernameOfPlayerThatLost);
 
             GameLostClientRpc(clientRpcParams);
 
             Debug.Log(usernameOfPlayerThatLost + " lost!");
-
         }
 
     }
+
+    private void RemovePlayerFromTurnLogic(FixedString32Bytes player)
+    {
+        int turnOrderOfPlayer = -1;
+
+        for (int i = 0; i < _playerUsernames.Count; i++)
+        {
+            if (player == _playerUsernames[i])
+            {
+                turnOrderOfPlayer = i;
+            }
+        }
+
+        if (turnOrderOfPlayer == -1)
+        {
+            Debug.LogError("Error in managing the players usernames and turn orders");
+        }
+
+        _playerUsernames.Remove(player); // This maintains the relative order of the remaining usernames
+
+        // 3 cases based on this distinction:
+        if (turnOrderOfPlayer > _currentPlayer.Value)
+        {
+            // Easy case
+            _numOfPlayers.Value -= 1;
+        }
+        else if (turnOrderOfPlayer == _currentPlayer.Value)
+        {
+            _numOfPlayers.Value -= 1;
+
+            // In this case the player lost during its turn so we need to fake the endTurn logic 
+            _currentPlayer.Value = (_currentPlayer.Value) % _numOfPlayers.Value;
+            _lastPlayer = -1;
+
+        }
+        else // turnOrderOfPlayer < _currentPlayer.Value
+        {
+            _numOfPlayers.Value -= 1;
+
+            // We want the current player to keep playing
+            _currentPlayer.Value -= 1;
+            _lastPlayer = _currentPlayer.Value;
+        }
+
+    }
+
+    private void ShipRetrievedTreasure(ShipUnit shipUnit)
+    {
+        // Calling winning method on winner client
+        ulong winnerId = _usernameToClientIds[shipUnit.GetOwnerUsername()];
+        ClientRpcParams clientRpcParams = CreateClientRpcParamsTargetClients(new ulong[] { winnerId });
+
+        GameWonClientRpc(clientRpcParams);
+
+
+
+        // Calling looser method on loosers clients
+        ulong[] loosersIds = new ulong[_numOfPlayers.Value - 1];
+        int i = 0;
+        foreach (ulong id in NetworkManager.Singleton.ConnectedClientsIds)
+        {
+            if (id != winnerId)
+            {
+                loosersIds[i] = id;
+                i++;
+            }
+        }
+
+        clientRpcParams = CreateClientRpcParamsTargetClients(loosersIds);
+
+        GameLostClientRpc(clientRpcParams);
+
+    }
+
+
+
 
     [ClientRpc]
     private void GameLostClientRpc(ClientRpcParams clientRpcParams = default)
@@ -250,15 +321,13 @@ public class GameManager : NetworkBehaviour
 
 
 
-    private ClientRpcParams CreateClientRpcParamsToSingleTargetClient(ulong targetClientId)
+    private ClientRpcParams CreateClientRpcParamsTargetClients(ulong[] targetClientsIds)
     {
-        _singleTargetClientArray[0] = targetClientId;
-
         return new ClientRpcParams
         {
             Send = new ClientRpcSendParams
             {
-                TargetClientIds = _singleTargetClientArray
+                TargetClientIds = targetClientsIds
             }
         };
     }

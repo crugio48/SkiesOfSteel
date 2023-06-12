@@ -2,8 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "ScriptableObjects/StartingShipsPositionsData")]
-public class StartingPositionsSO : ScriptableObject
+[CreateAssetMenu(menuName = "ScriptableObjects/DemoPositionsData")]
+public class DemoPositionsSO : ScriptableObject
 {
 
     public List<Vector3Int> flagshipsPositions;
@@ -11,4 +11,7 @@ public class StartingPositionsSO : ScriptableObject
     public List<Vector3Int> fastShipsPositions;
     public List<Vector3Int> cargoShipsPositions;
 
+    public Vector3Int treasureStartingGridPosition;
+
+    public List<Vector3Int> playersWinningTreasurePositions;
 }

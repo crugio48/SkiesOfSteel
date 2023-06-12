@@ -27,8 +27,6 @@ public class ShipUnit : NetworkBehaviour
     private static Vector3Int NOT_SET_POSITION = new Vector3Int(-1000, -1000, -1000);
     private NetworkVariable<Vector3IntSerializable> _currentPosition = new NetworkVariable<Vector3IntSerializable>(NOT_SET_POSITION);
 
-    private NetworkVariable<bool> _hasTreasure = new NetworkVariable<bool>(false);
-
     private NetworkVariable<bool> _isDestroyed = new NetworkVariable<bool>(false);
 
     private SpriteRenderer _spriteRenderer;
@@ -36,11 +34,7 @@ public class ShipUnit : NetworkBehaviour
     private Tilemap _tilemap;
 
     [CanBeNull] public static event System.Action<ShipUnit> ShipIsDestroyed;
-    [CanBeNull] public static event System.Action<ShipUnit> ShipRetrievedTheTrasureAndWonGame;
-
-
-
-    //TODO add hold item parameter
+    [CanBeNull] public static event System.Action<ShipUnit> ShipRetrievedTheTreasureAndWonGame;
 
 
     public override void OnNetworkSpawn()
@@ -291,6 +285,8 @@ public class ShipUnit : NetworkBehaviour
 
     public void Move(Vector3Int destination)
     {
+        ulong senderId = 0; // TODO make method a ServerRpc
+
         Node destinationNode = _pathfinding.AStarSearch(_currentPosition.Value.GetValues(), destination);
 
         if (destinationNode == null)
@@ -327,6 +323,23 @@ public class ShipUnit : NetworkBehaviour
 
         // Update this ship position and the _currentPosition.onValueChanged event will trigger both on server and on client
         _currentPosition.Value = destination;
+
+        Treasure treasureInstance = Treasure.Instance;
+
+        if (!treasureInstance.IsBeingCarried() && destination == treasureInstance.GetCurGridPosition())
+        {
+            treasureInstance.SetCarryingShip(this);
+        }
+
+        if (treasureInstance.GetCarryingShip() == this)
+        {
+            treasureInstance.SetCurGridPosition(destination);
+
+            if (destination == NetworkManager.Singleton.ConnectedClients[senderId].PlayerObject.GetComponent<Player>().GetWinningTreasurePosition())
+            {
+                ShipRetrievedTheTreasureAndWonGame?.Invoke(this);
+            }
+        }
     }
 
 
@@ -366,6 +379,11 @@ public class ShipUnit : NetworkBehaviour
     private bool IsSenderIdIsOwnerOfShip(ulong senderId)
     {
         return _ownerUsername.Value == NetworkManager.Singleton.ConnectedClients[senderId].PlayerObject.GetComponent<Player>().GetUsername();
+    }
+
+    public void SetDestroyed()
+    {
+        _isDestroyed.Value = true;
     }
 
 

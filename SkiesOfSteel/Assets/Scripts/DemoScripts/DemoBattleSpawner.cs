@@ -10,7 +10,7 @@ public class DemoBattleSpawner : NetworkBehaviour
     [SerializeField] private GameObject shipUnitPrefab;
     [SerializeField] private Tilemap tilemap;
 
-    public void SpawnDemoShips(NetworkList<FixedString32Bytes> playerUsernames, int numOfPlayers)
+    public void SpawnDemoShips(NetworkList<FixedString32Bytes> playerUsernames, int numOfPlayers, Dictionary<FixedString32Bytes, ulong> _usernameToClientIds)
     {
         if (playerUsernames.Count != numOfPlayers)
         {
@@ -19,7 +19,7 @@ public class DemoBattleSpawner : NetworkBehaviour
         }
 
 
-        StartingPositionsSO startingPositionsForDemo = Resources.Load<StartingPositionsSO>("DemoStartingPositions");
+        DemoPositionsSO demoPositions = Resources.Load<DemoPositionsSO>("DemoPositions");
 
         //Setup ships for demo match
         for (int i = 0; i < numOfPlayers; i++)
@@ -27,16 +27,19 @@ public class DemoBattleSpawner : NetworkBehaviour
             Debug.Log("Spawning ships for player = " + playerUsernames[i]);
 
             // Spawning Flagship
-            SpawnShip(startingPositionsForDemo.flagshipsPositions[i], "ShipsScriptableObjects/DefenseFlagship", playerUsernames[i], "Flagship");
+            SpawnShip(demoPositions.flagshipsPositions[i], "ShipsScriptableObjects/DefenseFlagship", playerUsernames[i], "Flagship");
 
             // Spawning AttackShip
-            SpawnShip(startingPositionsForDemo.attackShipsPositions[i], "ShipsScriptableObjects/AttackShip", playerUsernames[i], "AttackShip");
+            SpawnShip(demoPositions.attackShipsPositions[i], "ShipsScriptableObjects/AttackShip", playerUsernames[i], "AttackShip");
 
             // Spawning FastShip
-            SpawnShip(startingPositionsForDemo.fastShipsPositions[i], "ShipsScriptableObjects/FastShip", playerUsernames[i], "FastShip");
+            SpawnShip(demoPositions.fastShipsPositions[i], "ShipsScriptableObjects/FastShip", playerUsernames[i], "FastShip");
 
             // Spawning CargoShip
-            SpawnShip(startingPositionsForDemo.cargoShipsPositions[i], "ShipsScriptableObjects/CargoShip", playerUsernames[i], "CargoShip");
+            SpawnShip(demoPositions.cargoShipsPositions[i], "ShipsScriptableObjects/CargoShip", playerUsernames[i], "CargoShip");
+
+            ulong clientId = _usernameToClientIds[playerUsernames[i]];
+            NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.GetComponent<Player>().SetWinningTreasurePosition(demoPositions.playersWinningTreasurePositions[i]);
 
         }
     }

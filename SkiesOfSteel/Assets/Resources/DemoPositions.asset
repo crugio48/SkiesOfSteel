@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 74f696e60bba8d644a88dca72d6277ec, type: 3}
-  m_Name: DemoStartingPositions
+  m_Name: DemoPositions
   m_EditorClassIdentifier: 
   flagshipsPositions:
   - {x: -5, y: -11, z: 0}
@@ -32,3 +32,9 @@ MonoBehaviour:
   - {x: -5, y: 10, z: 0}
   - {x: 5, y: 10, z: 0}
   - {x: 5, y: -10, z: 0}
+  treasureStartingGridPosition: {x: 0, y: 0, z: 0}
+  playersWinningTreasurePositions:
+  - {x: -5, y: -11, z: 0}
+  - {x: -5, y: 11, z: 0}
+  - {x: 4, y: 11, z: 0}
+  - {x: 4, y: -11, z: 0}
