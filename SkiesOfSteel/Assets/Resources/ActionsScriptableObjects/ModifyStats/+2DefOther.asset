@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97d1343693c424b4495f3b8b7bec4d64, type: 3}
+  m_Name: +2DefOther
+  m_EditorClassIdentifier: 
+  name: Shield Up
+  sprite: {fileID: 0}
+  fuelCost: 10
+  range: 1
+  needsTarget: 1
+  isSelfOnly: 0
+  amountOfTargets: 1
+  isTargetAnArea: 0
+  shape: 0
+  needsCustomParameter: 0
+  stringToDisplayWhenAskingForCustomParam: 
+  modifyAttack: 0
+  attackModification: 0
+  modifyDefense: 1
+  defenseModification: 2
+  accuracy: 100

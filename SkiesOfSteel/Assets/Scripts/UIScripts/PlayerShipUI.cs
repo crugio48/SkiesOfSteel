@@ -54,7 +54,9 @@ public class PlayerShipUI : MonoBehaviour
             //TODO do this for each ship type
 
             //transform.GetChild(i).GetChild(0). change sprites
-            transform.GetChild(0).GetChild(i).GetChild(0).GetComponentInChildren<Text>().text = "Attack Damage = " + _shipSelected.GetAttack;
+
+            //transform.GetChild(i).GetChild(0).GetComponentInChildren<Text>().text = "Attack Damage = " + _shipSelected.GetAttack;
+
             //TODO Add all other attributes 
             transform.GetChild(0).GetChild(i).GetChild(4).GetComponentInChildren<Text>().text = ListofAllShipsActions[i][1].name;
             transform.GetChild(0).GetChild(i).GetChild(5).GetComponentInChildren<Text>().text = ListofAllShipsActions[i][2].name;
@@ -95,6 +97,7 @@ public class PlayerShipUI : MonoBehaviour
     public void ToggleShipCargo()
     {//change sprite to Ship + Attributes 
     }
+
     public void HealShipCargo() { _shipSelected.HealAtPortAction(); }
     public void BasicAttackCargo() { shipActions[0].Activate(_shipSelected); }
     public void RefuelCargo() { _shipSelected.RefuelToMaxAtPortAction(); }
@@ -115,4 +118,6 @@ public class PlayerShipUI : MonoBehaviour
     public void Action1CFast() { shipActions[1].Activate(_shipSelected); }
     public void Action2Fast() { shipActions[2].Activate(_shipSelected); }
 
+
+ 
 }

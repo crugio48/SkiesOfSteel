@@ -34,9 +34,9 @@ public class InputManager : MonoBehaviour
         {
             Vector2 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
             selectedtile = _debugTilemap.WorldToCell(mousePosition);
-            if(ShipsPositions.instance.GetShip(selectedtile) != null)
+            if(ShipsPositions.Instance.GetShip(selectedtile) != null)
             {
-                ship = ShipsPositions.instance.GetShip(selectedtile);
+                ship = ShipsPositions.Instance.GetShip(selectedtile);
                 playerShipUI.ShipClicked(ship);
             }
             else

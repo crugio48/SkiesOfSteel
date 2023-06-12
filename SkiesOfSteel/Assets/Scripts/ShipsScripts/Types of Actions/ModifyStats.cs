@@ -1,13 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 [CreateAssetMenu(menuName = "ScriptableObjects/Actions/ModifyStats")]
 public class ModifyStats : Action
 {
-    public bool selfOnly;
-    public int range;
-
+    [Space]
     public bool modifyAttack;
     public int attackModification;
 
@@ -17,25 +16,27 @@ public class ModifyStats : Action
     [Range(1, 100)]
     public int accuracy;
 
-    public override void Activate(ShipUnit thisShip)
+    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, int customParam)
     {
-        base.Activate(thisShip);
+        base.Activate(thisShip, targets, customParam);
 
-        ShipUnit target = thisShip;
-        if (!selfOnly)
+        foreach (ShipUnit target in targets)
         {
-            /*TODO select target of attack given the range value*/
+            if (AccuracyHit(accuracy))
+            {
+                if (modifyAttack)
+                    target.ModifyAttack(attackModification);
+
+                if (modifyDefense)
+                    target.ModifyDefense(defenseModification);
+
+
+                Debug.Log(thisShip.name + " modified the stats of " + target.name);
+            }
+            else
+            {
+                Debug.Log(thisShip.name + " missed the roll to modify the stats of " + target.name);
+            }
         }
-
-
-        if (AccuracyHit(accuracy))
-        {
-            if (modifyAttack)
-                target.ModifyAttack(attackModification);
-
-            if (modifyDefense)
-                target.ModifyDefense(defenseModification);
-        }
-
     }
 }
