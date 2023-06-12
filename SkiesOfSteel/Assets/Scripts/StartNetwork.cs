@@ -10,7 +10,6 @@ using UnityEngine;
 [RequireComponent(typeof(Canvas))]
 public class StartNetwork : MonoBehaviour
 {
-    [SerializeField] private GameManager gameManager;
     [SerializeField] private TextMeshProUGUI errorTextField;
     [SerializeField] private TMP_InputField inputIP;
 
@@ -28,7 +27,7 @@ public class StartNetwork : MonoBehaviour
     {
         NetworkManager.Singleton.StartServer();
 
-        gameManager.SetNumOfPlayers(numOfPlayers);
+        GameManager.Instance.SetNumOfPlayers(numOfPlayers);
     }
 
     public void StartClient()

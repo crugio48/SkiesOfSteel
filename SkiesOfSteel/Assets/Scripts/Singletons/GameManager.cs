@@ -1,55 +1,63 @@
 using JetBrains.Annotations;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
-public enum BattleState { START, PLAYERTURN};
+
+public enum BattleState { START, PLAYERTURN, END };
+
 
 [RequireComponent(typeof(DemoBattleSpawner))]
-public class GameManager : NetworkBehaviour
+public class GameManager : SingletonNetwork<GameManager>
 {
     [SerializeField] private ConnectionApprovalHandler connectionApprovalHandler;
-
-    private DemoBattleSpawner _demoBattleSpawner;
 
     private NetworkVariable<int> _numOfPlayers = new NetworkVariable<int>();
 
     private NetworkVariable<int> _currentPlayer = new NetworkVariable<int>();
 
-    private BattleState _battleState = BattleState.START;
-
     private NetworkList<FixedString32Bytes> _playerUsernames; // NetworkList must be initialized in awake
+
+    private BattleState _battleState = BattleState.START;
 
     private int _lastPlayer = 0;
 
-    // This dictionary is created only on server
+    // This dictionary is used only on server
     private Dictionary<FixedString32Bytes, ulong> _usernameToClientIds;
 
+    [CanBeNull] public event System.Action<bool> UsernameSelected;
+    [CanBeNull] public event System.Action StartGameEvent;
+    [CanBeNull] public event System.Action LostGameEvent;
+    [CanBeNull] public event System.Action WonGameEvent;
 
-    [CanBeNull] public static event System.Action<bool> UsernameSelected;
-    [CanBeNull] public static event System.Action StartGameEvent;
-    [CanBeNull] public static event System.Action LostGameEvent;
-    [CanBeNull] public static event System.Action WonGameEvent;
+    // This will be used by the server only script to spawn and intialize the ships
+    private DemoBattleSpawner _demoBattleSpawner;
 
 
-    private void Awake()
+    //----------------------------------- Overrides:
+
+    public override void Awake()
     {
+        base.Awake();
+
         // NetworkList must be initialized in awake
         _playerUsernames = new NetworkList<FixedString32Bytes>();
-        _usernameToClientIds = new Dictionary<FixedString32Bytes, ulong>();
     }
+
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
 
-        _demoBattleSpawner = GetComponent<DemoBattleSpawner>();
-
-        NetworkManager.Singleton.OnClientConnectedCallback += NewClientConnected;
-
         if (IsServer)
         {
+            _demoBattleSpawner = GetComponent<DemoBattleSpawner>();
+            _usernameToClientIds = new Dictionary<FixedString32Bytes, ulong>();
+
+            NetworkManager.Singleton.OnClientDisconnectCallback += ClientDisconnected;
+
             ShipUnit.ShipIsDestroyed += ShipGotDestroyed;
             ShipUnit.ShipRetrievedTheTreasureAndWonGame += ShipRetrievedTreasure;
         }
@@ -59,35 +67,70 @@ public class GameManager : NetworkBehaviour
     {
         base.OnNetworkDespawn();
 
-        NetworkManager.Singleton.OnClientConnectedCallback -= NewClientConnected;
-
         if (IsServer)
         {
+            NetworkManager.Singleton.OnClientDisconnectCallback -= ClientDisconnected;
+
             ShipUnit.ShipIsDestroyed -= ShipGotDestroyed;
             ShipUnit.ShipRetrievedTheTreasureAndWonGame -= ShipRetrievedTreasure;
         }
     }
 
-    // Callback method to run on server and on the client that connected everytime a new client connects
-    private void NewClientConnected(ulong newClientId)
+    //----------------------------------- Lobby population and disconnections:
+
+    // Callback when a client disconnects, the client will be deleted by NetworkManager AFTER this callback is run
+    private void ClientDisconnected(ulong clientId)
     {
-        Debug.Log("GameManager:NewClientConnected: newClientId = " + newClientId);
+        Debug.Log("A client DCed, remaining players count PRE client deletion = " + NetworkManager.Singleton.ConnectedClients.Count);
+
+        if (NetworkManager.Singleton.ConnectedClients.Count == 1)
+        {
+            return;
+        }
+
+        // If the second to last player disconnects then make last player remaining win and return
+        if (_battleState == BattleState.PLAYERTURN && NetworkManager.Singleton.ConnectedClients.Count == 2)
+        {
+            int winnerId = -1;
+
+            foreach(ulong id in NetworkManager.Singleton.ConnectedClientsIds)
+            {
+                if (id != clientId)
+                {
+                    winnerId = (int)id;
+                }
+            }
+            if (winnerId == -1)
+            {
+                Debug.LogError("Should not happen that there is not the last player to assign the win to");
+                return;
+            }
+
+            Debug.Log("Making the player with id " + winnerId + " win the game due to disconnections");
+            MakePlayerWin((ulong)winnerId);
+            return;
+        }
+
+        // The client will be deleted by NetworkManager AFTER this callback is run so I can still retrieve his username from the player gameObject
+        FixedString32Bytes dcUsername = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.GetComponent<Player>().GetUsername();
+
+        Debug.Log("DcUsername = " + dcUsername);
+
+        RemovePlayerFromGameLogic(dcUsername);
+
     }
 
+
+    // Server only method to setup the number of players of the match
     public void SetNumOfPlayers(int numOfPlayers)
     {
         _numOfPlayers.Value = numOfPlayers;
         connectionApprovalHandler.SetMaxPlayers(numOfPlayers);
     }
 
-    // This method is called on the local GameManager of the player that selected the username
-    public void SelectUsername(string username)
-    {
-        SelectUsernameServerRpc(username);
-    }
-
+    // A connected client calls this to try to register a username, the server will answer in a clientRpc with a response
     [ServerRpc(RequireOwnership = false)]
-    private void SelectUsernameServerRpc(string username, ServerRpcParams serverRpcParams = default)
+    public void SelectUsernameServerRpc(FixedString32Bytes username, ServerRpcParams serverRpcParams = default)
     {
         ulong senderId = serverRpcParams.Receive.SenderClientId;
 
@@ -113,13 +156,22 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    // Response of the server to a user request of username
     [ClientRpc]
     private void UsernameInsertedClientRpc(bool outcome, ClientRpcParams clientRpcParams = default)
     { 
         Debug.Log("I selected the username with outcome = " + outcome);
-        UsernameSelected.Invoke(outcome);
+        UsernameSelected?.Invoke(outcome);
     }
 
+
+    //----------------------------------- Game setup after every player setup their username:
+
+    [ClientRpc]
+    private void StartGameClientRpc()
+    {
+        StartGameEvent?.Invoke();
+    }
 
     // This will be executd only by the server once to setup the game
     private void SetupGame()
@@ -136,6 +188,9 @@ public class GameManager : NetworkBehaviour
     }
 
 
+    //----------------------------------- Turn logic:
+
+    // ServerOnly method that enables the current player
     private void EnableCurrentPlayer()
     {
         FixedString32Bytes playerToEnable = _playerUsernames[_currentPlayer.Value];
@@ -148,11 +203,21 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    [ClientRpc]
-    private void StartGameClientRpc()
+    [ServerRpc(RequireOwnership = false)]
+    public void EndTurnServerRpc(ServerRpcParams serverRpcParams = default)
     {
-        StartGameEvent.Invoke();
+        ulong senderId = serverRpcParams.Receive.SenderClientId;
+
+        if (_playerUsernames[_currentPlayer.Value] != NetworkManager.Singleton.ConnectedClients[senderId].PlayerObject.GetComponent<Player>().GetUsername())
+        {
+            Debug.LogError("A client that is not the current enabled player sent a request to end turn");
+            return;
+        }
+
+        _currentPlayer.Value = (_currentPlayer.Value + 1) % _numOfPlayers.Value;
     }
+
+    //----------------------------------- Update method:
 
     private void Update()
     {
@@ -167,7 +232,7 @@ public class GameManager : NetworkBehaviour
             StartGameClientRpc();
         }
 
-        
+        // After a client ended their turn we enable the next player
         if (_battleState == BattleState.PLAYERTURN && _lastPlayer != _currentPlayer.Value)
         {
             _lastPlayer = _currentPlayer.Value;
@@ -178,26 +243,9 @@ public class GameManager : NetworkBehaviour
     }
 
 
-    public void EndTurnCalledByClient()
-    {
-        EndTurnServerRpc();
-    }
+    //----------------------------------- Game logic methods and callbacks:
 
-    [ServerRpc(RequireOwnership = false)]
-    private void EndTurnServerRpc(ServerRpcParams serverRpcParams = default)
-    {
-        ulong senderId = serverRpcParams.Receive.SenderClientId;
-
-        if (_playerUsernames[_currentPlayer.Value] != NetworkManager.Singleton.ConnectedClients[senderId].PlayerObject.GetComponent<Player>().GetUsername())
-        {
-            Debug.LogError("A client that is not the current enabled player sent a request to end turn");
-            return;
-        }
-
-        _currentPlayer.Value = (_currentPlayer.Value + 1) % _numOfPlayers.Value;
-    }
-
-
+    // ServerOnly callback when a ship health goes down to zero 
     private void ShipGotDestroyed(ShipUnit shipUnit)
     {
         // Should already be called only on server but better to check
@@ -209,12 +257,7 @@ public class GameManager : NetworkBehaviour
 
             ClientRpcParams clientRpcParams = CreateClientRpcParamsTargetClients(new ulong[] { _usernameToClientIds[usernameOfPlayerThatLost] });
 
-            foreach (ShipUnit ship in PlayersShips.Instance.GetShips(usernameOfPlayerThatLost))
-            {
-                ship.SetDestroyed();
-            }
-
-            RemovePlayerFromTurnLogic(usernameOfPlayerThatLost);
+            RemovePlayerFromGameLogic(usernameOfPlayerThatLost);
 
             GameLostClientRpc(clientRpcParams);
 
@@ -223,8 +266,25 @@ public class GameManager : NetworkBehaviour
 
     }
 
+    // Destroys the ships of the player and removes him from the turn logic
+    private void RemovePlayerFromGameLogic(FixedString32Bytes player)
+    {
+        foreach (ShipUnit ship in PlayersShips.Instance.GetShips(player))
+        {
+            ship.SetDestroyed();
+        }
+
+        RemovePlayerFromTurnLogic(player);
+    }
+
+    // Updates the turn logic after removing player
     private void RemovePlayerFromTurnLogic(FixedString32Bytes player)
     {
+        if (!_playerUsernames.Contains(player)) // If Player already got removed then don't do anything
+        {
+            return;
+        }
+
         int turnOrderOfPlayer = -1;
 
         for (int i = 0; i < _playerUsernames.Count; i++)
@@ -268,14 +328,13 @@ public class GameManager : NetworkBehaviour
 
     }
 
+
+    // ServerOnly callback when a ship wins the game by retrieving the treasure, sends the correct ClientRpcs for winning or losing the game
     private void ShipRetrievedTreasure(ShipUnit shipUnit)
     {
         // Calling winning method on winner client
         ulong winnerId = _usernameToClientIds[shipUnit.GetOwnerUsername()];
-        ClientRpcParams clientRpcParams = CreateClientRpcParamsTargetClients(new ulong[] { winnerId });
-
-        GameWonClientRpc(clientRpcParams);
-
+        MakePlayerWin(winnerId);
 
 
         // Calling looser method on loosers clients
@@ -290,15 +349,25 @@ public class GameManager : NetworkBehaviour
             }
         }
 
-        clientRpcParams = CreateClientRpcParamsTargetClients(loosersIds);
+        ClientRpcParams clientRpcParams = CreateClientRpcParamsTargetClients(loosersIds);
 
         GameLostClientRpc(clientRpcParams);
 
     }
 
+    // Server sends a ClientRpc to the client that won the game and sets the _battleState to END
+    private void MakePlayerWin(ulong winnerId)
+    {
+        ClientRpcParams clientRpcParams = CreateClientRpcParamsTargetClients(new ulong[] { winnerId });
+
+        GameWonClientRpc(clientRpcParams);
+
+        _battleState = BattleState.END;
+    }
 
 
 
+    // ClientRpc of loosing the game
     [ClientRpc]
     private void GameLostClientRpc(ClientRpcParams clientRpcParams = default)
     {
@@ -309,6 +378,7 @@ public class GameManager : NetworkBehaviour
         NetworkManager.Singleton.Shutdown();
     }
 
+    // ClientRpc of winning the game
     [ClientRpc]
     private void GameWonClientRpc(ClientRpcParams clientRpcParams = default)
     {
@@ -319,8 +389,10 @@ public class GameManager : NetworkBehaviour
         NetworkManager.Singleton.Shutdown();
     }
 
+    //----------------------------------- Custom methods:
 
 
+    // Custom function to create the ClientRpc destination clients structure
     private ClientRpcParams CreateClientRpcParamsTargetClients(ulong[] targetClientsIds)
     {
         return new ClientRpcParams
@@ -330,5 +402,20 @@ public class GameManager : NetworkBehaviour
                 TargetClientIds = targetClientsIds
             }
         };
+    }
+
+
+    //----------------------------------- Getter methods:
+
+    public bool HasBattleStarted()
+    {
+        if (_battleState != BattleState.START)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

@@ -33,6 +33,13 @@ public class ConnectionApprovalHandler : MonoBehaviour
             response.Reason = "Server is full";
         }
 
+        if (GameManager.Instance.HasBattleStarted())
+        {
+            response.Approved = false;
+            response.CreatePlayerObject = false;
+            response.Reason = "Battle has already started";
+        }
+
         response.Pending = false;
     }
 }

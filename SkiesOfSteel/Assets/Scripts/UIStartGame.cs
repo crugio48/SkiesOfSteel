@@ -12,8 +12,6 @@ public class UIStartGame : MonoBehaviour
 
     [SerializeField] private TMP_InputField inputField;
 
-    [SerializeField] private GameManager gameManager;
-
     private Canvas _waitingStartCanvas;
 
     private void Start()
@@ -27,15 +25,15 @@ public class UIStartGame : MonoBehaviour
     private void OnEnable()
     {
         StartNetwork.ClientConnectedCorrectly += EnableCanvas;
-        GameManager.StartGameEvent += DisableCanvas;
-        GameManager.UsernameSelected += UsernameSelected;
+        GameManager.Instance.StartGameEvent += DisableCanvas;
+        GameManager.Instance.UsernameSelected += UsernameSelected;
     }
 
     private void OnDisable()
     {
         StartNetwork.ClientConnectedCorrectly -= EnableCanvas;
-        GameManager.StartGameEvent -= DisableCanvas;
-        GameManager.UsernameSelected -= UsernameSelected;
+        GameManager.Instance.StartGameEvent -= DisableCanvas;
+        GameManager.Instance.UsernameSelected -= UsernameSelected;
     }
 
     private void EnableCanvas()
@@ -64,7 +62,7 @@ public class UIStartGame : MonoBehaviour
             return;
         }
 
-        gameManager.SelectUsername(username);
+        GameManager.Instance.SelectUsernameServerRpc(username);
 
     }
 

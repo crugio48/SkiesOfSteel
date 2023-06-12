@@ -1,5 +1,6 @@
 
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 
 
@@ -17,14 +18,14 @@ public class UIEndGame : MonoBehaviour
 
     private void OnEnable()
     {
-        GameManager.WonGameEvent += WonGame;
-        GameManager.LostGameEvent += LostGame;
+        GameManager.Instance.WonGameEvent += WonGame;
+        GameManager.Instance.LostGameEvent += LostGame;
     }
 
     private void OnDisable()
     {
-        GameManager.WonGameEvent -= WonGame;
-        GameManager.LostGameEvent -= LostGame;
+        GameManager.Instance.WonGameEvent -= WonGame;
+        GameManager.Instance.LostGameEvent -= LostGame;
     }
 
     private void LostGame()
