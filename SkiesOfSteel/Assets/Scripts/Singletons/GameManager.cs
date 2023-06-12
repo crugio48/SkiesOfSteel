@@ -418,4 +418,10 @@ public class GameManager : SingletonNetwork<GameManager>
             return false;
         }
     }
+
+
+    public FixedString32Bytes GetCurrentPlayer()
+    {
+        return _playerUsernames[_currentPlayer.Value];
+    }
 }

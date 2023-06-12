@@ -8,6 +8,11 @@ public class Action : ScriptableObject
     public Sprite sprite;
     public int fuelCost;
 
+    [Space]
+    public bool needsCustomParameter;
+    public string stringToDisplayWhenAskingForCustomParam;
+
+
     public virtual void Activate(ShipUnit thisShip, List<ShipUnit> targets, int customParam)
     {
         if (thisShip.GetCurrentFuel() < fuelCost)
@@ -21,6 +26,9 @@ public class Action : ScriptableObject
         }
 
     }
+
+    public virtual int GetMinAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets) { return 0; }
+    public virtual int GetMaxAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets) { return 0; }
 
 
     public bool AccuracyHit(int accuracy)
