@@ -71,11 +71,11 @@ public class PlayerShipUI : MonoBehaviour
     }
     public void ToggleShipFlagship() {//change sprite to Ship + Attributes 
     }
-    public void HealShipFlagship(){_shipSelected.HealAtPortAction();}
-    public void BasicAttackFlagship() { shipActions[0].Activate(_shipSelected);}
-    public void RefuelFlagship(){_shipSelected.RefuelToMaxAtPortAction();}
-    public void Action1Flagship(){shipActions[1].Activate(_shipSelected);}
-    public void Action2Flagship(){shipActions[2].Activate(_shipSelected);}
+    //public void HealShipFlagship(){_shipSelected.HealAtPortAction();}
+    //public void BasicAttackFlagship() { shipActions[0].Activate(_shipSelected);}
+    //public void RefuelFlagship(){_shipSelected.RefuelToMaxAtPortAction();}
+    //public void Action1Flagship(){shipActions[1].Activate(_shipSelected);}
+    //public void Action2Flagship(){shipActions[2].Activate(_shipSelected);}
 
     //AttackShip METHODS  (Change Selected Ship)
     public void ToggleCaptainAttack()
@@ -84,11 +84,11 @@ public class PlayerShipUI : MonoBehaviour
     public void ToggleShipAttack()
     {//change sprite to Ship + Attributes 
     }
-    public void HealShipAttack() { _shipSelected.HealAtPortAction(); }
-    public void BasicAttackAttack() { shipActions[0].Activate(_shipSelected); }
-    public void RefuelAttack() { _shipSelected.RefuelToMaxAtPortAction(); }
-    public void Action1Attack() { shipActions[1].Activate(_shipSelected); }
-    public void Action2Attack() { shipActions[2].Activate(_shipSelected); }
+   // public void HealShipAttack() { _shipSelected.HealAtPortAction(); }
+    //public void BasicAttackAttack() { shipActions[0].Activate(_shipSelected); }
+    //public void RefuelAttack() { _shipSelected.RefuelToMaxAtPortAction(); }
+    //public void Action1Attack() { shipActions[1].Activate(_shipSelected); }
+    //public void Action2Attack() { shipActions[2].Activate(_shipSelected); }
 
     //CARGOSHIP METHODS  (Change Selected Ship)
     public void ToggleCaptainCargo()
@@ -98,11 +98,11 @@ public class PlayerShipUI : MonoBehaviour
     {//change sprite to Ship + Attributes 
     }
 
-    public void HealShipCargo() { _shipSelected.HealAtPortAction(); }
-    public void BasicAttackCargo() { shipActions[0].Activate(_shipSelected); }
-    public void RefuelCargo() { _shipSelected.RefuelToMaxAtPortAction(); }
-    public void Action1Cargo() { shipActions[1].Activate(_shipSelected); }
-    public void Action2Cargo() { shipActions[2].Activate(_shipSelected); }
+    //public void HealShipCargo() { _shipSelected.HealAtPortAction(); }
+    //public void BasicAttackCargo() { shipActions[0].Activate(_shipSelected); }
+    //public void RefuelCargo() { _shipSelected.RefuelToMaxAtPortAction(); }
+    //public void Action1Cargo() { shipActions[1].Activate(_shipSelected); }
+    //public void Action2Cargo() { shipActions[2].Activate(_shipSelected); }
 
 
     //FastSHIP METHODS  (Change Selected Ship)
@@ -112,11 +112,11 @@ public class PlayerShipUI : MonoBehaviour
     public void ToggleShipFast()
     {//change sprite to Ship + Attributes 
     }
-    public void HealShipFast() { _shipSelected.HealAtPortAction(); }
-    public void BasicAttackFast() { shipActions[0].Activate(_shipSelected); }
-    public void RefuelFast() { _shipSelected.RefuelToMaxAtPortAction(); }
-    public void Action1CFast() { shipActions[1].Activate(_shipSelected); }
-    public void Action2Fast() { shipActions[2].Activate(_shipSelected); }
+    //public void HealShipFast() { _shipSelected.HealAtPortAction(); }
+    //public void BasicAttackFast() { shipActions[0].Activate(_shipSelected); }
+    //public void RefuelFast() { _shipSelected.RefuelToMaxAtPortAction(); }
+   // public void Action1CFast() { shipActions[1].Activate(_shipSelected); }
+    //public void Action2Fast() { shipActions[2].Activate(_shipSelected); }
 
 
  

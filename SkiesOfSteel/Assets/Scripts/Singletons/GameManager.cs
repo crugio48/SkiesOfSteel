@@ -424,4 +424,11 @@ public class GameManager : SingletonNetwork<GameManager>
     {
         return _playerUsernames[_currentPlayer.Value];
     }
+
+    public FixedString32Bytes GetNextPlayer()
+    {
+        int nextPlayerIndex = (_currentPlayer.Value + 1) % _numOfPlayers.Value;
+
+        return _playerUsernames[nextPlayerIndex];
+    }
 }

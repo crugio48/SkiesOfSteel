@@ -29,8 +29,7 @@ public class RefuelOtherShip : Action
 
     public override int GetMinAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets)
     {
-        return 0;
-    
+        return 1;
     }
     public override int GetMaxAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets)
     {
