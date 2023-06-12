@@ -13,9 +13,16 @@ MonoBehaviour:
   m_Name: +2DefOther
   m_EditorClassIdentifier: 
   name: Shield Up
+  sprite: {fileID: 0}
   fuelCost: 10
-  selfOnly: 0
   range: 1
+  needsTarget: 1
+  isSelfOnly: 0
+  amountOfTargets: 1
+  isTargetAnArea: 0
+  shape: 0
+  needsCustomParameter: 0
+  stringToDisplayWhenAskingForCustomParam: 
   modifyAttack: 0
   attackModification: 0
   modifyDefense: 1

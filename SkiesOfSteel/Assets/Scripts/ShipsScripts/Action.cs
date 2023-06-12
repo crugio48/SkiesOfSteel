@@ -2,11 +2,30 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+public enum Shape
+{
+    NONE,
+    TRIANGLE
+}
+
+
+
 public class Action : ScriptableObject
 {
     public new string name;
     public Sprite sprite;
     public int fuelCost;
+    public int range;
+
+    [Space]
+    public bool needsTarget;
+    public bool isSelfOnly;
+    public int amountOfTargets;
+
+    [Space]
+    public bool isTargetAnArea;
+    public Shape shape;
 
     [Space]
     public bool needsCustomParameter;

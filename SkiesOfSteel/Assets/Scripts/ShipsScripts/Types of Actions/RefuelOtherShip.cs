@@ -5,7 +5,6 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "ScriptableObjects/Actions/RefuelOtherShip")]
 public class RefuelOtherShip : Action
 {
-    public int range;
 
     public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, int customParam)
     {

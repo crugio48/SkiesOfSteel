@@ -13,8 +13,15 @@ MonoBehaviour:
   m_Name: 50Damage80Acc1RangeTriangle
   m_EditorClassIdentifier: 
   name: Area Bombardment
+  sprite: {fileID: 0}
   fuelCost: 6
-  power: 50
   range: 1
-  shape: 0
+  needsTarget: 1
+  isSelfOnly: 0
+  amountOfTargets: 1
+  isTargetAnArea: 1
+  shape: 1
+  needsCustomParameter: 0
+  stringToDisplayWhenAskingForCustomParam: 
+  power: 50
   accuracy: 80

@@ -13,5 +13,13 @@ MonoBehaviour:
   m_Name: RefuelOtherShip1Range
   m_EditorClassIdentifier: 
   name: Refuel Ally
+  sprite: {fileID: 0}
   fuelCost: 0
   range: 1
+  needsTarget: 1
+  isSelfOnly: 0
+  amountOfTargets: 1
+  isTargetAnArea: 0
+  shape: 0
+  needsCustomParameter: 1
+  stringToDisplayWhenAskingForCustomParam: Select amount of fuel to transfer

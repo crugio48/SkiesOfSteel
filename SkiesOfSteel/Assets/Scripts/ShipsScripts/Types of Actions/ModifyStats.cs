@@ -6,9 +6,7 @@ using static UnityEngine.GraphicsBuffer;
 [CreateAssetMenu(menuName = "ScriptableObjects/Actions/ModifyStats")]
 public class ModifyStats : Action
 {
-    public bool selfOnly;
-    public int range;
-
+    [Space]
     public bool modifyAttack;
     public int attackModification;
 
@@ -21,11 +19,6 @@ public class ModifyStats : Action
     public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, int customParam)
     {
         base.Activate(thisShip, targets, customParam);
-
-        if (selfOnly)
-        {
-            targets = new List<ShipUnit> { thisShip };
-        }
 
         foreach (ShipUnit target in targets)
         {

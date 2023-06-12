@@ -6,8 +6,8 @@ using UnityEngine.Rendering;
 [CreateAssetMenu(menuName = "ScriptableObjects/Actions/SingleAttack")]
 public class SingleAttack : Action
 {
+    [Space]
     public int power;
-    public int range;
 
     [Range(1, 100)]
     public int accuracy;

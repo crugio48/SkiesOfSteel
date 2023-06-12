@@ -5,9 +5,8 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "ScriptableObjects/Actions/AreaAttack")]
 public class AreaAttack : Action
 {
+    [Space]
     public int power;
-    public int range;
-    public Shape shape;
 
     [Range(1, 100)]
     public int accuracy;
@@ -33,10 +32,4 @@ public class AreaAttack : Action
             }
         }
     }
-}
-
-
-public enum Shape
-{
-    TRIANGLE
 }
