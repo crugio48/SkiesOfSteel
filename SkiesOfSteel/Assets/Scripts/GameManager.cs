@@ -10,22 +10,23 @@ using UnityEngine.Tilemaps;
 
 public enum BattleState { START, PLAYERTURN};
 
+[RequireComponent(typeof(DemoBattleSpawner))]
 public class GameManager : NetworkBehaviour
 {
-    [SerializeField] private GameObject shipUnitPrefab;
     [SerializeField] private ConnectionApprovalHandler connectionApprovalHandler;
-    [SerializeField] private Tilemap tilemap;
 
-    private NetworkVariable<ushort> _numOfPlayers = new NetworkVariable<ushort>();
+    private DemoBattleSpawner _demoBattleSpawner;
 
-    private NetworkVariable<ushort> _currentPlayer = new NetworkVariable<ushort>();
+    private NetworkVariable<int> _numOfPlayers = new NetworkVariable<int>();
+
+    private NetworkVariable<int> _currentPlayer = new NetworkVariable<int>();
 
     private BattleState _battleState = BattleState.START;
 
     // This list of usernames will also be used as turn order so if a player quits or looses it needs to be removed from here TODO
     private NetworkList<FixedString32Bytes> _playerUsernames; // NetworkList must be initialized in awake
 
-    private ushort _lastPlayer = 0;
+    private int _lastPlayer = 0;
 
     // This dictionary is created only on server
     private Dictionary<FixedString32Bytes, ulong> _usernameToClientIds;
@@ -49,6 +50,8 @@ public class GameManager : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+
+        _demoBattleSpawner = GetComponent<DemoBattleSpawner>();
 
         NetworkManager.Singleton.OnClientConnectedCallback += NewClientConnected;
 
@@ -76,7 +79,7 @@ public class GameManager : NetworkBehaviour
         Debug.Log("GameManager:NewClientConnected: newClientId = " + newClientId);
     }
 
-    public void SetNumOfPlayers(ushort numOfPlayers)
+    public void SetNumOfPlayers(int numOfPlayers)
     {
         _numOfPlayers.Value = numOfPlayers;
         connectionApprovalHandler.SetMaxPlayers(numOfPlayers);
@@ -126,45 +129,15 @@ public class GameManager : NetworkBehaviour
     // This will be executd only by the server once to setup the game
     private void SetupGame()
     {
-        StartingPositionsSO startingPositionsForDemo = Resources.Load<StartingPositionsSO>("DemoStartingPositions");
+        // Spawn the ships
+        _demoBattleSpawner.SpawnDemoShips(_playerUsernames, _numOfPlayers.Value);
 
-        //Setup ships for demo match
-        for (int i = 0; i < _numOfPlayers.Value; i++)
-        {
-            Debug.Log("Spawning ships for player = " + _playerUsernames[i]);
-
-            // Spawning Flagship
-            SpawnShip(startingPositionsForDemo.flagshipsPositions[i], "ShipsScriptableObjects/DefenseFlagship", _playerUsernames[i], "Flagship");
-
-            // Spawning AttackShip
-            SpawnShip(startingPositionsForDemo.attackShipsPositions[i], "ShipsScriptableObjects/AttackShip", _playerUsernames[i], "AttackShip");
-
-            // Spawning FastShip
-            SpawnShip(startingPositionsForDemo.fastShipsPositions[i], "ShipsScriptableObjects/FastShip", _playerUsernames[i], "FastShip");
-
-            // Spawning CargoShip
-            SpawnShip(startingPositionsForDemo.cargoShipsPositions[i], "ShipsScriptableObjects/CargoShip", _playerUsernames[i], "CargoShip");
-
-        }
-
-
+        // Set first player
         _currentPlayer.Value = 0;
+
+        // Start game and enable first player
         _battleState = BattleState.PLAYERTURN;
-
         EnableCurrentPlayer();
-
-    }
-
-
-    private void SpawnShip(Vector3Int gridPosition, string scriptableObjectPath, FixedString32Bytes playerUsername, string typeOfShip)
-    {
-        GameObject newShip = Instantiate(shipUnitPrefab, tilemap.GetCellCenterWorld(gridPosition), Quaternion.identity);
-        newShip.name = typeOfShip + " of " + playerUsername;
-        newShip.GetComponent<NetworkObject>().Spawn();
-        ShipUnit shipUnit = newShip.GetComponent<ShipUnit>();
-        shipUnit.SetShipScriptableObject(scriptableObjectPath);
-        shipUnit.SetInitialGridPosition(gridPosition);
-        shipUnit.SetOwnerUsername(playerUsername);
     }
 
 
@@ -226,7 +199,7 @@ public class GameManager : NetworkBehaviour
             return;
         }
 
-        _currentPlayer.Value = (ushort)((_currentPlayer.Value + 1) % _numOfPlayers.Value);
+        _currentPlayer.Value = (_currentPlayer.Value + 1) % _numOfPlayers.Value;
     }
 
 
@@ -241,7 +214,7 @@ public class GameManager : NetworkBehaviour
 
             ClientRpcParams clientRpcParams = CreateClientRpcParamsToSingleTargetClient(_usernameToClientIds[usernameOfPlayerThatLost]);
 
-            _numOfPlayers.Value = (ushort)(_numOfPlayers.Value - 1);
+            _numOfPlayers.Value -= 1;
 
             _playerUsernames.Remove(usernameOfPlayerThatLost);
 
@@ -250,8 +223,6 @@ public class GameManager : NetworkBehaviour
             GameLostClientRpc(clientRpcParams);
 
             Debug.Log(usernameOfPlayerThatLost + " lost!");
-
-
 
         }
 

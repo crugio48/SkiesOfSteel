@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5002648431923421501}
   - component: {fileID: 5002648431923421500}
+  - component: {fileID: 5361222104045381727}
   - component: {fileID: 5002648431923421499}
   m_Layer: 0
   m_Name: Game Manager
@@ -45,7 +46,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 602956eaa40b8604daefed392ef5affe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  connectionApprovalHandler: {fileID: 0}
+--- !u!114 &5361222104045381727
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5002648431923421498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9a1829c76928b64c81380c4b4b058db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   shipUnitPrefab: {fileID: 1022513343650396748, guid: abd2cec6d88bd504bb221c520edcc0a3, type: 3}
+  tilemap: {fileID: 0}
 --- !u!114 &5002648431923421499
 MonoBehaviour:
   m_ObjectHideFlags: 0
