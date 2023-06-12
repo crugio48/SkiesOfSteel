@@ -30,7 +30,7 @@ public class PlayerShipUI : MonoBehaviour
             //TODO do this for each ship type
             transform.GetChild(i).gameObject.SetActive(true);
             //transform.GetChild(i).GetChild(0). change sprites
-            transform.GetChild(i).GetChild(0).GetComponentInChildren<Text>().text = "Attack Damage = " + _shipSelected.GetAttack;
+            //transform.GetChild(i).GetChild(0).GetComponentInChildren<Text>().text = "Attack Damage = " + _shipSelected.GetAttack;
             //TODO Add all other attributes 
             transform.GetChild(i).GetChild(4).GetComponentInChildren<Text>().text = shipActions[1].name;
             transform.GetChild(i).GetChild(5).GetComponentInChildren<Text>().text = shipActions[2].name;
@@ -48,9 +48,9 @@ public class PlayerShipUI : MonoBehaviour
     }
     public void ToggleShip() {//change sprite to Ship + Attributes 
     }
-    public void HealShip(){_shipSelected.HealAtPortAction();}
-    public void BasicAttack() { shipActions[0].Activate(_shipSelected);}
-    public void Refuel(){_shipSelected.RefuelToMaxAtPortAction();}
-    public void Action1(){shipActions[1].Activate(_shipSelected);}
-    public void Action2(){shipActions[2].Activate(_shipSelected);}
+   // public void HealShip(){_shipSelected.HealAtPortAction();}
+    //public void BasicAttack() { shipActions[0].Activate(_shipSelected);}
+   // public void Refuel(){_shipSelected.RefuelToMaxAtPortAction();}
+    //public void Action1(){shipActions[1].Activate(_shipSelected);}
+    //public void Action2(){shipActions[2].Activate(_shipSelected);}
 }
