@@ -3,14 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public enum Shape
-{
-    NONE,
-    TRIANGLE
-}
-
-
-
 public class Action : ScriptableObject
 {
     public new string name;
