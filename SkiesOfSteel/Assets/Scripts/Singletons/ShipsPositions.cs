@@ -64,6 +64,18 @@ public class ShipsPositions : Singleton<ShipsPositions>
         }
     }
 
+    public bool IsThereAShip(Vector3Int position)
+    {
+        if (GetShip(position) != null)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
 
     public void RemoveShip(Vector3Int position)
     {

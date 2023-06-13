@@ -1,5 +1,6 @@
 
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -9,20 +10,18 @@ using UnityEngine.Tilemaps;
 public class Pathfinding : MonoBehaviour
 {
     [SerializeField]
-    private Tilemap _tilemap;
+    private Tilemap tilemap;
 
     [SerializeField]
-    private Tilemap _portsMap;
+    private Tilemap portsMap;
 
     [Space]
 
     [SerializeField]
-    private bool _debugTileVertices;
+    private bool debugTileVertices;
     [SerializeField]
-    private Vector3[] _verticesDiff;
+    private Vector3[] verticesDiff;
 
-
-    // TODO you can pass through your ships but not enemy ships
 
 
     /// <summary>
@@ -35,7 +34,7 @@ public class Pathfinding : MonoBehaviour
     /// <param name="start"></param>
     /// <param name="goal"></param>
     /// <returns></returns>
-    public Node AStarSearch(Vector3Int start, Vector3Int goal)
+    public Node AStarSearch(Vector3Int start, Vector3Int goal, ShipUnit shipToMove)
     {
         // Checking possible errors:
         if (start == goal)
@@ -43,13 +42,13 @@ public class Pathfinding : MonoBehaviour
             return null;
         }
 
-        if (!_tilemap.HasTile(start) || !_tilemap.HasTile(goal))
+        if (!tilemap.HasTile(start) || !tilemap.HasTile(goal))
         {
             Debug.Log("Can't start or arrive in a non existing tile!!!");
             return null;
         }
 
-        if (!(_tilemap.GetTile(start) as MapTile).IsWalkable || !(_tilemap.GetTile(goal) as MapTile).IsWalkable)
+        if (!(tilemap.GetTile(start) as MapTile).IsWalkable || !(tilemap.GetTile(goal) as MapTile).IsWalkable)
         {
             Debug.Log("Can't start or arrive in an Unwalkable cell!!!");
             return null;
@@ -60,7 +59,8 @@ public class Pathfinding : MonoBehaviour
             Debug.Log("The destination is already occupied by another ship");
             return null;
         }
-
+        
+        FixedString32Bytes ownerOfShip = shipToMove.GetOwnerUsername();
 
         // We passed all the initial checks, now the real search starts:
 
@@ -79,7 +79,7 @@ public class Pathfinding : MonoBehaviour
 
             foreach (Vector3Int pos in Node.GetAdjacents(currNode.Position))
             {
-                if (!_tilemap.HasTile(pos)) continue; // If tile doesn't exist don't check
+                if (!tilemap.HasTile(pos)) continue; // If tile doesn't exist don't check
 
                 if (pos == goal)
                 {
@@ -90,9 +90,12 @@ public class Pathfinding : MonoBehaviour
                 }
                 else if (!visited.Contains(pos))
                 {
-                    if (ShipsPositions.Instance.GetShip(pos) != null) continue; // We cannot move over another ship (TODO decide if only with enemy ships or also with ally ships like it is now the check)
+                    if (ShipsPositions.Instance.IsThereAShip(pos))
+                    {
+                        if (ShipsPositions.Instance.GetShip(pos).GetOwnerUsername() != ownerOfShip) continue; // We cannot move over enemy ships
+                    }
 
-                    if (!(_tilemap.GetTile(pos) as MapTile).IsWalkable) continue; // For now this method is for ships that can travel on walkable tiles only
+                    if (!(tilemap.GetTile(pos) as MapTile).IsWalkable) continue; // For now this method is for ships that can travel on walkable tiles only
                     
                     Node newNode = new Node(pos, currNode.G + 1);
                     newNode.Parent = currNode;
@@ -119,7 +122,7 @@ public class Pathfinding : MonoBehaviour
     /// <param name="center"></param>
     /// <param name="movementRange"></param>
     /// <returns></returns>
-    public List<Vector3Int> GetPossibleDestinations(Vector3Int center, int movementRange)
+    public List<Vector3Int> GetPossibleDestinations(Vector3Int center, int movementRange, ShipUnit shipToMove)
     {
         List<Vector3Int> visited = new List<Vector3Int>();
 
@@ -134,6 +137,7 @@ public class Pathfinding : MonoBehaviour
 
         fringes[0].Add(center);
 
+        FixedString32Bytes ownerOfShip = shipToMove.GetOwnerUsername();
 
         for (int k = 1; k <= movementRange; k++)
         {
@@ -145,11 +149,14 @@ public class Pathfinding : MonoBehaviour
 
                     if (visited.Contains(pos)) continue;
 
-                    if (!_tilemap.HasTile(pos)) continue;
+                    if (!tilemap.HasTile(pos)) continue;
 
-                    if (!(_tilemap.GetTile(pos) as MapTile).IsWalkable) continue; // For now this method is for ships that can travel on walkable tiles only
+                    if (!(tilemap.GetTile(pos) as MapTile).IsWalkable) continue; // For now this method is for ships that can travel on walkable tiles only
 
-                    if (ShipsPositions.Instance.GetShip(pos) != null) continue; // We cannot move over another ship (TODO decide if only with enemy ships or also with ally ships like it is now the check)
+                    if (ShipsPositions.Instance.IsThereAShip(pos))
+                    {
+                        if (ShipsPositions.Instance.GetShip(pos).GetOwnerUsername() != ownerOfShip) continue; // We cannot move over enemy ships
+                    }
 
                     // Checks passed
                     visited.Add(pos);
@@ -158,7 +165,7 @@ public class Pathfinding : MonoBehaviour
             }
         }
 
-        visited.RemoveAll(pos => ShipsPositions.Instance.GetShip(pos) != null); // Here we remove every position in which there is any ship because we cannot end the movement on another ship
+        visited.RemoveAll(pos => ShipsPositions.Instance.IsThereAShip(pos)); // Here we remove every position in which there is any ship because we cannot end the movement on another ship
 
         return visited;
     }
@@ -167,7 +174,7 @@ public class Pathfinding : MonoBehaviour
 
     private List<Vector3Int> GetLine(Vector3 start, Vector3 goal)
     {
-        int N = Node.HexManhattanDistance(_tilemap.WorldToCell(start), _tilemap.WorldToCell(goal)) * 3;
+        int N = Node.HexManhattanDistance(tilemap.WorldToCell(start), tilemap.WorldToCell(goal)) * 3;
 
         float distance = Vector3.Distance(start, goal);
         float offset = distance / N;
@@ -177,7 +184,7 @@ public class Pathfinding : MonoBehaviour
 
         for (float i = 0; i <= distance; i += offset)
         {
-            Vector3Int cell = _tilemap.WorldToCell(start + dir * i);
+            Vector3Int cell = tilemap.WorldToCell(start + dir * i);
             if (!result.Contains(cell))
                 result.Add(cell);
         }
@@ -193,11 +200,11 @@ public class Pathfinding : MonoBehaviour
     /// <returns>null if there is no line of sight, returns the start world point and goal world point of there is sight</returns>
     public List<Vector3> GetLineOfSight(Vector3Int start, Vector3Int goal)
     {
-        foreach(Vector3 diff in _verticesDiff)
+        foreach(Vector3 diff in verticesDiff)
         {
-            foreach(Vector3 diff2 in _verticesDiff)
+            foreach(Vector3 diff2 in verticesDiff)
             {
-                List<Vector3Int> straightPath = GetLine(_tilemap.GetCellCenterWorld(start) + diff, _tilemap.GetCellCenterWorld(goal) + diff2);
+                List<Vector3Int> straightPath = GetLine(tilemap.GetCellCenterWorld(start) + diff, tilemap.GetCellCenterWorld(goal) + diff2);
 
                 bool lineOfSightExists = true;
 
@@ -205,31 +212,31 @@ public class Pathfinding : MonoBehaviour
                 {
                     // Checks to see if this line of sight is not clear:
 
-                    if (!_tilemap.HasTile(pos))
+                    if (!tilemap.HasTile(pos))
                     {
                         lineOfSightExists = false;
                         break;
                     }
 
-                    if (!(_tilemap.GetTile(pos) as MapTile).IsWalkable)
+                    if (!(tilemap.GetTile(pos) as MapTile).IsWalkable)
                     {
                         lineOfSightExists = false;
                         break;
                     }
 
-                    if (ShipsPositions.Instance.GetShip(pos) != null && pos != start && pos != goal)
+                    if (ShipsPositions.Instance.IsThereAShip(pos) && pos != start && pos != goal)
                     {
                         lineOfSightExists = false;
                         break;
-                    }     
+                    }
                 }
 
                 // If the line of sight considered passed all the checks then we return the vertices of the line of sight found
                 if (lineOfSightExists)
                     return new List<Vector3>
                     {
-                        _tilemap.GetCellCenterWorld(start) + diff,
-                        _tilemap.GetCellCenterWorld(goal) + diff2
+                        tilemap.GetCellCenterWorld(start) + diff,
+                        tilemap.GetCellCenterWorld(goal) + diff2
                     };
             }
         }
@@ -254,16 +261,31 @@ public class Pathfinding : MonoBehaviour
 
 
 
+    public bool IsPosOnTopOfAPortOrAdjacent(Vector3Int pos)
+    {
+        if (portsMap.HasTile(pos)) return true;
+
+        foreach (Vector3Int adjPos in Node.GetAdjacents(pos))
+        {
+            if (portsMap.HasTile(adjPos)) return true;
+        }
+
+        return false;
+    }
+
+
+
+
 
     private void OnDrawGizmos()
     {
-        if (_debugTileVertices)
+        if (debugTileVertices)
         {
             Gizmos.color = Color.yellow;
 
-            foreach (Vector3 diff in _verticesDiff)
+            foreach (Vector3 diff in verticesDiff)
             {
-                Vector3 position = _tilemap.GetCellCenterWorld(new Vector3Int(0, 0, 0)) + diff;
+                Vector3 position = tilemap.GetCellCenterWorld(new Vector3Int(0, 0, 0)) + diff;
 
                 Gizmos.DrawSphere(position, 0.05f);
 

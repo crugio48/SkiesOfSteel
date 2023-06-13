@@ -24,7 +24,9 @@ MonoBehaviour:
   needsCustomParameter: 0
   stringToDisplayWhenAskingForCustomParam: 
   modifyAttack: 0
+  isAttackOneTurnTemporary: 0
   attackModification: 0
   modifyDefense: 1
+  isDefenseOneTurnTemporary: 1
   defenseModification: 2
   accuracy: 100
