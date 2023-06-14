@@ -11,9 +11,9 @@ public class Attack : Action
     [Range(1, 100)]
     public int accuracy;
 
-    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, Vector3Int vec3, int customParam)
+    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> positions, List<Orientation> orientations, int customParam)
     {
-        base.Activate(thisShip, targets, vec3, customParam);
+        base.Activate(thisShip, targets, positions, orientations, customParam);
 
         foreach (ShipUnit target in targets)
         {

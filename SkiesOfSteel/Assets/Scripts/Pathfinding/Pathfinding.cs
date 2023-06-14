@@ -8,7 +8,7 @@ using UnityEngine.Tilemaps;
 // Super link: https://www.redblobgames.com/grids/hexagons/
 // Super link2: https://www.redblobgames.com/grids/hexagons/implementation.html
 
-public class Pathfinding : MonoBehaviour
+public class Pathfinding : Singleton<Pathfinding>
 {
     [SerializeField]
     private Tilemap tilemap;

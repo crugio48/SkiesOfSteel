@@ -281,7 +281,7 @@ public class ShipUnit : NetworkBehaviour
 
     // NetworkBehaviourReference is the easy way of referencing a specific NetworkBehaviour gameobject in an Rpc call
     [ServerRpc(RequireOwnership = false)]
-    public void ActivateActionServerRpc(int actionIndex, NetworkBehaviourReference[] targetShips, Vector3Int vec3, int customParam, ServerRpcParams serverRpcParams = default)
+    public void ActivateActionServerRpc(int actionIndex, NetworkBehaviourReference[] targetShips, Vector3Int[] positions, Orientation[] orientations, int customParam, ServerRpcParams serverRpcParams = default)
     {
         if (!PassedInitialChecks(serverRpcParams)) return;
 
@@ -307,7 +307,11 @@ public class ShipUnit : NetworkBehaviour
             }
         }
 
-        _shipSO.actionList[actionIndex].Activate(this, targets, vec3, customParam);
+        List<Vector3Int> positionsList = new List<Vector3Int>(positions);
+
+        List<Orientation> orientationsList = new List<Orientation>(orientations);
+
+        _shipSO.actionList[actionIndex].Activate(this, targets, positionsList, orientationsList, customParam);
     }
 
 

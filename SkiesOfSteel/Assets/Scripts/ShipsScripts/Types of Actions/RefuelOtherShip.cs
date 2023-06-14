@@ -6,9 +6,9 @@ using UnityEngine;
 public class RefuelOtherShip : Action
 {
 
-    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, Vector3Int vec3, int customParam)
+    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> positions, List<Orientation> orientations, int customParam)
     {
-        base.Activate(thisShip, targets, vec3, customParam);
+        base.Activate(thisShip, targets, positions, orientations, customParam);
 
         if (targets.Count != 1)
         {
@@ -27,11 +27,12 @@ public class RefuelOtherShip : Action
        
     }
 
-    public override int GetMinAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets)
+    public override int GetMinAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> vec3List, List<Orientation> orientations)
     {
         return 1;
     }
-    public override int GetMaxAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets)
+
+    public override int GetMaxAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> vec3List, List<Orientation> orientations)
     {
         if (targets.Count > 1)
         {

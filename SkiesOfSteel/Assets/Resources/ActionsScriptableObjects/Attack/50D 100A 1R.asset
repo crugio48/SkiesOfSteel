@@ -17,10 +17,12 @@ MonoBehaviour:
   fuelCost: 4
   range: 1
   needsTarget: 1
+  needsLineOfSight: 0
   isSelfOnly: 0
   canTargetSelf: 0
   amountOfTargets: 1
   isTargetAnArea: 0
+  isAffectingOnlyEmptyPositions: 0
   shape: 0
   needsCustomParameter: 0
   stringToDisplayWhenAskingForCustomParam: 

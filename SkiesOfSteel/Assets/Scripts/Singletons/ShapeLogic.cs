@@ -1,7 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.Rendering;
 
 public enum Shape
 {
@@ -23,7 +24,6 @@ public enum Orientation
 
 public class ShapeLogic : Singleton<ShapeLogic>
 {
-
     public List<Vector3Int> GetPositionsInThisShape(Shape shape, Orientation shapeOrientation, Vector3Int position)
     {
         return shape switch
