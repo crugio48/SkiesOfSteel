@@ -6,13 +6,13 @@ using UnityEngine;
 public class RefuelOtherShip : Action
 {
 
-    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, int customParam)
+    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, Vector3Int vec3, int customParam)
     {
-        base.Activate(thisShip, targets, customParam);
+        base.Activate(thisShip, targets, vec3, customParam);
 
-        if (targets.Count > 1)
+        if (targets.Count != 1)
         {
-            Debug.Log(thisShip.name + " Is trying to refuel too many ships with the action: " + this.name);
+            Debug.LogError(thisShip.name + " is trying to use the refuel a wrong amount of targets with the action: " + this.name);
             return;
         }
 
@@ -35,7 +35,7 @@ public class RefuelOtherShip : Action
     {
         if (targets.Count > 1)
         {
-            Debug.Log(thisShip.name + " Is trying to refuel too many ships with the action: " + this.name);
+            Debug.LogError(thisShip.name + " is trying to use the refuel a wrong amount of targets with the action: " + this.name);
             return 0;
         }
 

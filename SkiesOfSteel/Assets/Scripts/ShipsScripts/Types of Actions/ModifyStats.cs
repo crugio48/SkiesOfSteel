@@ -20,9 +20,9 @@ public class ModifyStats : Action
     [Range(1, 100)]
     public int accuracy;
 
-    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, int customParam)
+    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, Vector3Int vec3, int customParam)
     {
-        base.Activate(thisShip, targets, customParam);
+        base.Activate(thisShip, targets, vec3, customParam);
 
         foreach (ShipUnit target in targets)
         {

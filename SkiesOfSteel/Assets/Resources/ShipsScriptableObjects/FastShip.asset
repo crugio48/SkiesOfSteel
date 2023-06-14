@@ -16,11 +16,11 @@ MonoBehaviour:
   maxHealth: 60
   maxFuel: 20
   speed: 3
-  attack: 70
+  attack: 60
   defense: 40
   battleCost: 0
   sprite: {fileID: 0}
   actionList:
-  - {fileID: 11400000, guid: 4fdfd7a313b09c2419ef503b4d3ae084, type: 2}
-  - {fileID: 11400000, guid: f6e03ae245d9e01479cfe6d87049b32d, type: 2}
-  - {fileID: 11400000, guid: 50cf6470391b9a041af4c778966be4a8, type: 2}
+  - {fileID: 11400000, guid: 48829b03c2eb6914bb29422dcdd1268b, type: 2}
+  - {fileID: 11400000, guid: 800e6be3873a2cc4cb5f0015433f2e55, type: 2}
+  - {fileID: 11400000, guid: 7a6d593a75eece444b9c68921d3392ac, type: 2}

@@ -13,6 +13,7 @@ public class Action : ScriptableObject
     [Space]
     public bool needsTarget;
     public bool isSelfOnly;
+    public bool canTargetSelf;
     public int amountOfTargets;
 
     [Space]
@@ -24,7 +25,7 @@ public class Action : ScriptableObject
     public string stringToDisplayWhenAskingForCustomParam;
 
 
-    public virtual void Activate(ShipUnit thisShip, List<ShipUnit> targets, int customParam)
+    public virtual void Activate(ShipUnit thisShip, List<ShipUnit> targets, Vector3Int vec3, int customParam)
     {
         if (thisShip.GetCurrentFuel() < fuelCost)
         {

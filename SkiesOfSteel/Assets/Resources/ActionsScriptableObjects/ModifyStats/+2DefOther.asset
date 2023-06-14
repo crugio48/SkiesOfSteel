@@ -18,6 +18,7 @@ MonoBehaviour:
   range: 1
   needsTarget: 1
   isSelfOnly: 0
+  canTargetSelf: 0
   amountOfTargets: 1
   isTargetAnArea: 0
   shape: 0
