@@ -161,7 +161,7 @@ public class Action : ScriptableObject
         }
         else
         {
-            return trueTargets.Count == 0; // If the action is used to target only empty positions in the grid then we have to check that the target ship list is empty in those positions
+            return trueTargets.Count == 0 && targets.Count == 0; // If the action is used to target only empty positions in the grid then we have to check that the target ship list is empty in those positions
         }
     }
 

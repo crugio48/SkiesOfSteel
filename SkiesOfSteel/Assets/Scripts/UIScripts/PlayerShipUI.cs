@@ -82,8 +82,7 @@ public class PlayerShipUI : MonoBehaviour
     }
     public void HealShipFlagship()
     {
-        //todo check porto e cambia heal amount in base a quello
-        shipFlagship.HealAtPortActionServerRpc();
+        shipFlagship.HealActionServerRpc();
     }
     public void RefuelFlagship()
     {
@@ -115,7 +114,7 @@ public class PlayerShipUI : MonoBehaviour
     }
     public void HealShipAttack()
     {         //todo check porto e cambia heal amount in base a quello
-        shipAttack.HealAtPortActionServerRpc();
+        //shipAttack.HealAtPortActionServerRpc();
     }
     public void RefuelAttack()
     {
@@ -146,7 +145,7 @@ public class PlayerShipUI : MonoBehaviour
     public void HealShipCargo()
     {
         //todo check porto e cambia heal amount in base a quello
-        shipCargo.HealAtPortActionServerRpc();
+        //shipCargo.HealAtPortActionServerRpc();
     }
     public void RefuelCargo()
     {
@@ -180,7 +179,7 @@ public class PlayerShipUI : MonoBehaviour
     public void HealShipFast()
     {
         //todo check porto e cambia heal amount in base a quello
-        shipFast.HealAtPortActionServerRpc();
+        //shipFast.HealAtPortActionServerRpc();
     }
     public void RefuelFast()
     {
@@ -210,7 +209,7 @@ public class PlayerShipUI : MonoBehaviour
         {
             targetListNet[i] = targetList[i];
         }
-        casterShip.ActivateActionServerRpc(indexAction, targetListNet, 0);
+        //casterShip.ActivateActionServerRpc(indexAction, targetListNet, 0);
         targetList.Clear();
         actionInstructionCanvas.DisableCanvas();
     }
@@ -223,7 +222,7 @@ public class PlayerShipUI : MonoBehaviour
         actionInstructionCanvas.EnableCanvas();
         inputManager.startLookingForTarget(actionShip, 0, 1);
         NetworkBehaviourReference[] targetListNet = new NetworkBehaviourReference[] { targetList[0] };
-        actionShip.ActivateActionServerRpc(0, targetListNet, 0);
+        actionShip.ActivateActionServerRpc(0, targetListNet, new Vector3Int[0], new Orientation[0], 0);
 
     }
     public void Action1(ShipUnit actionShip, int indexShip)
@@ -233,14 +232,14 @@ public class PlayerShipUI : MonoBehaviour
         actionInstructionCanvas.EnableCanvas();
         if (ListofAllShipsActions[indexShip][1].needsTarget == false)
         {
-            actionShip.ActivateActionServerRpc(1, null, 0);
+            //actionShip.ActivateActionServerRpc(1, null, 0);
         }
         else
         {
             if (ListofAllShipsActions[indexShip][1].isSelfOnly == true)
             {
                 NetworkBehaviourReference[] targetListNet = new NetworkBehaviourReference[] { actionShip };
-                actionShip.ActivateActionServerRpc(1, targetListNet, 0);
+                //actionShip.ActivateActionServerRpc(1, targetListNet, 0);
             }
             else
             {
@@ -256,14 +255,14 @@ public class PlayerShipUI : MonoBehaviour
         actionInstructionCanvas.EnableCanvas();
         if (ListofAllShipsActions[indexShip][2].needsTarget == false)
         {
-            actionShip.ActivateActionServerRpc(2, null, 0);
+            //actionShip.ActivateActionServerRpc(2, null, 0);
         }
         else
         {
             if (ListofAllShipsActions[indexShip][2].isSelfOnly == true)
             {
                 NetworkBehaviourReference[] targetListNet = new NetworkBehaviourReference[] { actionShip };
-                actionShip.ActivateActionServerRpc(2, targetListNet, 0);
+                //actionShip.ActivateActionServerRpc(2, targetListNet, 0);
             }
             else
             {

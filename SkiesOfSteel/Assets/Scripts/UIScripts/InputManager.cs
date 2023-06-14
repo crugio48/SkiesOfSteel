@@ -98,7 +98,7 @@ public class InputManager : MonoBehaviour
             {
                 Vector2 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
                 selectedtile = _debugTilemap.WorldToCell(mousePosition);
-                possibleTiles = _pathfinding.GetPossibleDestinations(ship.GetCurrentPosition(), ship.GetMovementLeft());
+                //possibleTiles = _pathfinding.GetPossibleDestinations(ship.GetCurrentPosition(), ship.GetMovementLeft());
                 if (ship != null & possibleTiles.Contains(selectedtile))
                 {
                     ship.MoveServerRpc(selectedtile);
