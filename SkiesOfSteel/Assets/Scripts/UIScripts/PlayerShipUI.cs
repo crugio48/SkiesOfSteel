@@ -1,44 +1,46 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class PlayerShipUI : MonoBehaviour
 {
     ShipUnit _shipSelected, shipFlagship, shipAttack, shipCargo, shipFast;
-    List<Action> shipActions,shipActionsFlagship,shipActionsAttack,shipActionsCargo,shipActionsFast;
+    List<Action> shipActionsFlagship, shipActionsAttack, shipActionsCargo, shipActionsFast;
     List<List<Action>> ListofAllShipsActions;
     List<ShipUnit> shipList;
-
+    FixedString32Bytes playerName;
+    //TODO Find InputManager & ActionInstructionCanvas
+    InputManager inputManager;
+    ActionInstructionCanvas actionInstructionCanvas;
+    List<ShipUnit> targetList;
     public void ShipClicked(ShipUnit selectedShip)
     {
         //TODO Add to ShipUnit the splashart for the ship and the captain
-        //TODO Understand type of ship and get all ships from the same fleet
         _shipSelected = selectedShip;
 
-        //TODO Understand type of ship and get all ships from the same fleet (would be great to have the ships always in the same position es 1=flaghsip, 2=attack, 3=cargo, 4=fast
-        /*
-        shipList=_shipSelected.GetShips
-        shipFlagship=shipList[0]
+
+        playerName = _shipSelected.GetOwnerUsername();
+        shipList = PlayersShips.Instance.GetShips(playerName);
+
+        shipFlagship = shipList[0];
         shipActionsFlagship = shipFlagship.GetActions();
         ListofAllShipsActions.Add(shipActionsFlagship);
 
-        shipAttack=shipList[1]
+        shipAttack = shipList[1];
         shipActionsAttack = shipAttack.GetActions();
         ListofAllShipsActions.Add(shipActionsAttack);
 
-        shipCargo=shipList[2]
+        shipCargo = shipList[2];
         shipActionsCargo = shipCargo.GetActions();
         ListofAllShipsActions.Add(shipActionsCargo);
 
-        shipFast=shipList[3]
+        shipFast = shipList[3];
         shipActionsFast = shipFast.GetActions();
         ListofAllShipsActions.Add(shipActionsFast);
-
-         */
-        shipActions = _shipSelected.GetActions();
         ChildEnable();
-        ListofAllShipsActions.Add(shipActionsFlagship);
 
     }
     public void NoShipClicked()
@@ -51,13 +53,16 @@ public class PlayerShipUI : MonoBehaviour
         transform.GetChild(0).gameObject.SetActive(true);
         for (int i = 0; i < transform.GetChild(0).childCount; i++)
         {
-            //TODO do this for each ship type
+            //TODO Get Sprites
 
             //transform.GetChild(i).GetChild(0). change sprites
 
-            //transform.GetChild(i).GetChild(0).GetComponentInChildren<Text>().text = "Attack Damage = " + _shipSelected.GetAttack;
+            transform.GetChild(0).GetChild(i).GetChild(0).GetComponentInChildren<Text>().text = "Health = " + shipList[i].GetCurrentHealth() + " / " + shipList[i].GetMaxHealth() +
+                                                                                                "\nFuel = " + shipList[i].GetCurrentFuel() + " / " + shipList[i].GetMaxFuel() +
+                                                                                                "\nCurrent Bonus Attack Stage = " + shipList[i].GetAttackStage() +
+                                                                                                "\nCurrent Bonus Defence Stage = " + shipList[i].GetDefenseStage() +
+                                                                                                "\nMovements Left = " + shipList[i].GetMovementLeft();
 
-            //TODO Add all other attributes 
             transform.GetChild(0).GetChild(i).GetChild(4).GetComponentInChildren<Text>().text = ListofAllShipsActions[i][1].name;
             transform.GetChild(0).GetChild(i).GetChild(5).GetComponentInChildren<Text>().text = ListofAllShipsActions[i][2].name;
         }
@@ -66,58 +71,209 @@ public class PlayerShipUI : MonoBehaviour
     {
         transform.GetChild(0).gameObject.SetActive(false);
     }
+
+
     //FLASHIP METHODS  (Change Selected Ship)
-    public void ToggleCaptainFlagship() {//change sprite to Captain
+    public void ToggleCaptainFlagship()
+    {//TODO change sprite to Captain
     }
-    public void ToggleShipFlagship() {//change sprite to Ship + Attributes 
+    public void ToggleShipFlagship()
+    {//TODO change sprite to Ship + Attributes 
     }
-    //public void HealShipFlagship(){_shipSelected.HealAtPortAction();}
-    //public void BasicAttackFlagship() { shipActions[0].Activate(_shipSelected);}
-    //public void RefuelFlagship(){_shipSelected.RefuelToMaxAtPortAction();}
-    //public void Action1Flagship(){shipActions[1].Activate(_shipSelected);}
-    //public void Action2Flagship(){shipActions[2].Activate(_shipSelected);}
+    public void HealShipFlagship()
+    {
+        //todo check porto e cambia heal amount in base a quello
+        shipFlagship.HealAtPortActionServerRpc();
+    }
+    public void RefuelFlagship()
+    {
+        //todo check porto
+        shipFlagship.RefuelToMaxAtPortActionServerRpc();
+    }
+    public void BasicAttackFlagship()
+    {
+        BasicAttack(shipFlagship,0);
+    }
+    public void Action1Flagship()
+    {
+        Action1(shipFlagship, 0);
+    }
+    public void Action2Flagship()
+    {
+
+        Action2(shipFlagship, 0);
+    }
+
+
 
     //AttackShip METHODS  (Change Selected Ship)
     public void ToggleCaptainAttack()
-    {//change sprite to Captain
+    {//TODO change sprite to Captain
     }
     public void ToggleShipAttack()
-    {//change sprite to Ship + Attributes 
+    {//TODO change sprite to Ship + Attributes 
     }
-   // public void HealShipAttack() { _shipSelected.HealAtPortAction(); }
-    //public void BasicAttackAttack() { shipActions[0].Activate(_shipSelected); }
-    //public void RefuelAttack() { _shipSelected.RefuelToMaxAtPortAction(); }
-    //public void Action1Attack() { shipActions[1].Activate(_shipSelected); }
-    //public void Action2Attack() { shipActions[2].Activate(_shipSelected); }
+    public void HealShipAttack()
+    {         //todo check porto e cambia heal amount in base a quello
+        shipAttack.HealAtPortActionServerRpc();
+    }
+    public void RefuelAttack()
+    {
+        //todo check porto
+        shipAttack.RefuelToMaxAtPortActionServerRpc();
+    }
+    public void BasicAttackAttack()
+    {
+        BasicAttack(shipAttack,1);
+    }
+    public void Action1Attack()
+    {
+        Action1(shipAttack, 1);
+    }
+    public void Action2Attack()
+    {
+        Action2(shipAttack, 1);
+    }
 
     //CARGOSHIP METHODS  (Change Selected Ship)
     public void ToggleCaptainCargo()
-    {//change sprite to Captain
+    {//TODO change sprite to Captain
     }
     public void ToggleShipCargo()
-    {//change sprite to Ship + Attributes 
+    {//TODO change sprite to Ship + Attributes 
     }
 
-    //public void HealShipCargo() { _shipSelected.HealAtPortAction(); }
-    //public void BasicAttackCargo() { shipActions[0].Activate(_shipSelected); }
-    //public void RefuelCargo() { _shipSelected.RefuelToMaxAtPortAction(); }
-    //public void Action1Cargo() { shipActions[1].Activate(_shipSelected); }
-    //public void Action2Cargo() { shipActions[2].Activate(_shipSelected); }
+    public void HealShipCargo()
+    {
+        //todo check porto e cambia heal amount in base a quello
+        shipCargo.HealAtPortActionServerRpc();
+    }
+    public void RefuelCargo()
+    {
+        //todo check porto
+        shipCargo.RefuelToMaxAtPortActionServerRpc();
+    }
+    public void BasicAttackCargo()
+    {
+
+        BasicAttack(shipCargo,2);
+
+    }
+    public void Action1Cargo()
+    {
+        Action1(shipCargo, 2);
+    }
+    public void Action2Cargo()
+    {
+
+        Action2(shipCargo, 2);
+    }
 
 
     //FastSHIP METHODS  (Change Selected Ship)
     public void ToggleCaptainFast()
-    {//change sprite to Captain
+    {//TODO change sprite to Captain
     }
     public void ToggleShipFast()
-    {//change sprite to Ship + Attributes 
+    {//TODO change sprite to Ship + Attributes 
     }
-    //public void HealShipFast() { _shipSelected.HealAtPortAction(); }
-    //public void BasicAttackFast() { shipActions[0].Activate(_shipSelected); }
-    //public void RefuelFast() { _shipSelected.RefuelToMaxAtPortAction(); }
-   // public void Action1CFast() { shipActions[1].Activate(_shipSelected); }
-    //public void Action2Fast() { shipActions[2].Activate(_shipSelected); }
+    public void HealShipFast()
+    {
+        //todo check porto e cambia heal amount in base a quello
+        shipFast.HealAtPortActionServerRpc();
+    }
+    public void RefuelFast()
+    {
+        //todo check porto
+        shipFast.RefuelToMaxAtPortActionServerRpc();
+    }
+    public void BasicAttackFast()
+    {
+        BasicAttack(shipFast,3);
+
+    }
+    public void Action1Fast()
+    {
+        Action1(shipFast, 3);
+    }
+    public void Action2Fast()
+    {
+        Action2(shipFast, 3);
+    }
+
+    public void ReceiveTargets(int indexAction, ShipUnit casterShip, List<ShipUnit> _targetList)
+    {
+        targetList = _targetList;
+
+        NetworkBehaviourReference[] targetListNet = new NetworkBehaviourReference[targetList.Count];
+        for (int i = 0; i < targetList.Count; i++)
+        {
+            targetListNet[i] = targetList[i];
+        }
+        casterShip.ActivateActionServerRpc(indexAction, targetListNet, 0);
+        targetList.Clear();
+        actionInstructionCanvas.DisableCanvas();
+    }
+
+    public void BasicAttack(ShipUnit actionShip, int indexShip)
+    {
+
+        actionInstructionCanvas.ChangeTextDescription("Select 1 Target");
+        //actionInstructionCanvas.ChangeActionDescription(ListofAllShipsActions[indexShip][0].description);
+        actionInstructionCanvas.EnableCanvas();
+        inputManager.startLookingForTarget(actionShip, 0, 1);
+        NetworkBehaviourReference[] targetListNet = new NetworkBehaviourReference[] { targetList[0] };
+        actionShip.ActivateActionServerRpc(0, targetListNet, 0);
+
+    }
+    public void Action1(ShipUnit actionShip, int indexShip)
+    {
+        actionInstructionCanvas.ChangeActionDescription("Select " + ListofAllShipsActions[indexShip][2].amountOfTargets + " Target");
+        //actionInstructionCanvas.ChangeActionDescription(ListofAllShipsActions[indexShip][1].description);
+        actionInstructionCanvas.EnableCanvas();
+        if (ListofAllShipsActions[indexShip][1].needsTarget == false)
+        {
+            actionShip.ActivateActionServerRpc(1, null, 0);
+        }
+        else
+        {
+            if (ListofAllShipsActions[indexShip][1].isSelfOnly == true)
+            {
+                NetworkBehaviourReference[] targetListNet = new NetworkBehaviourReference[] { actionShip };
+                actionShip.ActivateActionServerRpc(1, targetListNet, 0);
+            }
+            else
+            {
+                actionInstructionCanvas.ChangeTextDescription("Select "+ ListofAllShipsActions[indexShip][1].amountOfTargets +" Target");
+                inputManager.startLookingForTarget(actionShip, 1, ListofAllShipsActions[indexShip][1].amountOfTargets);
+            }
+        }
+    }
+    public void Action2(ShipUnit actionShip, int indexShip)
+    {
+        actionInstructionCanvas.ChangeActionDescription("Select " + ListofAllShipsActions[indexShip][2].amountOfTargets + " Target");
+        //actionInstructionCanvas.ChangeActionDescription(ListofAllShipsActions[indexShip][2].description);
+        actionInstructionCanvas.EnableCanvas();
+        if (ListofAllShipsActions[indexShip][2].needsTarget == false)
+        {
+            actionShip.ActivateActionServerRpc(2, null, 0);
+        }
+        else
+        {
+            if (ListofAllShipsActions[indexShip][2].isSelfOnly == true)
+            {
+                NetworkBehaviourReference[] targetListNet = new NetworkBehaviourReference[] { actionShip };
+                actionShip.ActivateActionServerRpc(2, targetListNet, 0);
+            }
+            else
+            {
+                actionInstructionCanvas.ChangeTextDescription("Select " + ListofAllShipsActions[indexShip][2].amountOfTargets + " Target");                
+                inputManager.startLookingForTarget(actionShip, 2, ListofAllShipsActions[indexShip][2].amountOfTargets);
+                
+            }
+        }
 
 
- 
+
+    }
 }
