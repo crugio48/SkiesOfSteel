@@ -9,19 +9,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 394ebc6594bc90c4f9ec307f0a0bac9a, type: 3}
-  m_Name: 50Dmg100Acc2Range
+  m_Script: {fileID: 11500000, guid: 149f60f8c7d31e6469ee0e1d89e76001, type: 3}
+  m_Name: 50D 80A 1R Triangle
   m_EditorClassIdentifier: 
-  name: Cannon attack
+  name: Tentacle slash
   sprite: {fileID: 0}
-  fuelCost: 4
-  range: 2
+  fuelCost: 6
+  range: 1
   needsTarget: 1
+  needsLineOfSight: 0
   isSelfOnly: 0
+  canTargetSelf: 0
   amountOfTargets: 1
-  isTargetAnArea: 0
-  shape: 0
+  isTargetAnArea: 1
+  isAffectingOnlyEmptyPositions: 0
+  shape: 1
   needsCustomParameter: 0
   stringToDisplayWhenAskingForCustomParam: 
   power: 50
-  accuracy: 100
+  accuracy: 80

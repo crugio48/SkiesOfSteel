@@ -8,27 +8,31 @@ public class ModifyStats : Action
 {
     [Space]
     public bool modifyAttack;
+    public bool isAttackOneTurnTemporary;
+    [Range(-6, 6)]
     public int attackModification;
 
     public bool modifyDefense;
+    public bool isDefenseOneTurnTemporary;
+    [Range(-6, 6)]
     public int defenseModification;
 
     [Range(1, 100)]
     public int accuracy;
 
-    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, int customParam)
+    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> positions, List<Orientation> orientations, int customParam)
     {
-        base.Activate(thisShip, targets, customParam);
+        base.Activate(thisShip, targets, positions, orientations, customParam);
 
         foreach (ShipUnit target in targets)
         {
             if (AccuracyHit(accuracy))
             {
                 if (modifyAttack)
-                    target.ModifyAttack(attackModification);
+                    target.ModifyAttack(attackModification, isAttackOneTurnTemporary);
 
                 if (modifyDefense)
-                    target.ModifyDefense(defenseModification);
+                    target.ModifyDefense(defenseModification, isDefenseOneTurnTemporary);
 
 
                 Debug.Log(thisShip.name + " modified the stats of " + target.name);

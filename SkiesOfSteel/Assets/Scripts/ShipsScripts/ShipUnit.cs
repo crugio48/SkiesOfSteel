@@ -21,6 +21,12 @@ public class ShipUnit : NetworkBehaviour
     private NetworkVariable<int> _attackStage = new NetworkVariable<int>(0);
     private NetworkVariable<int> _defenseStage = new NetworkVariable<int>(0);
 
+    private NetworkVariable<int> _oneTurnTemporaryAttackStage = new NetworkVariable<int>(0);
+    private NetworkVariable<int> _oneTurnTemporaryDefenseStage = new NetworkVariable<int>(0);
+
+    private int MAX_STAGE = 6;
+    private int MIN_STAGE = -6;
+
     private NetworkVariable<bool> _canDoAction = new NetworkVariable<bool>(false);
     private NetworkVariable<int> _movementLeft = new NetworkVariable<int>(0);
 
@@ -149,7 +155,7 @@ public class ShipUnit : NetworkBehaviour
     {
         get
         {
-            return Mathf.Floor(_shipSO.attack * GetMultiplier(_attackStage.Value));
+            return Mathf.Floor(_shipSO.attack * GetMultiplier(_attackStage.Value + _oneTurnTemporaryAttackStage.Value));
         }
     }
 
@@ -158,7 +164,7 @@ public class ShipUnit : NetworkBehaviour
     {
         get
         {
-            return Mathf.Floor(_shipSO.defense * GetMultiplier(_defenseStage.Value));
+            return Mathf.Floor(_shipSO.defense * GetMultiplier(_defenseStage.Value + _oneTurnTemporaryDefenseStage.Value));
         }
     }
 
@@ -167,13 +173,25 @@ public class ShipUnit : NetworkBehaviour
     {
         //taking example from: https://www.dragonflycave.com/mechanics/stat-stages
 
+        // Limit the stage between -6 and +6
+        stage = Mathf.Min(MAX_STAGE, stage);
+        stage = Mathf.Max(MIN_STAGE, stage);
+
         return stage switch
         {
+            -6 => 0.25f,
+            -5 => 0.28f,
+            -4 => 0.33f,
+            -3 => 0.4f,
             -2 => 0.5f,
             -1 => 0.66f,
             0 => 1.0f,
             1 => 1.5f,
             2 => 2.0f,
+            3 => 2.5f,
+            4 => 3.0f,
+            5 => 3.5f,
+            6 => 4.0f,
 
             _ => 1.0f,
         };
@@ -223,7 +241,7 @@ public class ShipUnit : NetworkBehaviour
     }
 
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     public void RefuelToMaxAtPortActionServerRpc(ServerRpcParams serverRpcParams = default)
     {
         if (!PassedInitialChecks(serverRpcParams)) return;
@@ -234,12 +252,17 @@ public class ShipUnit : NetworkBehaviour
             return;
         }
 
+        if (!_pathfinding.IsPosOnTopOfAPortOrAdjacent(_currentPosition.Value.GetValues()))
+        {
+            Debug.LogError("A client tried to call a refuel at port action without being near a port");
+            return;
+        }
 
         _currentFuel.Value = _shipSO.maxFuel;
     }
 
-    [ServerRpc]
-    public void HealAtPortActionServerRpc(ServerRpcParams serverRpcParams = default)
+    [ServerRpc(RequireOwnership = false)]
+    public void HealActionServerRpc(ServerRpcParams serverRpcParams = default)
     {
         if (!PassedInitialChecks(serverRpcParams)) return;
 
@@ -249,20 +272,16 @@ public class ShipUnit : NetworkBehaviour
             return;
         }
 
-        float healPercentage = 0.2f;
+        float healPercentage = 0.1f;
+        if (_pathfinding.IsPosOnTopOfAPortOrAdjacent(_currentPosition.Value.GetValues())) healPercentage = 0.2f; // If is on top of a port then it heals more
 
-        _currentHealth.Value += (int) Mathf.Floor(_shipSO.maxHealth * healPercentage);
-
-        if (_currentHealth.Value > _shipSO.maxHealth)
-        {
-            _currentHealth.Value = _shipSO.maxHealth;
-        }
+        _currentHealth.Value = Mathf.Min(_shipSO.maxHealth, _currentHealth.Value + (int) Mathf.Floor(_shipSO.maxHealth * healPercentage));
 
     }
 
     // NetworkBehaviourReference is the easy way of referencing a specific NetworkBehaviour gameobject in an Rpc call
-    [ServerRpc]
-    public void ActivateActionServerRpc(int actionIndex, NetworkBehaviourReference[] targetShips, int customParam, ServerRpcParams serverRpcParams = default)
+    [ServerRpc(RequireOwnership = false)]
+    public void ActivateActionServerRpc(int actionIndex, NetworkBehaviourReference[] targetShips, Vector3Int[] positions, Orientation[] orientations, int customParam, ServerRpcParams serverRpcParams = default)
     {
         if (!PassedInitialChecks(serverRpcParams)) return;
 
@@ -288,18 +307,22 @@ public class ShipUnit : NetworkBehaviour
             }
         }
 
-        _shipSO.actionList[actionIndex].Activate(this, targets, customParam);
+        List<Vector3Int> positionsList = new List<Vector3Int>(positions);
+
+        List<Orientation> orientationsList = new List<Orientation>(orientations);
+
+        _shipSO.actionList[actionIndex].Activate(this, targets, positionsList, orientationsList, customParam);
     }
 
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     public void MoveServerRpc(Vector3Int destination, ServerRpcParams serverRpcParams = default)
     {
         if (!PassedInitialChecks(serverRpcParams)) return;
 
         ulong senderId = 0; // TODO make method a ServerRpc
 
-        Node destinationNode = _pathfinding.AStarSearch(_currentPosition.Value.GetValues(), destination);
+        Node destinationNode = _pathfinding.AStarSearch(_currentPosition.Value.GetValues(), destination, this);
 
         if (destinationNode == null)
         {
@@ -363,38 +386,50 @@ public class ShipUnit : NetworkBehaviour
         // Extra check just to be sure
         if (!IsServer) return;
 
+        _oneTurnTemporaryAttackStage.Value = 0;
+        _oneTurnTemporaryDefenseStage.Value = 0;
+
         _canDoAction.Value = true;
         _movementLeft.Value = _shipSO.speed;
     }
 
 
-    public void ModifyAttack(int stageModification)
+    public void ModifyAttack(int stageModification, bool isOneTurnTemp)
     {
         // Extra check just to be sure
         if (!IsServer) return;
 
-        _attackStage.Value += stageModification;
+        int finalValue;
 
-        if (_attackStage.Value > 2)
-            _attackStage.Value = 2;
+        if (!isOneTurnTemp) finalValue = _attackStage.Value + stageModification;
+        else finalValue = _oneTurnTemporaryAttackStage.Value + stageModification;
 
-        if (_attackStage.Value < -2)
-            _attackStage.Value = -2;
+        finalValue = Mathf.Min(MAX_STAGE, finalValue);
+
+        finalValue = Mathf.Max(MIN_STAGE, finalValue);
+
+        if (!isOneTurnTemp) _attackStage.Value = finalValue;
+        else _oneTurnTemporaryAttackStage.Value = finalValue;
+
     }
 
 
-    public void ModifyDefense(int stageModification)
+    public void ModifyDefense(int stageModification, bool isOneTurnTemp)
     {
         // Extra check just to be sure
         if (!IsServer) return;
 
-        _defenseStage.Value += stageModification;
+        int finalValue;
 
-        if (_defenseStage.Value > 2)
-            _defenseStage.Value = 2;
+        if (!isOneTurnTemp) finalValue = _defenseStage.Value + stageModification;
+        else finalValue = _oneTurnTemporaryDefenseStage.Value + stageModification;
 
-        if (_defenseStage.Value < -2)
-            _defenseStage.Value = -2;
+        finalValue = Mathf.Min(MAX_STAGE, finalValue);
+
+        finalValue = Mathf.Max(MIN_STAGE, finalValue);
+
+        if (!isOneTurnTemp) _defenseStage.Value = finalValue;
+        else _oneTurnTemporaryDefenseStage.Value = finalValue;
     }
 
 
@@ -496,6 +531,16 @@ public class ShipUnit : NetworkBehaviour
     public int GetDefenseStage()
     {
         return _defenseStage.Value;
+    }
+
+    public int GetOneTurnTemporaryAttackStage()
+    {
+        return _oneTurnTemporaryAttackStage.Value;
+    }
+
+    public int GetOneTurnTemporaryDefenseStage()
+    {
+        return _oneTurnTemporaryDefenseStage.Value;
     }
 
     public bool CanDoAction()

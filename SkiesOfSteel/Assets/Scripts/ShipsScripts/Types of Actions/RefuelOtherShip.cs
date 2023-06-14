@@ -6,13 +6,13 @@ using UnityEngine;
 public class RefuelOtherShip : Action
 {
 
-    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, int customParam)
+    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> positions, List<Orientation> orientations, int customParam)
     {
-        base.Activate(thisShip, targets, customParam);
+        base.Activate(thisShip, targets, positions, orientations, customParam);
 
-        if (targets.Count > 1)
+        if (targets.Count != 1)
         {
-            Debug.Log(thisShip.name + " Is trying to refuel too many ships with the action: " + this.name);
+            Debug.LogError(thisShip.name + " is trying to use the refuel a wrong amount of targets with the action: " + this.name);
             return;
         }
 
@@ -27,15 +27,16 @@ public class RefuelOtherShip : Action
        
     }
 
-    public override int GetMinAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets)
+    public override int GetMinAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> vec3List, List<Orientation> orientations)
     {
         return 1;
     }
-    public override int GetMaxAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets)
+
+    public override int GetMaxAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> vec3List, List<Orientation> orientations)
     {
         if (targets.Count > 1)
         {
-            Debug.Log(thisShip.name + " Is trying to refuel too many ships with the action: " + this.name);
+            Debug.LogError(thisShip.name + " is trying to use the refuel a wrong amount of targets with the action: " + this.name);
             return 0;
         }
 

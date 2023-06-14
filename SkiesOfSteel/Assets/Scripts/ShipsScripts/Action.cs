@@ -1,14 +1,8 @@
-using System.Collections;
+
 using System.Collections.Generic;
+using System.Linq;
+using System;
 using UnityEngine;
-
-
-public enum Shape
-{
-    NONE,
-    TRIANGLE
-}
-
 
 
 public class Action : ScriptableObject
@@ -20,11 +14,14 @@ public class Action : ScriptableObject
 
     [Space]
     public bool needsTarget;
+    public bool needsLineOfSight;
     public bool isSelfOnly;
+    public bool canTargetSelf;
     public int amountOfTargets;
 
     [Space]
     public bool isTargetAnArea;
+    public bool isAffectingOnlyEmptyPositions;
     public Shape shape;
 
     [Space]
@@ -32,27 +29,32 @@ public class Action : ScriptableObject
     public string stringToDisplayWhenAskingForCustomParam;
 
 
-    public virtual void Activate(ShipUnit thisShip, List<ShipUnit> targets, int customParam)
+    public virtual void Activate(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> positions, List<Orientation> orientations, int customParam)
     {
-        if (thisShip.GetCurrentFuel() < fuelCost)
+        // Checking parameters existence
+        if (thisShip == null || targets == null || positions == null || orientations == null)
         {
-            Debug.Log("Trying to use an action that cost more fuel than current amount " + thisShip.name);
+            Debug.LogError(thisShip.name + " is trying to use this action:" + this.name + " not in the intended way");
             return;
         }
-        else
+
+        // Server side checks on action activation
+        if (!HasEnoughFuel(thisShip) || !IsRangeRespected(thisShip, targets, positions, orientations) || !IsCustomParamRangeRespected(thisShip, targets, positions, orientations, customParam))
         {
-            thisShip.RemoveFuel(fuelCost);
+            Debug.LogError(thisShip.name + " is trying to use this action:" + this.name + " not in the intended way");
+            return;
         }
+
 
     }
 
-    public virtual int GetMinAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets) { return 0; }
-    public virtual int GetMaxAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets) { return 0; }
+    public virtual int GetMinAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> vec3List, List<Orientation> orientations) { return 0; }
+    public virtual int GetMaxAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> vec3List, List<Orientation> orientations) { return 0; }
 
 
-    public bool AccuracyHit(int accuracy)
+    protected bool AccuracyHit(int accuracy)
     {
-        int roll = Random.Range(0, 100);     // creates a number between 0 and 99
+        int roll = UnityEngine.Random.Range(0, 100);     // creates a number between 0 and 99
 
         if (roll < accuracy)
             return true;
@@ -60,4 +62,126 @@ public class Action : ScriptableObject
             return false;
     }
 
+    //---------------------------------------------------------------- Public checks
+
+
+    public bool HasEnoughFuel(ShipUnit thisShip)
+    {
+        return thisShip.GetCurrentFuel() >= fuelCost;
+    }
+
+
+    public bool IsRangeRespected(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> vec3List, List<Orientation> orientations)
+    {
+        if (!needsTarget) return true;
+
+        if (isTargetAnArea)
+        {
+            return TargetAreaCheck(thisShip, targets, vec3List, orientations);
+        }
+        else
+        {
+            return NonTargetAreaCheck(thisShip, targets);
+        }
+    }
+
+    public bool IsOrientationValueAdmissible(int value)
+    {
+        if (value < Enum.GetNames(typeof(Orientation)).Length && value >= 0) return true;
+
+        return false;
+    }
+
+
+    public bool IsSingleRangeRespected(ShipUnit thisShip, Vector3Int pos)
+    {
+        return Node.HexManhattanDistance(thisShip.GetCurrentPosition(), pos) <= range;
+    }
+
+
+    public bool HasLineOfSight(ShipUnit thisShip, Vector3Int pos)
+    {
+        return Pathfinding.Instance.IsThereLineOfSight(thisShip.GetCurrentPosition(), pos);
+    }
+
+
+    public bool IsCustomParamRangeRespected(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> vec3List, List<Orientation> orientations, int customParam)
+    {
+        if (!needsCustomParameter) return true;
+
+        if (customParam > GetMaxAmountForCustomParam(thisShip, targets, vec3List, orientations)) return false;
+
+        if (customParam < GetMinAmountForCustomParam(thisShip, targets, vec3List, orientations)) return false;
+
+        return true;
+    }
+
+
+    //---------------------------------------------------------------- Private only checks
+    private bool TargetAreaCheck(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> targetPositions, List<Orientation> orientations)
+    {
+        if (targetPositions.Count > amountOfTargets) return false;
+
+        if (targetPositions.Count != orientations.Count) return false;
+
+        for (int i = 0; i < targetPositions.Count; i++)
+        {
+            if(!IsSingleRangeRespected(thisShip, targetPositions[i])) return false;
+
+            if (needsLineOfSight && !HasLineOfSight(thisShip, targetPositions[i])) return false;
+
+            if (!canTargetSelf && targetPositions[i] == thisShip.GetCurrentPosition()) return false;
+
+            if (isSelfOnly && targetPositions[i] != thisShip.GetCurrentPosition()) return false;
+
+            if (!IsOrientationValueAdmissible((int) orientations[i])) return false;
+        }
+
+
+        return AreTargetsOfAreaCorrect(targets, targetPositions, orientations);
+    }
+
+
+    private bool AreTargetsOfAreaCorrect(List<ShipUnit> targets, List<Vector3Int> targetPositions, List<Orientation> orientations)
+    {
+
+        List<ShipUnit> trueTargets = new List<ShipUnit>();
+
+        for (int i = 0; i < targetPositions.Count; i++)
+        {
+            foreach (ShipUnit target in ShapeLogic.Instance.GetShipsInThisShape(shape, orientations[i], targetPositions[i]))
+            {
+                if (!trueTargets.Contains(target)) trueTargets.Add(target);
+            }
+        }
+
+        if (!isAffectingOnlyEmptyPositions)
+        {
+            return trueTargets.All(targets.Contains) && targets.All(trueTargets.Contains); // check if lists have the same elements
+        }
+        else
+        {
+            return trueTargets.Count == 0; // If the action is used to target only empty positions in the grid then we have to check that the target ship list is empty in those positions
+        }
+    }
+
+
+
+    private bool NonTargetAreaCheck(ShipUnit thisShip, List<ShipUnit> targets)
+    {
+        if (targets.Count > amountOfTargets) return false;
+
+        foreach (ShipUnit target in targets)
+        {
+            if (!IsSingleRangeRespected(thisShip, target.GetCurrentPosition())) return false;
+
+            if (needsLineOfSight && !HasLineOfSight(thisShip, target.GetCurrentPosition())) return false;
+
+            if (!canTargetSelf && target == thisShip) return false;
+
+            if (isSelfOnly && target != thisShip) return false;
+        }
+
+        return true;
+    }
 }
