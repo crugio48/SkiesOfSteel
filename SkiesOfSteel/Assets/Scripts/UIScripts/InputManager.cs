@@ -6,9 +6,6 @@ using UnityEngine.Tilemaps;
 public class InputManager : MonoBehaviour
 {
     [SerializeField]
-    private Pathfinding _pathfinding;
-
-    [SerializeField]
     private Tilemap _debugTilemap;
 
     [SerializeField]
@@ -35,7 +32,6 @@ public class InputManager : MonoBehaviour
     void Start()
     {
         _mainCamera = Camera.main;
-        _pathfinding = FindObjectOfType<Pathfinding>();
         //playerShipUI = GameObject.FindGameObjectWithTag("UI Fleet");
         targetingShips = false;
         cyclingTargeting = 0;

@@ -11,7 +11,7 @@ public class PlayerShipUI : MonoBehaviour
     List<Action> shipActionsFlagship, shipActionsAttack, shipActionsCargo, shipActionsFast;
     List<List<Action>> ListofAllShipsActions;
     List<ShipUnit> shipList;
-    FixedString32Bytes playerName;
+    string playerName;
     //TODO Find InputManager & ActionInstructionCanvas
     InputManager inputManager;
     ActionInstructionCanvas actionInstructionCanvas;

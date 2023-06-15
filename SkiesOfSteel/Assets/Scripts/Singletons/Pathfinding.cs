@@ -60,8 +60,8 @@ public class Pathfinding : Singleton<Pathfinding>
             Debug.Log("The destination is already occupied by another ship");
             return null;
         }
-        
-        FixedString32Bytes ownerOfShip = shipToMove.GetOwnerUsername();
+
+        string ownerOfShip = shipToMove.GetOwnerUsername();
 
         // We passed all the initial checks, now the real search starts:
 
@@ -138,7 +138,7 @@ public class Pathfinding : Singleton<Pathfinding>
 
         fringes[0].Add(center);
 
-        FixedString32Bytes ownerOfShip = shipToMove.GetOwnerUsername();
+        string ownerOfShip = shipToMove.GetOwnerUsername();
 
         for (int k = 1; k <= movementRange; k++)
         {

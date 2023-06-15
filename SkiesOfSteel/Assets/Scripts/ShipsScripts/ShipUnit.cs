@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
 using JetBrains.Annotations;
-using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -14,7 +13,7 @@ public class ShipUnit : NetworkBehaviour
 {
     private ShipScriptableObject _shipSO;
 
-    private NetworkVariable<FixedString32Bytes> _ownerUsername = new NetworkVariable<FixedString32Bytes>();
+    private string _ownerUsername;
 
     private NetworkVariable<int> _currentHealth = new NetworkVariable<int>();
     private NetworkVariable<int> _currentFuel = new NetworkVariable<int>();
@@ -36,7 +35,6 @@ public class ShipUnit : NetworkBehaviour
     private NetworkVariable<bool> _isDestroyed = new NetworkVariable<bool>(false);
 
     private SpriteRenderer _spriteRenderer;
-    private Pathfinding _pathfinding;
     private Tilemap _tilemap;
 
     [CanBeNull] public static event System.Action<ShipUnit> ShipIsDestroyed;
@@ -47,13 +45,11 @@ public class ShipUnit : NetworkBehaviour
     {
         base.OnNetworkSpawn();
 
-        _pathfinding = FindObjectOfType<Pathfinding>();
         _tilemap = FindObjectOfType<Tilemap>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
 
 
         // Run both on server and on clients the callbacks that update the info databases classes
-        _ownerUsername.OnValueChanged += RegisterShipOfOwner;
         _currentPosition.OnValueChanged += PositionChangedCallback;
         _isDestroyed.OnValueChanged += HideShip;
     }
@@ -63,19 +59,12 @@ public class ShipUnit : NetworkBehaviour
     {
         base.OnNetworkDespawn();
 
-        _ownerUsername.OnValueChanged -= RegisterShipOfOwner;
         _currentPosition.OnValueChanged -= PositionChangedCallback;
         _isDestroyed.OnValueChanged -= HideShip;
     }
 
     //----------------------------------- Callback methods of onValueChanged:
 
-
-    // Callback of _ownerUsername.OnValueChanged
-    private void RegisterShipOfOwner(FixedString32Bytes previousValue, FixedString32Bytes newValue)
-    {
-        PlayersShips.Instance.SetShip(newValue, this);
-    }
 
     // Callback of _currentPosition.OnValueChanged
     private void PositionChangedCallback(Vector3IntSerializable previousValue, Vector3IntSerializable newValue)
@@ -103,6 +92,9 @@ public class ShipUnit : NetworkBehaviour
             _spriteRenderer.enabled = false;
 
             ShipsPositions.Instance.RemoveShip(_currentPosition.Value.GetValues());
+
+            if (Treasure.Instance.GetCarryingShip() == this) Treasure.Instance.RemoveCarryingShip();
+
         }
     }
 
@@ -129,16 +121,31 @@ public class ShipUnit : NetworkBehaviour
     {       
         _shipSO = Resources.Load<ShipScriptableObject>(shipSOpath);
 
+        if (IsServer)
+        {
+            _currentHealth.Value = _shipSO.maxHealth;
+            _currentFuel.Value = _shipSO.maxFuel;
+        }
+
         _spriteRenderer.sprite = _shipSO.sprite; // TODO implement logic for more sprites
-        _currentHealth.Value = _shipSO.maxHealth;
-        _currentFuel.Value = _shipSO.maxFuel;
     }
 
 
     // Only the server will be running this function once
-    public void SetOwnerUsername(FixedString32Bytes username)
+    public void SetOwnerUsername(string username)
     {
-        _ownerUsername.Value = username;
+        _ownerUsername = username;
+        PlayersShips.Instance.SetShip(username, this);
+
+        // Set also client information
+        SetOwnerUsernameClientRpc(username);
+    }
+
+    [ClientRpc]
+    public void SetOwnerUsernameClientRpc(string username)
+    {
+        _ownerUsername = username;
+        PlayersShips.Instance.SetShip(username, this);
     }
 
     // Only the server will be running this function once
@@ -202,7 +209,7 @@ public class ShipUnit : NetworkBehaviour
     
     private bool IsItThisPlayersTurn()
     {
-        if (GameManager.Instance.GetCurrentPlayer() != _ownerUsername.Value)
+        if (GameManager.Instance.GetCurrentPlayer() != _ownerUsername)
         {
             Debug.LogError("A client tried to call a Ship action during another players turn");
             return false;
@@ -215,7 +222,7 @@ public class ShipUnit : NetworkBehaviour
 
     private bool IsSenderIdIsOwnerOfShip(ulong senderId)
     {
-        if (_ownerUsername.Value != NetworkManager.Singleton.ConnectedClients[senderId].PlayerObject.GetComponent<Player>().GetUsername())
+        if (_ownerUsername != NetworkManager.Singleton.ConnectedClients[senderId].PlayerObject.GetComponent<Player>().GetUsername())
         {
             Debug.LogError("A client tried to call a Ship action of another players ship");
             return false;
@@ -252,7 +259,7 @@ public class ShipUnit : NetworkBehaviour
             return;
         }
 
-        if (!_pathfinding.IsPosOnTopOfAPortOrAdjacent(_currentPosition.Value.GetValues()))
+        if (!Pathfinding.Instance.IsPosOnTopOfAPortOrAdjacent(_currentPosition.Value.GetValues()))
         {
             Debug.LogError("A client tried to call a refuel at port action without being near a port");
             return;
@@ -273,7 +280,7 @@ public class ShipUnit : NetworkBehaviour
         }
 
         float healPercentage = 0.1f;
-        if (_pathfinding.IsPosOnTopOfAPortOrAdjacent(_currentPosition.Value.GetValues())) healPercentage = 0.2f; // If is on top of a port then it heals more
+        if (Pathfinding.Instance.IsPosOnTopOfAPortOrAdjacent(_currentPosition.Value.GetValues())) healPercentage = 0.2f; // If is on top of a port then it heals more
 
         _currentHealth.Value = Mathf.Min(_shipSO.maxHealth, _currentHealth.Value + (int) Mathf.Floor(_shipSO.maxHealth * healPercentage));
 
@@ -322,7 +329,7 @@ public class ShipUnit : NetworkBehaviour
 
         ulong senderId = 0; // TODO make method a ServerRpc
 
-        Node destinationNode = _pathfinding.AStarSearch(_currentPosition.Value.GetValues(), destination, this);
+        Node destinationNode = Pathfinding.Instance.AStarSearch(_currentPosition.Value.GetValues(), destination, this);
 
         if (destinationNode == null)
         {
@@ -508,9 +515,9 @@ public class ShipUnit : NetworkBehaviour
     //----------------------------------- Getters:
 
 
-    public FixedString32Bytes GetOwnerUsername()
+    public string GetOwnerUsername()
     {
-        return _ownerUsername.Value;
+        return _ownerUsername;
     }
 
     public int GetCurrentHealth()

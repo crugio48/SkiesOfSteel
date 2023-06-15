@@ -14,23 +14,25 @@ public class GameManager : SingletonNetwork<GameManager>
 {
     [SerializeField] private ConnectionApprovalHandler connectionApprovalHandler;
 
-    private NetworkVariable<int> _numOfPlayers = new NetworkVariable<int>();
-
-    private NetworkVariable<int> _currentPlayer = new NetworkVariable<int>();
-
-    private NetworkList<FixedString32Bytes> _playerUsernames; // NetworkList must be initialized in awake
+    private List<string> _playerUsernames;
 
     private BattleState _battleState = BattleState.START;
+
+    private int _numOfPlayers;
+
+    private int _currentPlayer = 0;
 
     private int _lastPlayer = 0;
 
     // This dictionary is used only on server
-    private Dictionary<FixedString32Bytes, ulong> _usernameToClientIds;
+    private Dictionary<string, ulong> _usernameToClientIds;
 
     [CanBeNull] public event System.Action<bool> UsernameSelected;
     [CanBeNull] public event System.Action StartGameEvent;
     [CanBeNull] public event System.Action LostGameEvent;
     [CanBeNull] public event System.Action WonGameEvent;
+    [CanBeNull] public event System.Action EndTurnEvent;
+
 
     // This will be used by the server only script to spawn and intialize the ships
     private DemoBattleSpawner _demoBattleSpawner;
@@ -42,8 +44,7 @@ public class GameManager : SingletonNetwork<GameManager>
     {
         base.Awake();
 
-        // NetworkList must be initialized in awake
-        _playerUsernames = new NetworkList<FixedString32Bytes>();
+        _playerUsernames = new List<string>();
     }
 
 
@@ -54,7 +55,7 @@ public class GameManager : SingletonNetwork<GameManager>
         if (IsServer)
         {
             _demoBattleSpawner = GetComponent<DemoBattleSpawner>();
-            _usernameToClientIds = new Dictionary<FixedString32Bytes, ulong>();
+            _usernameToClientIds = new Dictionary<string, ulong>();
 
             NetworkManager.Singleton.OnClientDisconnectCallback += ClientDisconnected;
 
@@ -112,7 +113,7 @@ public class GameManager : SingletonNetwork<GameManager>
         }
 
         // The client will be deleted by NetworkManager AFTER this callback is run so I can still retrieve his username from the player gameObject
-        FixedString32Bytes dcUsername = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.GetComponent<Player>().GetUsername();
+        string dcUsername = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.GetComponent<Player>().GetUsername();
 
         Debug.Log("DcUsername = " + dcUsername);
 
@@ -124,13 +125,13 @@ public class GameManager : SingletonNetwork<GameManager>
     // Server only method to setup the number of players of the match
     public void SetNumOfPlayers(int numOfPlayers)
     {
-        _numOfPlayers.Value = numOfPlayers;
+        _numOfPlayers = numOfPlayers;
         connectionApprovalHandler.SetMaxPlayers(numOfPlayers);
     }
 
     // A connected client calls this to try to register a username, the server will answer in a clientRpc with a response
     [ServerRpc(RequireOwnership = false)]
-    public void SelectUsernameServerRpc(FixedString32Bytes username, ServerRpcParams serverRpcParams = default)
+    public void SelectUsernameServerRpc(string username, ServerRpcParams serverRpcParams = default)
     {
         ulong senderId = serverRpcParams.Receive.SenderClientId;
 
@@ -143,6 +144,8 @@ public class GameManager : SingletonNetwork<GameManager>
             _playerUsernames.Add(username);
 
             NetworkManager.Singleton.ConnectedClients[senderId].PlayerObject.GetComponent<Player>().SetUsername(username);
+
+            NetworkManager.Singleton.ConnectedClients[senderId].PlayerObject.GetComponent<Player>().SetUsernameClientRpc(username, clientRpcParams);
 
             _usernameToClientIds.Add(username, senderId);
 
@@ -177,10 +180,7 @@ public class GameManager : SingletonNetwork<GameManager>
     private void SetupGame()
     {
         // Spawn the ships
-        _demoBattleSpawner.SpawnDemoShips(_playerUsernames, _numOfPlayers.Value, _usernameToClientIds);
-
-        // Set first player
-        _currentPlayer.Value = 0;
+        _demoBattleSpawner.SpawnDemoShips(_playerUsernames, _numOfPlayers, _usernameToClientIds);
 
         // Start game and enable first player
         _battleState = BattleState.PLAYERTURN;
@@ -193,7 +193,7 @@ public class GameManager : SingletonNetwork<GameManager>
     // ServerOnly method that enables the current player
     private void EnableCurrentPlayer()
     {
-        FixedString32Bytes playerToEnable = _playerUsernames[_currentPlayer.Value];
+        string playerToEnable = _playerUsernames[_currentPlayer];
 
         Debug.Log("Enabling the player: " + playerToEnable);
 
@@ -201,20 +201,36 @@ public class GameManager : SingletonNetwork<GameManager>
         {
             shipUnit.EnableShip();
         }
+
+        CallEndTurnEventClientRpc();
     }
+
+    [ClientRpc]
+    private void CallEndTurnEventClientRpc()
+    {
+        EndTurnEvent?.Invoke();
+    }
+
+    // Called by the client
+    public void PassTurn()
+    {
+        EndTurnServerRpc();
+    }
+
 
     [ServerRpc(RequireOwnership = false)]
     public void EndTurnServerRpc(ServerRpcParams serverRpcParams = default)
     {
         ulong senderId = serverRpcParams.Receive.SenderClientId;
 
-        if (_playerUsernames[_currentPlayer.Value] != NetworkManager.Singleton.ConnectedClients[senderId].PlayerObject.GetComponent<Player>().GetUsername())
+        if (_playerUsernames[_currentPlayer] != NetworkManager.Singleton.ConnectedClients[senderId].PlayerObject.GetComponent<Player>().GetUsername())
         {
             Debug.LogError("A client that is not the current enabled player sent a request to end turn");
             return;
         }
 
-        _currentPlayer.Value = (_currentPlayer.Value + 1) % _numOfPlayers.Value;
+        _currentPlayer = (_currentPlayer + 1) % _numOfPlayers;
+        UpdateCurrentPlayerClientRpc(_currentPlayer);
     }
 
     //----------------------------------- Update method:
@@ -226,16 +242,18 @@ public class GameManager : SingletonNetwork<GameManager>
 
 
         // At the start of the game, when the lobby is complete and everyone chose a username, the server setups the game
-        if (_battleState == BattleState.START && _numOfPlayers.Value == NetworkManager.ConnectedClients.Count && _playerUsernames.Count == _numOfPlayers.Value)
+        if (_battleState == BattleState.START && _numOfPlayers == NetworkManager.ConnectedClients.Count && _playerUsernames.Count == _numOfPlayers)
         {
+            UpdateNumOfPlayersClientRpc(_numOfPlayers);
+            UpdatePlayerUsernamesClientRpc(new NetworkStringArray(_playerUsernames));
             SetupGame();
             StartGameClientRpc();
         }
 
         // After a client ended their turn we enable the next player
-        if (_battleState == BattleState.PLAYERTURN && _lastPlayer != _currentPlayer.Value)
+        if (_battleState == BattleState.PLAYERTURN && _lastPlayer != _currentPlayer)
         {
-            _lastPlayer = _currentPlayer.Value;
+            _lastPlayer = _currentPlayer;
 
             EnableCurrentPlayer();
         }
@@ -253,7 +271,7 @@ public class GameManager : SingletonNetwork<GameManager>
 
         if (shipUnit.IsFlagship())
         {
-            FixedString32Bytes usernameOfPlayerThatLost = shipUnit.GetOwnerUsername();
+            string usernameOfPlayerThatLost = shipUnit.GetOwnerUsername();
 
             ClientRpcParams clientRpcParams = CreateClientRpcParamsTargetClients(new ulong[] { _usernameToClientIds[usernameOfPlayerThatLost] });
 
@@ -267,7 +285,7 @@ public class GameManager : SingletonNetwork<GameManager>
     }
 
     // Destroys the ships of the player and removes him from the turn logic
-    private void RemovePlayerFromGameLogic(FixedString32Bytes player)
+    private void RemovePlayerFromGameLogic(string player)
     {
         foreach (ShipUnit ship in PlayersShips.Instance.GetShips(player))
         {
@@ -278,7 +296,7 @@ public class GameManager : SingletonNetwork<GameManager>
     }
 
     // Updates the turn logic after removing player
-    private void RemovePlayerFromTurnLogic(FixedString32Bytes player)
+    private void RemovePlayerFromTurnLogic(string player)
     {
         if (!_playerUsernames.Contains(player)) // If Player already got removed then don't do anything
         {
@@ -302,28 +320,36 @@ public class GameManager : SingletonNetwork<GameManager>
 
         _playerUsernames.Remove(player); // This maintains the relative order of the remaining usernames
 
+        UpdatePlayerUsernamesClientRpc(new NetworkStringArray(_playerUsernames));
+
         // 3 cases based on this distinction:
-        if (turnOrderOfPlayer > _currentPlayer.Value)
+        if (turnOrderOfPlayer > _currentPlayer)
         {
             // Easy case
-            _numOfPlayers.Value -= 1;
+            _numOfPlayers -= 1;
+            UpdateNumOfPlayersClientRpc(_numOfPlayers);
         }
-        else if (turnOrderOfPlayer == _currentPlayer.Value)
+        else if (turnOrderOfPlayer == _currentPlayer)
         {
-            _numOfPlayers.Value -= 1;
+            _numOfPlayers -= 1;
+            
 
             // In this case the player lost during its turn so we need to fake the endTurn logic 
-            _currentPlayer.Value = (_currentPlayer.Value) % _numOfPlayers.Value;
+            _currentPlayer = (_currentPlayer) % _numOfPlayers;
             _lastPlayer = -1;
+
+            UpdateNumOfPlayersAndCurrentPlayerClientRpc(_numOfPlayers, _currentPlayer);
 
         }
         else // turnOrderOfPlayer < _currentPlayer.Value
         {
-            _numOfPlayers.Value -= 1;
+            _numOfPlayers -= 1;
 
             // We want the current player to keep playing
-            _currentPlayer.Value -= 1;
-            _lastPlayer = _currentPlayer.Value;
+            _currentPlayer -= 1;
+            _lastPlayer = _currentPlayer;
+
+            UpdateNumOfPlayersAndCurrentPlayerClientRpc(_numOfPlayers, _currentPlayer);
         }
 
     }
@@ -338,7 +364,7 @@ public class GameManager : SingletonNetwork<GameManager>
 
 
         // Calling looser method on loosers clients
-        ulong[] loosersIds = new ulong[_numOfPlayers.Value - 1];
+        ulong[] loosersIds = new ulong[_numOfPlayers - 1];
         int i = 0;
         foreach (ulong id in NetworkManager.Singleton.ConnectedClientsIds)
         {
@@ -389,6 +415,39 @@ public class GameManager : SingletonNetwork<GameManager>
         NetworkManager.Singleton.Shutdown();
     }
 
+
+    [ClientRpc]
+    private void UpdateCurrentPlayerClientRpc(int newCurrentPlayer)
+    {
+        _currentPlayer = newCurrentPlayer;
+    }
+
+    [ClientRpc]
+    private void UpdateNumOfPlayersClientRpc(int newNumOfPlayers)
+    {
+        _numOfPlayers = newNumOfPlayers;
+    }
+
+    [ClientRpc]
+    private void UpdateNumOfPlayersAndCurrentPlayerClientRpc(int newNumOfPlayers, int newCurrentPlayer)
+    {
+        _numOfPlayers = newNumOfPlayers;
+        _currentPlayer = newCurrentPlayer;
+    }
+
+    [ClientRpc]
+    private void UpdatePlayerUsernamesClientRpc(NetworkStringArray newUsernames)
+    {
+        _playerUsernames = new List<string>(new string[newUsernames.GetLenght()]);
+        
+        for (int i = 0; i < newUsernames.GetLenght(); i++)
+        {
+            _playerUsernames[i] = newUsernames.GetIthUsername(i);
+            Debug.Log(_playerUsernames[i]);
+        }
+
+    }
+
     //----------------------------------- Custom methods:
 
 
@@ -419,16 +478,59 @@ public class GameManager : SingletonNetwork<GameManager>
         }
     }
 
-
-    public FixedString32Bytes GetCurrentPlayer()
+    public string GetCurrentPlayer()
     {
-        return _playerUsernames[_currentPlayer.Value];
+        return _playerUsernames[_currentPlayer];
     }
 
-    public FixedString32Bytes GetNextPlayer()
+    public string GetNextPlayer()
     {
-        int nextPlayerIndex = (_currentPlayer.Value + 1) % _numOfPlayers.Value;
+        int nextPlayerIndex = (_currentPlayer + 1) % _numOfPlayers;
 
         return _playerUsernames[nextPlayerIndex];
+    }
+}
+
+
+
+public struct NetworkStringArray : INetworkSerializable
+{
+    public string[] Array;
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        var length = 0;
+        if (!serializer.IsReader)
+            length = Array.Length;
+
+        serializer.SerializeValue(ref length);
+
+        if (serializer.IsReader)
+            Array = new string[length];
+
+        for (var n = 0; n < length; ++n)
+            serializer.SerializeValue(ref Array[n]);
+    }
+
+
+    public NetworkStringArray (List<string> list)
+    {
+        Array = new string[list.Count];
+
+        for (int i = 0; i < list.Count; ++i)
+        {
+            Array[i] = list[i];
+        }
+    }
+
+    public int GetLenght()
+    {
+        return Array.Length;
+    }
+
+
+    public string GetIthUsername(int i)
+    {
+        return Array[i];
     }
 }

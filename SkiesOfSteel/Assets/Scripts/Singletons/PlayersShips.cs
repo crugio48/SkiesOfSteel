@@ -7,16 +7,16 @@ using UnityEngine;
 
 public class PlayersShips : Singleton<PlayersShips>
 {
-    private Dictionary<FixedString32Bytes, List<ShipUnit>> shipsOfPlayer;
+    private Dictionary<string, List<ShipUnit>> shipsOfPlayer;
 
 
     public void Start()
     {
-        shipsOfPlayer = new Dictionary<FixedString32Bytes, List<ShipUnit>>();
+        shipsOfPlayer = new Dictionary<string, List<ShipUnit>>();
     }
 
 
-    public void SetShip(FixedString32Bytes username, ShipUnit ship)
+    public void SetShip(string username, ShipUnit ship)
     {
         if (!shipsOfPlayer.ContainsKey(username))
         {
@@ -31,7 +31,7 @@ public class PlayersShips : Singleton<PlayersShips>
     }
 
 
-    public List<ShipUnit> GetShips(FixedString32Bytes username)
+    public List<ShipUnit> GetShips(string username)
     {
         return shipsOfPlayer[username];
     }

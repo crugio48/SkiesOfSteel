@@ -3365,6 +3365,7 @@ MonoBehaviour:
   _startColor: {r: 0, g: 1, b: 0.49127674, a: 1}
   _goalColor: {r: 1, g: 0.42050022, b: 0, a: 1}
   _movementRange: 3
+  shipToMove: {fileID: 0}
 --- !u!1 &1225736029
 GameObject:
   m_ObjectHideFlags: 0
@@ -3508,9 +3509,17 @@ PrefabInstance:
       value: Pathfinding
       objectReference: {fileID: 0}
     - target: {fileID: 8562944756464463150, guid: 697d759cd3efa4844a71d1f089740260, type: 3}
+      propertyPath: tilemap
+      value: 
+      objectReference: {fileID: 624527627}
+    - target: {fileID: 8562944756464463150, guid: 697d759cd3efa4844a71d1f089740260, type: 3}
       propertyPath: _tilemap
       value: 
       objectReference: {fileID: 624527627}
+    - target: {fileID: 8562944756464463150, guid: 697d759cd3efa4844a71d1f089740260, type: 3}
+      propertyPath: portsMap
+      value: 
+      objectReference: {fileID: 126639762}
     - target: {fileID: 8562944756464463150, guid: 697d759cd3efa4844a71d1f089740260, type: 3}
       propertyPath: _portsMap
       value: 

@@ -10,7 +10,7 @@ public class DemoBattleSpawner : NetworkBehaviour
     [SerializeField] private GameObject shipUnitPrefab;
     [SerializeField] private Tilemap tilemap;
 
-    public void SpawnDemoShips(NetworkList<FixedString32Bytes> playerUsernames, int numOfPlayers, Dictionary<FixedString32Bytes, ulong> _usernameToClientIds)
+    public void SpawnDemoShips(List<string> playerUsernames, int numOfPlayers, Dictionary<string, ulong> _usernameToClientIds)
     {
         if (playerUsernames.Count != numOfPlayers)
         {
@@ -45,7 +45,7 @@ public class DemoBattleSpawner : NetworkBehaviour
     }
 
 
-    private void SpawnShip(Vector3Int gridPosition, string scriptableObjectPath, FixedString32Bytes playerUsername, string typeOfShip)
+    private void SpawnShip(Vector3Int gridPosition, string scriptableObjectPath, string playerUsername, string typeOfShip)
     {
         GameObject newShip = Instantiate(shipUnitPrefab, tilemap.GetCellCenterWorld(gridPosition), Quaternion.identity);
         newShip.name = typeOfShip + " of " + playerUsername;

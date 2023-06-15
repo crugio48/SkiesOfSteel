@@ -1,5 +1,6 @@
 
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -66,7 +67,7 @@ public class Treasure : SingletonNetwork<Treasure>
     }
 
 
-    private void Update()
+    public void LateUpdate()
     {
         if (!IsServer) return;
 

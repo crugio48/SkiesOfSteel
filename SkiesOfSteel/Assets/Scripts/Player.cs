@@ -5,18 +5,25 @@ using UnityEngine;
 
 public class Player : NetworkBehaviour
 {
-    private NetworkVariable<FixedString32Bytes> _username = new NetworkVariable<FixedString32Bytes>();
+    private string _username;
 
     private Vector3Int _winningTreasurePosition; // This only needs to be checked on server scripts
 
-    public void SetUsername(FixedString32Bytes username)
+    // Called on server
+    public void SetUsername(string username)
     {
-        _username.Value = username;
+        _username = username;
     }
 
-    public FixedString32Bytes GetUsername()
+    [ClientRpc]
+    public void SetUsernameClientRpc(string username, ClientRpcParams clientRpcParams = default)
     {
-        return _username.Value;
+        _username = username;
+    }
+
+    public string GetUsername()
+    {
+        return _username;
     }
 
 
