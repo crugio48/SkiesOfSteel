@@ -72,7 +72,7 @@ public class Action : ScriptableObject
     }
 
 
-    public bool IsRangeRespected(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> vec3List, List<Orientation> orientations)
+    private bool IsRangeRespected(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> vec3List, List<Orientation> orientations)
     {
         if (!needsTarget) return true;
 
@@ -86,12 +86,6 @@ public class Action : ScriptableObject
         }
     }
 
-    public bool IsOrientationValueAdmissible(int value)
-    {
-        if (value < Enum.GetNames(typeof(Orientation)).Length && value >= 0) return true;
-
-        return false;
-    }
 
 
     public bool IsSingleRangeRespected(ShipUnit thisShip, Vector3Int pos)
@@ -142,7 +136,6 @@ public class Action : ScriptableObject
         return AreTargetsOfAreaCorrect(targets, targetPositions, orientations);
     }
 
-
     private bool AreTargetsOfAreaCorrect(List<ShipUnit> targets, List<Vector3Int> targetPositions, List<Orientation> orientations)
     {
 
@@ -184,5 +177,13 @@ public class Action : ScriptableObject
         }
 
         return true;
+    }
+
+
+    private bool IsOrientationValueAdmissible(int value)
+    {
+        if (value < Enum.GetNames(typeof(Orientation)).Length && value >= 0) return true;
+
+        return false;
     }
 }
