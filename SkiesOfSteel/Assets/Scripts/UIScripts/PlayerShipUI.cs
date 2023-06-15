@@ -79,10 +79,7 @@ public class PlayerShipUI : MonoBehaviour
             transform.GetChild(i).GetChild(5).GetComponentInChildren<TextMeshProUGUI>().text = ListofAllShipsActions[i][2].name;
         }
     }
-    private void Update()
-    {
-        
-    }
+
     private void ChildDisable()
     {
         canvas.enabled = false;

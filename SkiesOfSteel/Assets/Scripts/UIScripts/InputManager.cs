@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
 
 public class InputManager : MonoBehaviour
@@ -64,7 +65,6 @@ public class InputManager : MonoBehaviour
         if (!_gameStarted) return;
 
         if (NetworkManager.Singleton.IsServer) return;
-
 
         if (!targetingShips)
         {
@@ -148,15 +148,7 @@ public class InputManager : MonoBehaviour
     }
     private bool IsUIPresent()
     {
-        Ray mouseRay = _mainCamera.ScreenPointToRay(Input.mousePosition);
-        RaycastHit2D hit = Physics2D.Raycast(Input.mousePosition, -Vector2.up, distance: Mathf.Infinity, layerMask: layerMask);
-        if (hit.collider != null)
-        {
-            Debug.Log("Mouse colpito UI");
-            return true;
-        }
-        Debug.Log("Mouse colpita mappa");
-        return false;
+        return EventSystem.current.IsPointerOverGameObject();
     }
 
     private void TryToMove()
@@ -219,4 +211,8 @@ public class InputManager : MonoBehaviour
 
         return myUsername == GameManager.Instance.GetCurrentPlayer();
     }
+
+
+
 }
+
