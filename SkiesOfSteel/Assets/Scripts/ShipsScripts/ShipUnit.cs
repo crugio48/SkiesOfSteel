@@ -135,6 +135,7 @@ public class ShipUnit : NetworkBehaviour
     public void SetOwnerUsername(string username)
     {
         _ownerUsername = username;
+
         PlayersShips.Instance.SetShip(username, this);
 
         // Set also client information
@@ -362,6 +363,7 @@ public class ShipUnit : NetworkBehaviour
         }
 
         // Update this ship position and the _currentPosition.onValueChanged event will trigger both on server and on client
+        _movementLeft.Value -= pathLenght;
         _currentPosition.Value = destination;
 
 
@@ -398,6 +400,8 @@ public class ShipUnit : NetworkBehaviour
 
         _canDoAction.Value = true;
         _movementLeft.Value = _shipSO.speed;
+
+        
     }
 
     // Not ServerRpc but only called by the server that disables the ship at the end of the players turn
@@ -608,6 +612,14 @@ public class ShipUnit : NetworkBehaviour
     public bool IsFlagship()
     {
         return _shipSO.isFlagship;
+    }
+
+
+    public bool IsMyShip()
+    {
+        if (IsServer) return false; // This is a local client check method only
+
+        return _ownerUsername == NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().GetUsername();
     }
 }
 

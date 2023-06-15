@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public class CameraManagement : MonoBehaviour
 {
     private Camera _camera;
 
+    private bool _gameStarted = false;
 
     [SerializeField] private float maxX;
     [SerializeField] private float maxY;
@@ -13,17 +15,38 @@ public class CameraManagement : MonoBehaviour
     [SerializeField] private float minSize;
     [SerializeField] private float maxSize;
 
-
     // Start is called before the first frame update
     void Start()
     {
         _camera = Camera.main;
     }
 
+
+    private void OnEnable()
+    {
+        GameManager.Instance.StartGameEvent += StartReceivingInput;
+    }
+
+    private void OnDisable()
+    {
+        GameManager.Instance.StartGameEvent -= StartReceivingInput;
+    }
+
+    private void StartReceivingInput()
+    {
+        _gameStarted = true;
+    }
+
+
     // Update is called once per frame
     void Update()
     {
         if (_camera == null) return;
+
+        if (!_gameStarted) return;
+
+        if (NetworkManager.Singleton.IsServer) return;
+
 
         Move();
 

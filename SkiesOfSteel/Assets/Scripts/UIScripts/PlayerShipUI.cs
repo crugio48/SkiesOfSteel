@@ -220,7 +220,7 @@ public class PlayerShipUI : MonoBehaviour
         actionInstructionCanvas.ChangeTextDescription("Select 1 Target");
         //actionInstructionCanvas.ChangeActionDescription(ListofAllShipsActions[indexShip][0].description);
         actionInstructionCanvas.EnableCanvas();
-        inputManager.startLookingForTarget(actionShip, 0, 1);
+        //inputManager.startLookingForTarget(actionShip, 0, 1);
         NetworkBehaviourReference[] targetListNet = new NetworkBehaviourReference[] { targetList[0] };
         actionShip.ActivateActionServerRpc(0, targetListNet, new Vector3Int[0], new Orientation[0], 0);
 
@@ -244,7 +244,7 @@ public class PlayerShipUI : MonoBehaviour
             else
             {
                 actionInstructionCanvas.ChangeTextDescription("Select "+ ListofAllShipsActions[indexShip][1].amountOfTargets +" Target");
-                inputManager.startLookingForTarget(actionShip, 1, ListofAllShipsActions[indexShip][1].amountOfTargets);
+                //inputManager.startLookingForTarget(actionShip, 1, ListofAllShipsActions[indexShip][1].amountOfTargets);
             }
         }
     }
@@ -267,7 +267,7 @@ public class PlayerShipUI : MonoBehaviour
             else
             {
                 actionInstructionCanvas.ChangeTextDescription("Select " + ListofAllShipsActions[indexShip][2].amountOfTargets + " Target");                
-                inputManager.startLookingForTarget(actionShip, 2, ListofAllShipsActions[indexShip][2].amountOfTargets);
+                //inputManager.startLookingForTarget(actionShip, 2, ListofAllShipsActions[indexShip][2].amountOfTargets);
                 
             }
         }
