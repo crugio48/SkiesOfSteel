@@ -400,6 +400,16 @@ public class ShipUnit : NetworkBehaviour
         _movementLeft.Value = _shipSO.speed;
     }
 
+    // Not ServerRpc but only called by the server that disables the ship at the end of the players turn
+    public void DisableShip()
+    {
+        // Extra check just to be sure
+        if (!IsServer) return;
+
+        _canDoAction.Value = false;
+        _movementLeft.Value = 0;
+    }
+
 
     public void ModifyAttack(int stageModification, bool isOneTurnTemp)
     {

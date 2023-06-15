@@ -205,6 +205,18 @@ public class GameManager : SingletonNetwork<GameManager>
         CallEndTurnEventClientRpc();
     }
 
+    private void DisableCurrentPlayer()
+    {
+        string playerToDisable = _playerUsernames[_currentPlayer];
+
+        Debug.Log("Disabling the player: " + playerToDisable);
+
+        foreach (ShipUnit shipUnit in PlayersShips.Instance.GetShips(playerToDisable))
+        {
+            shipUnit.DisableShip();
+        }
+    }
+
     [ClientRpc]
     private void CallEndTurnEventClientRpc()
     {
@@ -228,6 +240,8 @@ public class GameManager : SingletonNetwork<GameManager>
             Debug.LogError("A client that is not the current enabled player sent a request to end turn");
             return;
         }
+
+        DisableCurrentPlayer();
 
         _currentPlayer = (_currentPlayer + 1) % _numOfPlayers;
         UpdateCurrentPlayerClientRpc(_currentPlayer);
