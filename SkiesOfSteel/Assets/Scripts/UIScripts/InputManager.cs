@@ -10,6 +10,9 @@ public class InputManager : MonoBehaviour
     private Tilemap overlayMap;
 
     [SerializeField]
+    private LayerMask layerMask;
+
+    [SerializeField]
     private Tile overlayTile;
 
     [SerializeField]
@@ -17,7 +20,6 @@ public class InputManager : MonoBehaviour
 
     [SerializeField]
     private ActionInstructionCanvas actionInstructionCanvas;
-
     private bool _gameStarted = false;
 
     private Camera _mainCamera;
@@ -66,14 +68,15 @@ public class InputManager : MonoBehaviour
 
         if (!targetingShips)
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && !IsUIPresent())
             {
+
                 ResetOverlayMap();
 
                 SelectShip();
             }
 
-            if (Input.GetMouseButtonDown(1))
+            if (Input.GetMouseButtonDown(1) && !IsUIPresent())
             {
                 if (_selectedShip != null && _selectedShip.IsMyShip() && _selectedShip.GetMovementLeft() > 0) TryToMove();
             }
@@ -127,7 +130,7 @@ public class InputManager : MonoBehaviour
         {
             _selectedShip = ShipsPositions.Instance.GetShip(selectedTile);
 
-            //playerShipUI.ShipClicked(_selectedShip);
+            playerShipUI.ShipClicked(_selectedShip);
 
             Debug.Log("Selected ship: " + _selectedShip.name);
 
@@ -139,11 +142,22 @@ public class InputManager : MonoBehaviour
         }
         else
         {
-            //playerShipUI.NoShipClicked();
+            playerShipUI.NoShipClicked();
             Debug.Log("No Ship Found");
         }
     }
-
+    private bool IsUIPresent()
+    {
+        Ray mouseRay = _mainCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit2D hit = Physics2D.Raycast(Input.mousePosition, -Vector2.up, distance: Mathf.Infinity, layerMask: layerMask);
+        if (hit.collider != null)
+        {
+            Debug.Log("Mouse colpito UI");
+            return true;
+        }
+        Debug.Log("Mouse colpita mappa");
+        return false;
+    }
 
     private void TryToMove()
     {

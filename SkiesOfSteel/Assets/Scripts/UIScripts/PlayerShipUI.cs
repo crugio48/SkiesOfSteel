@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -7,15 +8,26 @@ using UnityEngine.UI;
 
 public class PlayerShipUI : MonoBehaviour
 {
+
+    private Canvas canvas;
     ShipUnit _shipSelected, shipFlagship, shipAttack, shipCargo, shipFast;
     List<Action> shipActionsFlagship, shipActionsAttack, shipActionsCargo, shipActionsFast;
     List<List<Action>> ListofAllShipsActions;
     List<ShipUnit> shipList;
     string playerName;
     //TODO Find InputManager & ActionInstructionCanvas
-    InputManager inputManager;
-    ActionInstructionCanvas actionInstructionCanvas;
+    [SerializeField]
+    private InputManager inputManager;
+
+    [SerializeField]
+    private ActionInstructionCanvas actionInstructionCanvas;
     List<ShipUnit> targetList;
+    private void Start()
+    {
+        canvas = GetComponent<Canvas>();
+        ListofAllShipsActions = new List<List<Action>>();
+        shipList = new List<ShipUnit>();
+    }
     public void ShipClicked(ShipUnit selectedShip)
     {
         //TODO Add to ShipUnit the splashart for the ship and the captain
@@ -50,26 +62,30 @@ public class PlayerShipUI : MonoBehaviour
 
     private void ChildEnable()
     {
-        transform.GetChild(0).gameObject.SetActive(true);
-        for (int i = 0; i < transform.GetChild(0).childCount; i++)
+        canvas.enabled = true;
+        for (int i = 0; i < transform.childCount; i++)
         {
             //TODO Get Sprites
 
             //transform.GetChild(i).GetChild(0). change sprites
 
-            transform.GetChild(0).GetChild(i).GetChild(0).GetComponentInChildren<Text>().text = "Health = " + shipList[i].GetCurrentHealth() + " / " + shipList[i].GetMaxHealth() +
+            transform.GetChild(i).GetChild(0).GetComponentInChildren<Text>().text = "Health = " + shipList[i].GetCurrentHealth() + " / " + shipList[i].GetMaxHealth() +
                                                                                                 "\nFuel = " + shipList[i].GetCurrentFuel() + " / " + shipList[i].GetMaxFuel() +
                                                                                                 "\nCurrent Bonus Attack Stage = " + shipList[i].GetAttackStage() +
                                                                                                 "\nCurrent Bonus Defence Stage = " + shipList[i].GetDefenseStage() +
                                                                                                 "\nMovements Left = " + shipList[i].GetMovementLeft();
 
-            transform.GetChild(0).GetChild(i).GetChild(4).GetComponentInChildren<Text>().text = ListofAllShipsActions[i][1].name;
-            transform.GetChild(0).GetChild(i).GetChild(5).GetComponentInChildren<Text>().text = ListofAllShipsActions[i][2].name;
+            transform.GetChild(i).GetChild(4).GetComponentInChildren<TextMeshProUGUI>().text = ListofAllShipsActions[i][1].name;
+            transform.GetChild(i).GetChild(5).GetComponentInChildren<TextMeshProUGUI>().text = ListofAllShipsActions[i][2].name;
         }
+    }
+    private void Update()
+    {
+        
     }
     private void ChildDisable()
     {
-        transform.GetChild(0).gameObject.SetActive(false);
+        canvas.enabled = false;
     }
 
 
@@ -86,7 +102,6 @@ public class PlayerShipUI : MonoBehaviour
     }
     public void RefuelFlagship()
     {
-        //todo check porto
         shipFlagship.RefuelToMaxAtPortActionServerRpc();
     }
     public void BasicAttackFlagship()
@@ -113,12 +128,11 @@ public class PlayerShipUI : MonoBehaviour
     {//TODO change sprite to Ship + Attributes 
     }
     public void HealShipAttack()
-    {         //todo check porto e cambia heal amount in base a quello
-        //shipAttack.HealAtPortActionServerRpc();
+    {         
+        shipAttack.HealActionServerRpc();
     }
     public void RefuelAttack()
     {
-        //todo check porto
         shipAttack.RefuelToMaxAtPortActionServerRpc();
     }
     public void BasicAttackAttack()
@@ -144,12 +158,11 @@ public class PlayerShipUI : MonoBehaviour
 
     public void HealShipCargo()
     {
-        //todo check porto e cambia heal amount in base a quello
-        //shipCargo.HealAtPortActionServerRpc();
+        shipCargo.HealActionServerRpc();
     }
     public void RefuelCargo()
     {
-        //todo check porto
+        
         shipCargo.RefuelToMaxAtPortActionServerRpc();
     }
     public void BasicAttackCargo()
@@ -178,12 +191,10 @@ public class PlayerShipUI : MonoBehaviour
     }
     public void HealShipFast()
     {
-        //todo check porto e cambia heal amount in base a quello
-        //shipFast.HealAtPortActionServerRpc();
+        shipFast.HealActionServerRpc();
     }
     public void RefuelFast()
     {
-        //todo check porto
         shipFast.RefuelToMaxAtPortActionServerRpc();
     }
     public void BasicAttackFast()
