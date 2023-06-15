@@ -8,6 +8,7 @@ using UnityEngine;
 public class Action : ScriptableObject
 {
     public new string name;
+    public string description;
     public Sprite sprite;
     public int fuelCost;
     public int range;

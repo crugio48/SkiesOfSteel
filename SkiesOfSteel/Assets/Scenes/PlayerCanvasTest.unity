@@ -2139,7 +2139,7 @@ RectTransform:
   - {fileID: 1928042661}
   - {fileID: 415857987}
   - {fileID: 1365258166}
-  m_Father: {fileID: 536782546}
+  m_Father: {fileID: 536782549}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -2484,31 +2484,16 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 536782546}
+  - component: {fileID: 536782549}
   - component: {fileID: 536782547}
+  - component: {fileID: 536782548}
   m_Layer: 0
   m_Name: PlayerTurnCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &536782546
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 536782545}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 687.0491, y: 352.68704, z: -11.028973}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 474592679}
-  m_Father: {fileID: 0}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_IsActive: 0
 --- !u!114 &536782547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2521,6 +2506,51 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4dbcad3488dbb34ba0ea95033937a5c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentPlayerText: {fileID: 0}
+  nextPlayerText: {fileID: 0}
+  passTurnButton: {fileID: 0}
+--- !u!223 &536782548
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 536782545}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+  m_TargetDisplay: 0
+--- !u!224 &536782549
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 536782545}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -11.028973}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 474592679}
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 687.0491, y: 352.68704}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &545382054
 GameObject:
   m_ObjectHideFlags: 0
@@ -8284,7 +8314,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f65ac5b9f4d9f646ac0c3624d89f99b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _pathfinding: {fileID: 0}
   _debugTilemap: {fileID: 0}
   _debugTile: {fileID: 0}
 --- !u!4 &2119908929

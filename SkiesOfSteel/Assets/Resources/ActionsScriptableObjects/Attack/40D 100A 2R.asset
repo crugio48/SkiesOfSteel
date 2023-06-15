@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: 40D 100A 2R
   m_EditorClassIdentifier: 
   name: Cannon attack
+  description: 
   sprite: {fileID: 0}
   fuelCost: 4
   range: 2
