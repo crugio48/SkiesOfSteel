@@ -361,17 +361,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9940ab88853381b4fb273ad6188795ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &316607893 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8562944756464463150, guid: 697d759cd3efa4844a71d1f089740260, type: 3}
-  m_PrefabInstance: {fileID: 8562944756232265915}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cd04b21fdc18b424f918d828a7f822fb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &500556994
 GameObject:
   m_ObjectHideFlags: 0
@@ -3356,7 +3345,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8a421911ce300542929de52ddd6a914, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _pathfinding: {fileID: 316607893}
   _debugTilemap: {fileID: 500556997}
   _debugTile: {fileID: 11400000, guid: e51f6d8ccdc25254fab93b445cdd6d52, type: 2}
   _visitedColor: {r: 0, g: 0, b: 0, a: 0}
@@ -3524,6 +3512,10 @@ PrefabInstance:
       propertyPath: _portsMap
       value: 
       objectReference: {fileID: 126639762}
+    - target: {fileID: 8562944756464463150, guid: 697d759cd3efa4844a71d1f089740260, type: 3}
+      propertyPath: debugTileVertices
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8562944756464463151, guid: 697d759cd3efa4844a71d1f089740260, type: 3}
       propertyPath: m_RootOrder
       value: 2

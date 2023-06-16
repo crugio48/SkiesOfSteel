@@ -1,6 +1,5 @@
 
 using System.Collections.Generic;
-using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -211,6 +210,8 @@ public class Pathfinding : Singleton<Pathfinding>
 
                 foreach (Vector3Int pos in straightPath)
                 {
+                    if (pos == start || pos == goal) continue;
+
                     // Checks to see if this line of sight is not clear:
 
                     if (!tilemap.HasTile(pos))
@@ -225,7 +226,7 @@ public class Pathfinding : Singleton<Pathfinding>
                         break;
                     }
 
-                    if (ShipsPositions.Instance.IsThereAShip(pos) && pos != start && pos != goal)
+                    if (ShipsPositions.Instance.IsThereAShip(pos))
                     {
                         lineOfSightExists = false;
                         break;
@@ -249,8 +250,11 @@ public class Pathfinding : Singleton<Pathfinding>
 
     public bool IsThereLineOfSight(Vector3Int start, Vector3Int goal)
     {
+        //return true; //TODO debug why Line of sight not working anymore
+
         if (GetLineOfSight(start, goal) == null)
         {
+            Debug.Log("Returning false");
             return false;
         }
         else

@@ -21,11 +21,12 @@ public class InputManager : MonoBehaviour
 
     [SerializeField]
     private ActionInstructionCanvas actionInstructionCanvas;
-    private bool _gameStarted = false;
 
     private Camera _mainCamera;
 
     private ShipUnit _selectedShip;
+
+    private bool _receiveInput = false;
 
     private int indexAction;
 
@@ -52,17 +53,21 @@ public class InputManager : MonoBehaviour
         GameManager.Instance.StartGameEvent -= StartReceivingInput;
     }
 
-    private void StartReceivingInput()
+    public void StartReceivingInput()
     {
-        _gameStarted = true;
+        _receiveInput = true;
     }
 
+    public void StopReceivingInput()
+    {
+        _receiveInput = false;
+    }
 
 
 
     private void Update()
     {
-        if (!_gameStarted) return;
+        if (!_receiveInput) return;
 
         if (NetworkManager.Singleton.IsServer) return;
 
@@ -187,9 +192,6 @@ public class InputManager : MonoBehaviour
     private void DisplayMovementOverlayTiles(List<Vector3Int> possibleDestinationTiles)
     {
         Color color = Color.yellow;
-        color.a = 0.3f;
-        Debug.Log("Coloring Tiles");
-
         foreach (Vector3Int pos in possibleDestinationTiles)
         {
             overlayMap.SetTile(pos, overlayTile);
@@ -211,8 +213,6 @@ public class InputManager : MonoBehaviour
 
         return myUsername == GameManager.Instance.GetCurrentPlayer();
     }
-
-
-
+    
 }
 

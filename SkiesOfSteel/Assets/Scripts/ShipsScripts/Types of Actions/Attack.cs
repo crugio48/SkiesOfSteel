@@ -11,9 +11,23 @@ public class Attack : Action
     [Range(1, 100)]
     public int accuracy;
 
-    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> positions, List<Orientation> orientations, int customParam)
+    public override bool Activate(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> positions, List<Orientation> orientations, int customParam)
     {
-        base.Activate(thisShip, targets, positions, orientations, customParam);
+        if (base.Activate(thisShip, targets, positions, orientations, customParam) == false) return false;
+
+        // If target is an area then we need to calculate the targets given the shape and the positions and orientations
+        if (isTargetAnArea)
+        {
+            targets.Clear();
+
+            for (int i = 0; i < positions.Count; i++)
+            {
+                foreach (ShipUnit ship in ShapeLogic.Instance.GetShipsInThisShape(shape, orientations[i], positions[i]))
+                {
+                    if (!targets.Contains(ship)) targets.Add(ship);
+                }
+            }
+        }
 
         foreach (ShipUnit target in targets)
         {
@@ -29,5 +43,8 @@ public class Attack : Action
                 Debug.Log(thisShip.name + " missed " + target.name);
             }
         }
+
+
+        return true;
     }
 }

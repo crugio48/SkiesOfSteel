@@ -30,23 +30,23 @@ public class Action : ScriptableObject
     public string stringToDisplayWhenAskingForCustomParam;
 
 
-    public virtual void Activate(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> positions, List<Orientation> orientations, int customParam)
+    public virtual bool Activate(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> positions, List<Orientation> orientations, int customParam)
     {
         // Checking parameters existence
         if (thisShip == null || targets == null || positions == null || orientations == null)
         {
             Debug.LogError(thisShip.name + " is trying to use this action:" + this.name + " not in the intended way");
-            return;
+            return false;
         }
 
         // Server side checks on action activation
         if (!HasEnoughFuel(thisShip) || !IsRangeRespected(thisShip, targets, positions, orientations) || !IsCustomParamRangeRespected(thisShip, targets, positions, orientations, customParam))
         {
             Debug.LogError(thisShip.name + " is trying to use this action:" + this.name + " not in the intended way");
-            return;
+            return false;
         }
 
-
+        return true;
     }
 
     public virtual int GetMinAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> vec3List, List<Orientation> orientations) { return 0; }
@@ -78,7 +78,7 @@ public class Action : ScriptableObject
 
         if (isTargetAnArea)
         {
-            return TargetAreaCheck(thisShip, targets, vec3List, orientations);
+            return TargetAreaCheck(thisShip, vec3List, orientations);
         }
         else
         {
@@ -113,7 +113,7 @@ public class Action : ScriptableObject
 
 
     //---------------------------------------------------------------- Private only checks
-    private bool TargetAreaCheck(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> targetPositions, List<Orientation> orientations)
+    private bool TargetAreaCheck(ShipUnit thisShip, List<Vector3Int> targetPositions, List<Orientation> orientations)
     {
         if (targetPositions.Count > amountOfTargets) return false;
 
@@ -133,30 +133,25 @@ public class Action : ScriptableObject
         }
 
 
-        return AreTargetsOfAreaCorrect(targets, targetPositions, orientations);
+        return AreTargetsOfAreaCorrect(targetPositions, orientations);
     }
 
-    private bool AreTargetsOfAreaCorrect(List<ShipUnit> targets, List<Vector3Int> targetPositions, List<Orientation> orientations)
+    private bool AreTargetsOfAreaCorrect(List<Vector3Int> targetPositions, List<Orientation> orientations)
     {
+        if (!isAffectingOnlyEmptyPositions) return true;
 
-        List<ShipUnit> trueTargets = new List<ShipUnit>();
+        // If the action is used to target only empty positions in the grid then we have to check that the target ship list is empty in those positions
 
         for (int i = 0; i < targetPositions.Count; i++)
         {
-            foreach (ShipUnit target in ShapeLogic.Instance.GetShipsInThisShape(shape, orientations[i], targetPositions[i]))
+            foreach (Vector3Int pos in ShapeLogic.Instance.GetPositionsInThisShape(shape, orientations[i], targetPositions[i]))
             {
-                if (!trueTargets.Contains(target)) trueTargets.Add(target);
+                if (ShipsPositions.Instance.IsThereAShip(pos)) return false;
             }
         }
 
-        if (!isAffectingOnlyEmptyPositions)
-        {
-            return trueTargets.All(targets.Contains) && targets.All(trueTargets.Contains); // check if lists have the same elements
-        }
-        else
-        {
-            return trueTargets.Count == 0 && targets.Count == 0; // If the action is used to target only empty positions in the grid then we have to check that the target ship list is empty in those positions
-        }
+        return true;
+    
     }
 
 

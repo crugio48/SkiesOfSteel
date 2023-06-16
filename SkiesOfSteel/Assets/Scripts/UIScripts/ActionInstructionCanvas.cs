@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
@@ -26,6 +27,8 @@ public class ActionInstructionCanvas : MonoBehaviour
     [SerializeField] private Tilemap overlayMap;
 
     [SerializeField] private Tile overlayTile;
+
+    [SerializeField] private InputManager inputManager;
 
     private Canvas _canvas;
     private Camera _mainCamera;
@@ -60,8 +63,9 @@ public class ActionInstructionCanvas : MonoBehaviour
 
         if (_isSelectingTargets)
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && !IsUIPresent())
             {
+                Debug.Log("Clicked");
                 TryAddClick();
             }
 
@@ -71,16 +75,19 @@ public class ActionInstructionCanvas : MonoBehaviour
                 if (Input.GetKeyDown(KeyCode.R))
                 {
                     _curRotation = ShapeLogic.Instance.GetNextClockwiseOrientation(_curRotation);
+                    List<Vector3Int> tilesInCurrentArea = ShapeLogic.Instance.GetPositionsInThisShape(_selectedAction.shape, _curRotation, _currentTileUnderMouse);
+                    ResetOverlayMap();
+                    DisplayTargetAreaTiles(tilesInCurrentArea);
                 }
 
                 Vector3Int newTileUnderMouse = GetTileUnderMouse();
 
                 if (_currentTileUnderMouse != newTileUnderMouse)
                 {
+                    _currentTileUnderMouse = newTileUnderMouse;
                     List<Vector3Int> tilesInCurrentArea = ShapeLogic.Instance.GetPositionsInThisShape(_selectedAction.shape, _curRotation, _currentTileUnderMouse);
                     ResetOverlayMap();
                     DisplayTargetAreaTiles(tilesInCurrentArea);
-                    _currentTileUnderMouse = newTileUnderMouse;
                 }
             }
         }
@@ -93,8 +100,7 @@ public class ActionInstructionCanvas : MonoBehaviour
 
     }
 
-    //TODO make private
-    public void EnableCanvas()
+    private void EnableCanvas()
     {
         _canvas.enabled = true;
         _targets.Clear();
@@ -108,26 +114,18 @@ public class ActionInstructionCanvas : MonoBehaviour
             List<Vector3Int> tilesInCurrentArea = ShapeLogic.Instance.GetPositionsInThisShape(_selectedAction.shape, _curRotation, _currentTileUnderMouse);
             DisplayTargetAreaTiles(tilesInCurrentArea);
         }
-        
+
+        inputManager.StopReceivingInput();
     }
 
-    //TODO make private
-    public void DisableCanvas()
+
+    private void DisableCanvas()
     {
         _canvas.enabled = false;
         _selectedAction = null;
         _selectedShip = null;
         ResetOverlayMap();
-    }
-
-    public void ChangeActionDescription(string text)
-    {
-        // DEPRECATED
-    }
-
-    public void ChangeTextDescription(string text)
-    {
-        // DEPRECATED
+        inputManager.StartReceivingInput();
     }
 
 
@@ -170,9 +168,15 @@ public class ActionInstructionCanvas : MonoBehaviour
 
     public void ClickedTargetsConfirmButton()
     {
-        if (_targets.Count == 0 && _selectedAction.needsTarget)
+        if (_targets.Count == 0 && _selectedAction.needsTarget && !_selectedAction.isTargetAnArea)
         {
             _errorText.text = "You have to select at least one target";
+            return;
+        }
+        else if (_positions.Count == 0 && _selectedAction.isTargetAnArea)
+        {
+            _errorText.text = "You have to select at least one target area";
+            return;
         }
 
         _isSelectingTargets = false;
@@ -238,9 +242,18 @@ public class ActionInstructionCanvas : MonoBehaviour
     {
         Vector3Int selectedTile = GetTileUnderMouse();
 
-        if (!_selectedAction.IsSingleRangeRespected(_selectedShip, selectedTile)) return;
+        if (!_selectedAction.IsSingleRangeRespected(_selectedShip, selectedTile))
+        {
+            Debug.Log("Not enough range");
+            return;
+        }
 
-        if (_selectedAction.needsLineOfSight && !_selectedAction.HasLineOfSight(_selectedShip, selectedTile)) return;
+        if (_selectedAction.needsLineOfSight && !_selectedAction.HasLineOfSight(_selectedShip, selectedTile))
+        {
+            Debug.Log("No line of sight");
+            return;
+        }
+
 
         if (!_selectedAction.isTargetAnArea)
         {
@@ -248,19 +261,29 @@ public class ActionInstructionCanvas : MonoBehaviour
             {
                 ShipUnit clickedShip = ShipsPositions.Instance.GetShip(selectedTile);
 
-                if (!_selectedAction.canTargetSelf && clickedShip == _selectedShip) return;
+                Debug.Log("Clicked on ship:" + clickedShip.name);
 
-                if (_selectedAction.isSelfOnly && clickedShip != _selectedShip) return;
-
+                if (!_selectedAction.canTargetSelf && clickedShip == _selectedShip)
+                {
+                    Debug.Log("Can't target self");
+                    return;
+                }
+                if (_selectedAction.isSelfOnly && clickedShip != _selectedShip)
+                {
+                    Debug.Log("Can't target other");
+                    return;
+                }
 
                 if (_targets.Count < _selectedAction.amountOfTargets && !_targets.Contains(clickedShip))
                 {
+                    Debug.Log("Selected target: " + clickedShip.name);
                     _targets.Add(clickedShip);
                     AddOverlayTileAtPos(selectedTile);
                 }
 
                 else if (_targets.Contains(clickedShip))
                 {
+                    Debug.Log("Removed target: " + clickedShip.name);
                     _targets.Remove(clickedShip);
                     RemoveOverlayTileAtPos(selectedTile);
                 }
@@ -335,6 +358,13 @@ public class ActionInstructionCanvas : MonoBehaviour
 
     private Vector3Int GetTileUnderMouse()
     {
-        return overlayMap.WorldToCell(_mainCamera.ScreenToWorldPoint(Input.mousePosition));
+        Vector2 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
+        return overlayMap.WorldToCell(mousePosition);
+    }
+
+
+    private bool IsUIPresent()
+    {
+        return EventSystem.current.IsPointerOverGameObject();
     }
 }

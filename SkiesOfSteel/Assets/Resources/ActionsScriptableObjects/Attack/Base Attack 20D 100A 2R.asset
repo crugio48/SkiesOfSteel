@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Base Attack 20D 100A 2R
   m_EditorClassIdentifier: 
   name: Base attack
+  description: Base attack of ships
   sprite: {fileID: 0}
   fuelCost: 1
   range: 2

@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 [CreateAssetMenu(menuName = "ScriptableObjects/Actions/ModifyStats")]
 public class ModifyStats : Action
@@ -20,9 +19,10 @@ public class ModifyStats : Action
     [Range(1, 100)]
     public int accuracy;
 
-    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> positions, List<Orientation> orientations, int customParam)
+    public override bool Activate(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> positions, List<Orientation> orientations, int customParam)
     {
-        base.Activate(thisShip, targets, positions, orientations, customParam);
+        if (base.Activate(thisShip, targets, positions, orientations, customParam) == false) return false;
+
 
         foreach (ShipUnit target in targets)
         {
@@ -42,5 +42,7 @@ public class ModifyStats : Action
                 Debug.Log(thisShip.name + " missed the roll to modify the stats of " + target.name);
             }
         }
+
+        return true;
     }
 }

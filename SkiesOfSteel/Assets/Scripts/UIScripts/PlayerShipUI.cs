@@ -8,25 +8,28 @@ using UnityEngine.UI;
 
 public class PlayerShipUI : MonoBehaviour
 {
-
-    private Canvas canvas;
-    ShipUnit _shipSelected, shipFlagship, shipAttack, shipCargo, shipFast;
-    List<Action> shipActionsFlagship, shipActionsAttack, shipActionsCargo, shipActionsFast;
-    List<List<Action>> ListofAllShipsActions;
-    List<ShipUnit> shipList;
-    string playerName;
-    //TODO Find InputManager & ActionInstructionCanvas
     [SerializeField]
     private InputManager inputManager;
 
     [SerializeField]
     private ActionInstructionCanvas actionInstructionCanvas;
-    List<ShipUnit> targetList;
+
+
+    private Canvas canvas;
+
+    ShipUnit _shipSelected, shipFlagship, shipAttack, shipCargo, shipFast;
+
+    List<List<Action>> ListofAllShipsActions;
+
+    List<ShipUnit> shipList;
+
+    string playerName;
+
+
     private void Start()
     {
         canvas = GetComponent<Canvas>();
         ListofAllShipsActions = new List<List<Action>>();
-        shipList = new List<ShipUnit>();
     }
     public void ShipClicked(ShipUnit selectedShip)
     {
@@ -36,22 +39,20 @@ public class PlayerShipUI : MonoBehaviour
 
         playerName = _shipSelected.GetOwnerUsername();
         shipList = PlayersShips.Instance.GetShips(playerName);
+        ListofAllShipsActions.Clear();
+
 
         shipFlagship = shipList[0];
-        shipActionsFlagship = shipFlagship.GetActions();
-        ListofAllShipsActions.Add(shipActionsFlagship);
+        ListofAllShipsActions.Add(shipFlagship.GetActions());
 
         shipAttack = shipList[1];
-        shipActionsAttack = shipAttack.GetActions();
-        ListofAllShipsActions.Add(shipActionsAttack);
+        ListofAllShipsActions.Add(shipAttack.GetActions());
 
         shipCargo = shipList[2];
-        shipActionsCargo = shipCargo.GetActions();
-        ListofAllShipsActions.Add(shipActionsCargo);
+        ListofAllShipsActions.Add(shipCargo.GetActions());
 
         shipFast = shipList[3];
-        shipActionsFast = shipFast.GetActions();
-        ListofAllShipsActions.Add(shipActionsFast);
+        ListofAllShipsActions.Add(shipFast.GetActions());
         ChildEnable();
 
     }
@@ -62,7 +63,6 @@ public class PlayerShipUI : MonoBehaviour
 
     private void ChildEnable()
     {
-        canvas.enabled = true;
         for (int i = 0; i < transform.childCount; i++)
         {
             //TODO Get Sprites
@@ -78,6 +78,8 @@ public class PlayerShipUI : MonoBehaviour
             transform.GetChild(i).GetChild(4).GetComponentInChildren<TextMeshProUGUI>().text = ListofAllShipsActions[i][1].name;
             transform.GetChild(i).GetChild(5).GetComponentInChildren<TextMeshProUGUI>().text = ListofAllShipsActions[i][2].name;
         }
+
+        canvas.enabled = true;
     }
 
     private void ChildDisable()
@@ -103,16 +105,16 @@ public class PlayerShipUI : MonoBehaviour
     }
     public void BasicAttackFlagship()
     {
-        BasicAttack(shipFlagship,0);
+        ActionSelected(shipFlagship,0);
     }
     public void Action1Flagship()
     {
-        Action1(shipFlagship, 0);
+        ActionSelected(shipFlagship, 1);
     }
     public void Action2Flagship()
     {
 
-        Action2(shipFlagship, 0);
+        ActionSelected(shipFlagship, 2);
     }
 
 
@@ -134,15 +136,15 @@ public class PlayerShipUI : MonoBehaviour
     }
     public void BasicAttackAttack()
     {
-        BasicAttack(shipAttack,1);
+        ActionSelected(shipAttack, 0);
     }
     public void Action1Attack()
     {
-        Action1(shipAttack, 1);
+        ActionSelected(shipAttack, 1);
     }
     public void Action2Attack()
     {
-        Action2(shipAttack, 1);
+        ActionSelected(shipAttack, 2);
     }
 
     //CARGOSHIP METHODS  (Change Selected Ship)
@@ -162,20 +164,21 @@ public class PlayerShipUI : MonoBehaviour
         
         shipCargo.RefuelToMaxAtPortActionServerRpc();
     }
+
     public void BasicAttackCargo()
     {
-
-        BasicAttack(shipCargo,2);
-
+        ActionSelected(shipCargo, 0);
     }
+
     public void Action1Cargo()
     {
-        Action1(shipCargo, 2);
+        ActionSelected(shipCargo, 1);
     }
+
     public void Action2Cargo()
     {
 
-        Action2(shipCargo, 2);
+        ActionSelected(shipCargo, 2);
     }
 
 
@@ -196,91 +199,22 @@ public class PlayerShipUI : MonoBehaviour
     }
     public void BasicAttackFast()
     {
-        BasicAttack(shipFast,3);
+        ActionSelected(shipFast, 0);
 
     }
     public void Action1Fast()
     {
-        Action1(shipFast, 3);
+        ActionSelected(shipFast, 1);
     }
     public void Action2Fast()
     {
-        Action2(shipFast, 3);
+        ActionSelected(shipFast, 2);
     }
 
-    public void ReceiveTargets(int indexAction, ShipUnit casterShip, List<ShipUnit> _targetList)
+
+    public void ActionSelected(ShipUnit actionShip, int actionIndex)
     {
-        targetList = _targetList;
-
-        NetworkBehaviourReference[] targetListNet = new NetworkBehaviourReference[targetList.Count];
-        for (int i = 0; i < targetList.Count; i++)
-        {
-            targetListNet[i] = targetList[i];
-        }
-        //casterShip.ActivateActionServerRpc(indexAction, targetListNet, 0);
-        targetList.Clear();
-        actionInstructionCanvas.DisableCanvas();
+        actionInstructionCanvas.ActionOfShipSelected(actionShip, actionIndex);
     }
-
-    public void BasicAttack(ShipUnit actionShip, int indexShip)
-    {
-
-        actionInstructionCanvas.ChangeTextDescription("Select 1 Target");
-        //actionInstructionCanvas.ChangeActionDescription(ListofAllShipsActions[indexShip][0].description);
-        actionInstructionCanvas.EnableCanvas();
-        //inputManager.startLookingForTarget(actionShip, 0, 1);
-        NetworkBehaviourReference[] targetListNet = new NetworkBehaviourReference[] { targetList[0] };
-        actionShip.ActivateActionServerRpc(0, targetListNet, new Vector3Int[0], new Orientation[0], 0);
-
-    }
-    public void Action1(ShipUnit actionShip, int indexShip)
-    {
-        actionInstructionCanvas.ChangeActionDescription("Select " + ListofAllShipsActions[indexShip][2].amountOfTargets + " Target");
-        //actionInstructionCanvas.ChangeActionDescription(ListofAllShipsActions[indexShip][1].description);
-        actionInstructionCanvas.EnableCanvas();
-        if (ListofAllShipsActions[indexShip][1].needsTarget == false)
-        {
-            //actionShip.ActivateActionServerRpc(1, null, 0);
-        }
-        else
-        {
-            if (ListofAllShipsActions[indexShip][1].isSelfOnly == true)
-            {
-                NetworkBehaviourReference[] targetListNet = new NetworkBehaviourReference[] { actionShip };
-                //actionShip.ActivateActionServerRpc(1, targetListNet, 0);
-            }
-            else
-            {
-                actionInstructionCanvas.ChangeTextDescription("Select "+ ListofAllShipsActions[indexShip][1].amountOfTargets +" Target");
-                //inputManager.startLookingForTarget(actionShip, 1, ListofAllShipsActions[indexShip][1].amountOfTargets);
-            }
-        }
-    }
-    public void Action2(ShipUnit actionShip, int indexShip)
-    {
-        actionInstructionCanvas.ChangeActionDescription("Select " + ListofAllShipsActions[indexShip][2].amountOfTargets + " Target");
-        //actionInstructionCanvas.ChangeActionDescription(ListofAllShipsActions[indexShip][2].description);
-        actionInstructionCanvas.EnableCanvas();
-        if (ListofAllShipsActions[indexShip][2].needsTarget == false)
-        {
-            //actionShip.ActivateActionServerRpc(2, null, 0);
-        }
-        else
-        {
-            if (ListofAllShipsActions[indexShip][2].isSelfOnly == true)
-            {
-                NetworkBehaviourReference[] targetListNet = new NetworkBehaviourReference[] { actionShip };
-                //actionShip.ActivateActionServerRpc(2, targetListNet, 0);
-            }
-            else
-            {
-                actionInstructionCanvas.ChangeTextDescription("Select " + ListofAllShipsActions[indexShip][2].amountOfTargets + " Target");                
-                //inputManager.startLookingForTarget(actionShip, 2, ListofAllShipsActions[indexShip][2].amountOfTargets);
-                
-            }
-        }
-
-
-
-    }
+    
 }

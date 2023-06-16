@@ -6,14 +6,15 @@ using UnityEngine;
 public class RefuelOtherShip : Action
 {
 
-    public override void Activate(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> positions, List<Orientation> orientations, int customParam)
+    public override bool Activate(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> positions, List<Orientation> orientations, int customParam)
     {
-        base.Activate(thisShip, targets, positions, orientations, customParam);
+        if (base.Activate(thisShip, targets, positions, orientations, customParam) == false) return false;
+
 
         if (targets.Count != 1)
         {
             Debug.LogError(thisShip.name + " is trying to use the refuel a wrong amount of targets with the action: " + this.name);
-            return;
+            return false;
         }
 
         ShipUnit target = targets[0];
@@ -25,6 +26,7 @@ public class RefuelOtherShip : Action
         target.AddFuel(fuelAmount);
         Debug.Log(thisShip + " refueled " + target + " with " + fuelAmount + " fuel");
        
+        return true;
     }
 
     public override int GetMinAmountForCustomParam(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> vec3List, List<Orientation> orientations)

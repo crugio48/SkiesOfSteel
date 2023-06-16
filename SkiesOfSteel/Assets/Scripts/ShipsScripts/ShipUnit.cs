@@ -267,6 +267,8 @@ public class ShipUnit : NetworkBehaviour
         }
 
         _currentFuel.Value = _shipSO.maxFuel;
+
+        _canDoAction.Value = false;
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -285,6 +287,7 @@ public class ShipUnit : NetworkBehaviour
 
         _currentHealth.Value = Mathf.Min(_shipSO.maxHealth, _currentHealth.Value + (int) Mathf.Floor(_shipSO.maxHealth * healPercentage));
 
+        _canDoAction.Value = false;
     }
 
     // NetworkBehaviourReference is the easy way of referencing a specific NetworkBehaviour gameobject in an Rpc call
@@ -319,7 +322,9 @@ public class ShipUnit : NetworkBehaviour
 
         List<Orientation> orientationsList = new List<Orientation>(orientations);
 
-        _shipSO.actionList[actionIndex].Activate(this, targets, positionsList, orientationsList, customParam);
+        bool actionDoneCorrectly = _shipSO.actionList[actionIndex].Activate(this, targets, positionsList, orientationsList, customParam);
+
+        if (actionDoneCorrectly) _canDoAction.Value = false;
     }
 
 
@@ -394,6 +399,8 @@ public class ShipUnit : NetworkBehaviour
     {
         // Extra check just to be sure
         if (!IsServer) return;
+
+        if (_isDestroyed.Value) return;
 
         _oneTurnTemporaryAttackStage.Value = 0;
         _oneTurnTemporaryDefenseStage.Value = 0;
