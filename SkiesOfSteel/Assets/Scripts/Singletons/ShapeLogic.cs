@@ -50,11 +50,16 @@ public class ShapeLogic : Singleton<ShapeLogic>
         return ships;
     }
 
+    public Orientation GetNextClockwiseOrientation(Orientation orientation)
+    {
+        return (Orientation)(((int)orientation + 1) % 6);
+    }
+
 
     // Get list of positions under this triangle shape
     private List<Vector3Int> TrianglePositions(Orientation shapeOrientation, Vector3Int position)
     {
-        Orientation otherDirection = (Orientation)(((int)shapeOrientation + 1) % 6);
+        Orientation otherDirection = GetNextClockwiseOrientation(shapeOrientation);
 
         return new List<Vector3Int>
         {
