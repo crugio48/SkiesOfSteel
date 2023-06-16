@@ -39,7 +39,49 @@ public class ShipUnit : NetworkBehaviour
 
     [CanBeNull] public static event System.Action<ShipUnit> ShipIsDestroyed;
     [CanBeNull] public static event System.Action<ShipUnit> ShipRetrievedTheTreasureAndWonGame;
+    [CanBeNull] public static event System.Action<ShipUnit> StatsGotModified;
+    [CanBeNull] public static event System.Action<ShipUnit> MovementCompleted;
 
+
+
+    private void RegisterCallBacks()
+    {
+        // Run both on server and on clients the callbacks that update the info databases classes
+        _currentPosition.OnValueChanged += PositionChangedCallback;
+        _isDestroyed.OnValueChanged += HideShip;
+
+        if (IsClient)
+        {
+            _currentHealth.OnValueChanged += GeneralIntInvokeStatsChanged;
+            _currentFuel.OnValueChanged += GeneralIntInvokeStatsChanged;
+            _attackStage.OnValueChanged += GeneralIntInvokeStatsChanged;
+            _defenseStage.OnValueChanged += GeneralIntInvokeStatsChanged;
+            _oneTurnTemporaryAttackStage.OnValueChanged += GeneralIntInvokeStatsChanged;
+            _oneTurnTemporaryDefenseStage.OnValueChanged += GeneralIntInvokeStatsChanged;
+
+            _canDoAction.OnValueChanged += GeneralBoolInvokeStatsChanged;
+            _isDestroyed.OnValueChanged += GeneralBoolInvokeStatsChanged;
+        }
+    }
+
+    private void UnregisterCallbacks()
+    {
+        _currentPosition.OnValueChanged -= PositionChangedCallback;
+        _isDestroyed.OnValueChanged -= HideShip;
+
+        if (IsClient)
+        {
+            _currentHealth.OnValueChanged -= GeneralIntInvokeStatsChanged;
+            _currentFuel.OnValueChanged -= GeneralIntInvokeStatsChanged;
+            _attackStage.OnValueChanged -= GeneralIntInvokeStatsChanged;
+            _defenseStage.OnValueChanged -= GeneralIntInvokeStatsChanged;
+            _oneTurnTemporaryAttackStage.OnValueChanged -= GeneralIntInvokeStatsChanged;
+            _oneTurnTemporaryDefenseStage.OnValueChanged -= GeneralIntInvokeStatsChanged;
+
+            _canDoAction.OnValueChanged -= GeneralBoolInvokeStatsChanged;
+            _isDestroyed.OnValueChanged -= GeneralBoolInvokeStatsChanged;
+        }
+    }
 
     public override void OnNetworkSpawn()
     {
@@ -49,22 +91,26 @@ public class ShipUnit : NetworkBehaviour
         _spriteRenderer = GetComponent<SpriteRenderer>();
 
 
-        // Run both on server and on clients the callbacks that update the info databases classes
-        _currentPosition.OnValueChanged += PositionChangedCallback;
-        _isDestroyed.OnValueChanged += HideShip;
+        RegisterCallBacks();
     }
-
 
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
 
-        _currentPosition.OnValueChanged -= PositionChangedCallback;
-        _isDestroyed.OnValueChanged -= HideShip;
+        UnregisterCallbacks();
     }
 
     //----------------------------------- Callback methods of onValueChanged:
 
+    private void GeneralIntInvokeStatsChanged(int previousValue, int newValue)
+    {
+        StatsGotModified?.Invoke(this);
+    }
+    private void GeneralBoolInvokeStatsChanged(bool previousValue, bool newValue)
+    {
+        StatsGotModified?.Invoke(this);
+    }
 
     // Callback of _currentPosition.OnValueChanged
     private void PositionChangedCallback(Vector3IntSerializable previousValue, Vector3IntSerializable newValue)
@@ -95,6 +141,10 @@ public class ShipUnit : NetworkBehaviour
 
             if (Treasure.Instance.GetCarryingShip() == this) Treasure.Instance.RemoveCarryingShip();
 
+            if (IsServer)
+            {
+                _currentHealth.Value = 0;
+            }
         }
     }
 
@@ -327,13 +377,14 @@ public class ShipUnit : NetworkBehaviour
         if (actionDoneCorrectly) _canDoAction.Value = false;
     }
 
+    private bool _isMoving = false;
 
     [ServerRpc(RequireOwnership = false)]
     public void MoveServerRpc(Vector3Int destination, ServerRpcParams serverRpcParams = default)
     {
-        if (!PassedInitialChecks(serverRpcParams)) return;
+        if (_isMoving) return;
 
-        ulong senderId = 0; // TODO make method a ServerRpc
+        if (!PassedInitialChecks(serverRpcParams)) return;
 
         Node destinationNode = Pathfinding.Instance.AStarSearch(_currentPosition.Value.GetValues(), destination, this);
 
@@ -358,7 +409,11 @@ public class ShipUnit : NetworkBehaviour
 
         // Here we passed all checks:
 
-        Sequence moveSequence = DOTween.Sequence();
+        Sequence moveSequence = DOTween.Sequence().OnComplete(() =>
+        {
+            _isMoving = false;
+            RefreshMovementClientRpc();
+        });
 
         for (Node step = destinationNode; step.Parent != null; step = step.Parent)
         {
@@ -366,6 +421,8 @@ public class ShipUnit : NetworkBehaviour
 
             moveSequence.Prepend(transform.DOMove(worldPos, 0.5f).SetEase(Ease.Linear));
         }
+
+        _isMoving = true;
 
         // Update this ship position and the _currentPosition.onValueChanged event will trigger both on server and on client
         _movementLeft.Value -= pathLenght;
@@ -384,11 +441,21 @@ public class ShipUnit : NetworkBehaviour
         {
             treasureInstance.SetCurGridPosition(destination);
 
+            ulong senderId = serverRpcParams.Receive.SenderClientId;
+
+            Debug.Log("WINNING POSITION: " + NetworkManager.Singleton.ConnectedClients[senderId].PlayerObject.GetComponent<Player>().GetWinningTreasurePosition());
+
             if (destination == NetworkManager.Singleton.ConnectedClients[senderId].PlayerObject.GetComponent<Player>().GetWinningTreasurePosition())
             {
                 ShipRetrievedTheTreasureAndWonGame?.Invoke(this);
             }
         }
+    }
+
+    [ClientRpc]
+    private void RefreshMovementClientRpc()
+    {
+        MovementCompleted?.Invoke(this);
     }
 
 

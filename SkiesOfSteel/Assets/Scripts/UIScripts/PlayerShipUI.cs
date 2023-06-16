@@ -35,6 +35,31 @@ public class PlayerShipUI : MonoBehaviour
     {
         canvas = GetComponent<Canvas>();
     }
+
+    private void OnEnable()
+    {
+        ShipUnit.StatsGotModified += RefreshUI;
+    }
+
+    private void OnDisable()
+    {
+        ShipUnit.StatsGotModified -= RefreshUI;
+    }
+
+    public void RefreshUI(ShipUnit shipModified)
+    {
+        if (shipModified == _shipSelected)
+        {
+            ShipClicked(_shipSelected);
+        }
+
+        if (_shipList != null && _shipList.Contains(shipModified))
+        {
+            // TODO logic of swapping sprite of other ships button 
+        }
+    }
+
+
     public void ShipClicked(ShipUnit selectedShip)
     {
         //TODO Add to ShipUnit the splashart for the ship and the captain
@@ -51,6 +76,8 @@ public class PlayerShipUI : MonoBehaviour
 
     public void NoShipClicked()
     {
+        _shipSelected = null;
+        _shipList = null;
         DisableCanvas();
     }
 
@@ -65,6 +92,31 @@ public class PlayerShipUI : MonoBehaviour
         action0Button.GetComponentInChildren<TextMeshProUGUI>().text = _shipSelected.GetActions()[0].name;
         action1Button.GetComponentInChildren<TextMeshProUGUI>().text = _shipSelected.GetActions()[1].name;
         action2Button.GetComponentInChildren<TextMeshProUGUI>().text = _shipSelected.GetActions()[2].name;
+
+        if (_shipSelected.IsMyShip() && _shipSelected.CanDoAction())
+        {
+            healButton.interactable = true;
+            action0Button.interactable = true;
+            action1Button.interactable = true;
+            action2Button.interactable = true;
+
+            if (Pathfinding.Instance.IsPosOnTopOfAPortOrAdjacent(_shipSelected.GetCurrentPosition()))
+            {
+                refuelButton.interactable = true;
+            }
+            else
+            {
+                refuelButton.interactable = false;
+            }
+        }
+        else
+        {
+            healButton.interactable = false;
+            refuelButton.interactable = false;
+            action0Button.interactable = false;
+            action1Button.interactable = false;
+            action2Button.interactable = false;
+        }
 
         canvas.enabled = true;
     }
