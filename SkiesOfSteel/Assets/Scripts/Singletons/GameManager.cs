@@ -199,6 +199,8 @@ public class GameManager : SingletonNetwork<GameManager>
 
         foreach (ShipUnit shipUnit in PlayersShips.Instance.GetShips(playerToEnable))
         {
+            Debug.Log("Enabling ship: " + shipUnit.name);
+
             shipUnit.EnableShip();
         }
 

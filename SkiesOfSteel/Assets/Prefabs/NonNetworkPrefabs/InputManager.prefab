@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3569483482636653024}
   - component: {fileID: 2729254642674363697}
+  - component: {fileID: 5784188371943705268}
   m_Layer: 0
   m_Name: InputManager
   m_TagString: Untagged
@@ -48,3 +49,17 @@ MonoBehaviour:
   maxY: 6
   minSize: 4
   maxSize: 7
+--- !u!114 &5784188371943705268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6698097816081752024}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f65ac5b9f4d9f646ac0c3624d89f99b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _debugTilemap: {fileID: 0}
+  _debugTile: {fileID: 0}

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
-using Unity.Netcode;
 using UnityEngine;
 
 public class PlayersShips : Singleton<PlayersShips>
@@ -22,9 +21,10 @@ public class PlayersShips : Singleton<PlayersShips>
         {
             shipsOfPlayer.Add(username, new List<ShipUnit>());
         }
+
         List<ShipUnit> currList = shipsOfPlayer[username];
 
-        currList.Append(ship);
+        currList.Add(ship);
 
         shipsOfPlayer[username] = currList;
 
