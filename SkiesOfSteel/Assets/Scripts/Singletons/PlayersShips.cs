@@ -33,6 +33,6 @@ public class PlayersShips : Singleton<PlayersShips>
 
     public List<ShipUnit> GetShips(string username)
     {
-        return shipsOfPlayer[username];
+        return new List<ShipUnit>(shipsOfPlayer[username]);
     }
 }

@@ -14,22 +14,26 @@ public class PlayerShipUI : MonoBehaviour
     [SerializeField]
     private ActionInstructionCanvas actionInstructionCanvas;
 
+    [SerializeField] private TextMeshProUGUI _selectedShipStatsText;
+
+    [SerializeField] private Button healButton;
+    [SerializeField] private Button refuelButton;
+    [SerializeField] private Button action0Button;
+    [SerializeField] private Button action1Button;
+    [SerializeField] private Button action2Button;
 
     private Canvas canvas;
 
-    ShipUnit _shipSelected, shipFlagship, shipAttack, shipCargo, shipFast;
+    ShipUnit _shipSelected;
 
-    List<List<Action>> ListofAllShipsActions;
+    List<ShipUnit> _shipList;
 
-    List<ShipUnit> shipList;
-
-    string playerName;
+    private string _playerName;
 
 
     private void Start()
     {
         canvas = GetComponent<Canvas>();
-        ListofAllShipsActions = new List<List<Action>>();
     }
     public void ShipClicked(ShipUnit selectedShip)
     {
@@ -37,184 +41,64 @@ public class PlayerShipUI : MonoBehaviour
         _shipSelected = selectedShip;
 
 
-        playerName = _shipSelected.GetOwnerUsername();
-        shipList = PlayersShips.Instance.GetShips(playerName);
-        ListofAllShipsActions.Clear();
+        _playerName = _shipSelected.GetOwnerUsername();
+        _shipList = PlayersShips.Instance.GetShips(_playerName);
 
+        _shipList.Remove(_shipSelected);
 
-        shipFlagship = shipList[0];
-        ListofAllShipsActions.Add(shipFlagship.GetActions());
-
-        shipAttack = shipList[1];
-        ListofAllShipsActions.Add(shipAttack.GetActions());
-
-        shipCargo = shipList[2];
-        ListofAllShipsActions.Add(shipCargo.GetActions());
-
-        shipFast = shipList[3];
-        ListofAllShipsActions.Add(shipFast.GetActions());
-        ChildEnable();
-
+        EnableCanvas();
     }
+
     public void NoShipClicked()
     {
-        ChildDisable();
+        DisableCanvas();
     }
 
-    private void ChildEnable()
+    private void EnableCanvas()
     {
-        for (int i = 0; i < transform.childCount; i++)
-        {
-            //TODO Get Sprites
+        _selectedShipStatsText.text = "Health = " + _shipSelected.GetCurrentHealth() + " / " + _shipSelected.GetMaxHealth() +
+                                                                                            "\nFuel = " + _shipSelected.GetCurrentFuel() + " / " + _shipSelected.GetMaxFuel() +
+                                                                                            "\nCurrent Bonus Attack Stage = " + _shipSelected.GetAttackStage() +
+                                                                                            "\nCurrent Bonus Defence Stage = " + _shipSelected.GetDefenseStage() +
+                                                                                            "\nMovements Left = " + _shipSelected.GetMovementLeft();
 
-            //transform.GetChild(i).GetChild(0). change sprites
-
-            transform.GetChild(i).GetChild(0).GetComponentInChildren<Text>().text = "Health = " + shipList[i].GetCurrentHealth() + " / " + shipList[i].GetMaxHealth() +
-                                                                                                "\nFuel = " + shipList[i].GetCurrentFuel() + " / " + shipList[i].GetMaxFuel() +
-                                                                                                "\nCurrent Bonus Attack Stage = " + shipList[i].GetAttackStage() +
-                                                                                                "\nCurrent Bonus Defence Stage = " + shipList[i].GetDefenseStage() +
-                                                                                                "\nMovements Left = " + shipList[i].GetMovementLeft();
-
-            transform.GetChild(i).GetChild(4).GetComponentInChildren<TextMeshProUGUI>().text = ListofAllShipsActions[i][1].name;
-            transform.GetChild(i).GetChild(5).GetComponentInChildren<TextMeshProUGUI>().text = ListofAllShipsActions[i][2].name;
-        }
+        action0Button.GetComponentInChildren<TextMeshProUGUI>().text = _shipSelected.GetActions()[0].name;
+        action1Button.GetComponentInChildren<TextMeshProUGUI>().text = _shipSelected.GetActions()[1].name;
+        action2Button.GetComponentInChildren<TextMeshProUGUI>().text = _shipSelected.GetActions()[2].name;
 
         canvas.enabled = true;
     }
 
-    private void ChildDisable()
+    private void DisableCanvas()
     {
         canvas.enabled = false;
     }
 
 
     //FLASHIP METHODS  (Change Selected Ship)
-    public void ToggleCaptainFlagship()
-    {//TODO change sprite to Captain
-    }
-    public void ToggleShipFlagship()
-    {//TODO change sprite to Ship + Attributes 
-    }
-    public void HealShipFlagship()
+    public void ToggleImage()
     {
-        shipFlagship.HealActionServerRpc();
-    }
-    public void RefuelFlagship()
-    {
-        shipFlagship.RefuelToMaxAtPortActionServerRpc();
-    }
-    public void BasicAttackFlagship()
-    {
-        ActionSelected(shipFlagship,0);
-    }
-    public void Action1Flagship()
-    {
-        ActionSelected(shipFlagship, 1);
-    }
-    public void Action2Flagship()
-    {
-
-        ActionSelected(shipFlagship, 2);
+        //TODO change sprite to Captain
     }
 
-
-
-    //AttackShip METHODS  (Change Selected Ship)
-    public void ToggleCaptainAttack()
-    {//TODO change sprite to Captain
-    }
-    public void ToggleShipAttack()
-    {//TODO change sprite to Ship + Attributes 
-    }
-    public void HealShipAttack()
-    {         
-        shipAttack.HealActionServerRpc();
-    }
-    public void RefuelAttack()
+    public void HealShip()
     {
-        shipAttack.RefuelToMaxAtPortActionServerRpc();
-    }
-    public void BasicAttackAttack()
-    {
-        ActionSelected(shipAttack, 0);
-    }
-    public void Action1Attack()
-    {
-        ActionSelected(shipAttack, 1);
-    }
-    public void Action2Attack()
-    {
-        ActionSelected(shipAttack, 2);
+        _shipSelected.HealActionServerRpc();
     }
 
-    //CARGOSHIP METHODS  (Change Selected Ship)
-    public void ToggleCaptainCargo()
-    {//TODO change sprite to Captain
-    }
-    public void ToggleShipCargo()
-    {//TODO change sprite to Ship + Attributes 
+    public void RefuelShip()
+    {
+        _shipSelected.RefuelToMaxAtPortActionServerRpc();
     }
 
-    public void HealShipCargo()
+    public void StartActionOfShipAtIndex(int index)
     {
-        shipCargo.HealActionServerRpc();
-    }
-    public void RefuelCargo()
-    {
-        
-        shipCargo.RefuelToMaxAtPortActionServerRpc();
-    }
-
-    public void BasicAttackCargo()
-    {
-        ActionSelected(shipCargo, 0);
-    }
-
-    public void Action1Cargo()
-    {
-        ActionSelected(shipCargo, 1);
-    }
-
-    public void Action2Cargo()
-    {
-
-        ActionSelected(shipCargo, 2);
-    }
-
-
-    //FastSHIP METHODS  (Change Selected Ship)
-    public void ToggleCaptainFast()
-    {//TODO change sprite to Captain
-    }
-    public void ToggleShipFast()
-    {//TODO change sprite to Ship + Attributes 
-    }
-    public void HealShipFast()
-    {
-        shipFast.HealActionServerRpc();
-    }
-    public void RefuelFast()
-    {
-        shipFast.RefuelToMaxAtPortActionServerRpc();
-    }
-    public void BasicAttackFast()
-    {
-        ActionSelected(shipFast, 0);
-
-    }
-    public void Action1Fast()
-    {
-        ActionSelected(shipFast, 1);
-    }
-    public void Action2Fast()
-    {
-        ActionSelected(shipFast, 2);
-    }
-
-
-    public void ActionSelected(ShipUnit actionShip, int actionIndex)
-    {
-        actionInstructionCanvas.ActionOfShipSelected(actionShip, actionIndex);
+        actionInstructionCanvas.ActionOfShipSelected(_shipSelected, index);
     }
     
+
+    public void ClickedButtonOfShipChange(int index)
+    {
+        ShipClicked(_shipList[index]);
+    }
 }
