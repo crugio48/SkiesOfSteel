@@ -185,7 +185,7 @@ public class ShipUnit : NetworkBehaviour
             _currentFuel.Value = _shipSO.maxFuel;
         }
 
-        _spriteRenderer.sprite = _shipSO.sprite; // TODO implement logic for more sprites
+        UpdateSprite();
     }
 
 
@@ -411,26 +411,40 @@ public class ShipUnit : NetworkBehaviour
 
         if (pathLenght > _movementLeft.Value)
         {
-            Debug.LogError("A client tried to move a ship too far than the movement it had left");
+            Debug.LogError("A client tried to move a ship further than the movement it had left.");
             return;
         }
 
         // Here we passed all checks:
 
-        Sequence moveSequence = DOTween.Sequence().OnComplete(() =>
-        {
-            _isMoving = false;
-            RefreshMovementClientRpc();
-        });
+
+        List<Vector3> path = new List<Vector3>();
+        List<Orientation> dir = new List<Orientation>();
+        Vector3Int next = Vector3Int.zero;
 
         for (Node step = destinationNode; step.Parent != null; step = step.Parent)
         {
-            Vector3 worldPos = _tilemap.GetCellCenterWorld(step.Position);
+            path.Insert(0, _tilemap.GetCellCenterWorld(step.Position));
+            dir.Insert(0, ShapeLogic.Instance.ComputeDirection(step.Parent.Position, step.Position));
 
-            moveSequence.Prepend(transform.DOMove(worldPos, 0.5f).SetEase(Ease.Linear));
+            next = step.Position;
         }
 
+
+        SetDirection(ShapeLogic.Instance.ComputeDirection(_currentPosition.Value.GetValues(), next));
+
+        transform.DOPath(path.ToArray(), pathLenght * 1.0f, PathType.Linear)
+                 .OnStart(() => Engines(true))
+                 .OnComplete(() => {
+                 Engines(false);
+                 _isMoving = false;
+                 RefreshMovementClientRpc();
+                 })
+                 .OnWaypointChange((int index) => SetDirection(dir[index]));
+
+
         _isMoving = true;
+
 
         // Update this ship position and the _currentPosition.onValueChanged event will trigger both on server and on client
         _movementLeft.Value -= pathLenght;
@@ -719,6 +733,35 @@ public class ShipUnit : NetworkBehaviour
 }
 
 
+    //----------------------------------- ART:
+
+    private bool _engines = false;
+    private Orientation _direction = Orientation.BOTTOM_LEFT;
+
+    private void Engines(bool enginesOn)
+    {
+        _engines = enginesOn;
+        UpdateSprite();
+    }
+
+    private void SetDirection(Orientation direction)
+    {
+        _direction = direction;
+        UpdateSprite();
+    }
+
+    private void UpdateSprite()
+    {
+        UpdateSpriteClientRpc(_direction, _engines);
+    }
+
+    [ClientRpc]
+    private void UpdateSpriteClientRpc(Orientation orientation, bool engines)
+    {
+        _spriteRenderer.sprite = _shipSO.graphics.GetSprite(orientation, engines);
+    }
+}
+
 
 public struct Vector3IntSerializable : INetworkSerializable
 {
@@ -738,7 +781,6 @@ public struct Vector3IntSerializable : INetworkSerializable
         return new Vector3IntSerializable(newValue);
     }
 
-
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref x);
@@ -746,8 +788,6 @@ public struct Vector3IntSerializable : INetworkSerializable
         serializer.SerializeValue(ref z);
 
     }
-
-
 
     public Vector3Int GetValues()
     {

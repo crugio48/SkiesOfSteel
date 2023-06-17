@@ -15,8 +15,7 @@ public class ShipScriptableObject : ScriptableObject
     public int defense;
     public int battleCost;
 
-    // Add more sprites for the different angles and add logic to switch between them in ShipUnit TODO
-    public Sprite sprite;
+    public ShipGraphics graphics;
 
 
     public List<Action> actionList;

@@ -19,6 +19,6 @@ MonoBehaviour:
   attack: 10
   defense: 10
   battleCost: 2
-  sprite: {fileID: 21300000, guid: c22340e383b54c44196cb7765328e79d, type: 3}
+  graphics: {fileID: 11400000, guid: 5bde3cce72c555d4b9ab6a6e9acbd438, type: 2}
   actionList:
   - {fileID: 11400000, guid: 48829b03c2eb6914bb29422dcdd1268b, type: 2}
