@@ -33,13 +33,14 @@ public class Attack : Action
         {
             if (AccuracyHit(accuracy))
             {
-                //TODO show animation of attack
                 target.TakeHit(thisShip, power);
+
+                target.PlayAnimationClientRpc(AnimationToShow.HIT_ATTACK, thisShip.GetCurrentPosition());
                 Debug.Log(thisShip.name + " hit " + target.name);
             }
             else
             {
-                //TODO show animation of miss
+                target.PlayAnimationClientRpc(AnimationToShow.MISSED_ATTACK, thisShip.GetCurrentPosition());
                 Debug.Log(thisShip.name + " missed " + target.name);
             }
         }
