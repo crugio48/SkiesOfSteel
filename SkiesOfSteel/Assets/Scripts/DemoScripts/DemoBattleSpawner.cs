@@ -48,7 +48,7 @@ public class DemoBattleSpawner : NetworkBehaviour
     private void SpawnShip(Vector3Int gridPosition, string scriptableObjectPath, string playerUsername, string typeOfShip)
     {
         GameObject newShip = Instantiate(shipUnitPrefab, tilemap.GetCellCenterWorld(gridPosition), Quaternion.identity);
-        newShip.name = typeOfShip + " of " + playerUsername;
+        newShip.name = typeOfShip + " of " + playerUsername; // Server only 
         newShip.GetComponent<NetworkObject>().Spawn();
         ShipUnit shipUnit = newShip.GetComponent<ShipUnit>();
         shipUnit.SetShipScriptableObject(scriptableObjectPath);

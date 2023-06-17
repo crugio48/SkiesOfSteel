@@ -5,6 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName ="ShipScriptableObject", menuName="ScriptableObjects/Ship")]
 public class ShipScriptableObject : ScriptableObject
 {
+    // TODO add name
     public bool isFlagship;
 
     public int maxHealth;

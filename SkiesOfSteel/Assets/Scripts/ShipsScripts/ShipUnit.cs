@@ -39,7 +39,52 @@ public class ShipUnit : NetworkBehaviour
 
     [CanBeNull] public static event System.Action<ShipUnit> ShipIsDestroyed;
     [CanBeNull] public static event System.Action<ShipUnit> ShipRetrievedTheTreasureAndWonGame;
+    [CanBeNull] public static event System.Action<ShipUnit> StatsGotModified;
+    [CanBeNull] public static event System.Action<ShipUnit> MovementCompleted;
 
+
+    private void RegisterCallBacks()
+    {
+        // Run both on server and on clients the callbacks that update the info databases classes
+        _currentPosition.OnValueChanged += PositionChangedCallback;
+        _isDestroyed.OnValueChanged += HideShip;
+
+        if (IsClient)
+        {
+            _currentHealth.OnValueChanged += GeneralIntInvokeStatsChanged;
+            _currentFuel.OnValueChanged += GeneralIntInvokeStatsChanged;
+            _attackStage.OnValueChanged += GeneralIntInvokeStatsChanged;
+            _defenseStage.OnValueChanged += GeneralIntInvokeStatsChanged;
+            _oneTurnTemporaryAttackStage.OnValueChanged += GeneralIntInvokeStatsChanged;
+            _oneTurnTemporaryDefenseStage.OnValueChanged += GeneralIntInvokeStatsChanged;
+
+            _canDoAction.OnValueChanged += GeneralBoolInvokeStatsChanged;
+            _isDestroyed.OnValueChanged += GeneralBoolInvokeStatsChanged;
+
+            _currentPosition.OnValueChanged += GeneralVec3IntInvokeStatsChanged;
+        }
+    }
+
+    private void UnregisterCallbacks()
+    {
+        _currentPosition.OnValueChanged -= PositionChangedCallback;
+        _isDestroyed.OnValueChanged -= HideShip;
+
+        if (IsClient)
+        {
+            _currentHealth.OnValueChanged -= GeneralIntInvokeStatsChanged;
+            _currentFuel.OnValueChanged -= GeneralIntInvokeStatsChanged;
+            _attackStage.OnValueChanged -= GeneralIntInvokeStatsChanged;
+            _defenseStage.OnValueChanged -= GeneralIntInvokeStatsChanged;
+            _oneTurnTemporaryAttackStage.OnValueChanged -= GeneralIntInvokeStatsChanged;
+            _oneTurnTemporaryDefenseStage.OnValueChanged -= GeneralIntInvokeStatsChanged;
+
+            _canDoAction.OnValueChanged -= GeneralBoolInvokeStatsChanged;
+            _isDestroyed.OnValueChanged -= GeneralBoolInvokeStatsChanged;
+
+            _currentPosition.OnValueChanged -= GeneralVec3IntInvokeStatsChanged;
+        }
+    }
 
     public override void OnNetworkSpawn()
     {
@@ -49,22 +94,31 @@ public class ShipUnit : NetworkBehaviour
         _spriteRenderer = GetComponent<SpriteRenderer>();
 
 
-        // Run both on server and on clients the callbacks that update the info databases classes
-        _currentPosition.OnValueChanged += PositionChangedCallback;
-        _isDestroyed.OnValueChanged += HideShip;
+        RegisterCallBacks();
     }
-
 
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
 
-        _currentPosition.OnValueChanged -= PositionChangedCallback;
-        _isDestroyed.OnValueChanged -= HideShip;
+        UnregisterCallbacks();
     }
 
     //----------------------------------- Callback methods of onValueChanged:
 
+    private void GeneralIntInvokeStatsChanged(int previousValue, int newValue)
+    {
+        StatsGotModified?.Invoke(this);
+    }
+    private void GeneralBoolInvokeStatsChanged(bool previousValue, bool newValue)
+    {
+        StatsGotModified?.Invoke(this);
+    }
+
+    private void GeneralVec3IntInvokeStatsChanged(Vector3IntSerializable previousValue, Vector3IntSerializable newValue)
+    {
+        StatsGotModified?.Invoke(this);
+    }
 
     // Callback of _currentPosition.OnValueChanged
     private void PositionChangedCallback(Vector3IntSerializable previousValue, Vector3IntSerializable newValue)
@@ -95,6 +149,10 @@ public class ShipUnit : NetworkBehaviour
 
             if (Treasure.Instance.GetCarryingShip() == this) Treasure.Instance.RemoveCarryingShip();
 
+            if (IsServer)
+            {
+                _currentHealth.Value = 0;
+            }
         }
     }
 
@@ -282,8 +340,8 @@ public class ShipUnit : NetworkBehaviour
             return;
         }
 
-        float healPercentage = 0.1f;
-        if (Pathfinding.Instance.IsPosOnTopOfAPortOrAdjacent(_currentPosition.Value.GetValues())) healPercentage = 0.2f; // If is on top of a port then it heals more
+        float healPercentage = 0.05f;
+        if (Pathfinding.Instance.IsPosOnTopOfAPortOrAdjacent(_currentPosition.Value.GetValues())) healPercentage = 0.15f; // If is on top of a port then it heals more
 
         _currentHealth.Value = Mathf.Min(_shipSO.maxHealth, _currentHealth.Value + (int) Mathf.Floor(_shipSO.maxHealth * healPercentage));
 
@@ -327,13 +385,14 @@ public class ShipUnit : NetworkBehaviour
         if (actionDoneCorrectly) _canDoAction.Value = false;
     }
 
+    private bool _isMoving = false;
 
     [ServerRpc(RequireOwnership = false)]
     public void MoveServerRpc(Vector3Int destination, ServerRpcParams serverRpcParams = default)
     {
-        if (!PassedInitialChecks(serverRpcParams)) return;
+        if (_isMoving) return;
 
-        ulong senderId = 0; // TODO make method a ServerRpc
+        if (!PassedInitialChecks(serverRpcParams)) return;
 
         Node destinationNode = Pathfinding.Instance.AStarSearch(_currentPosition.Value.GetValues(), destination, this);
 
@@ -358,6 +417,7 @@ public class ShipUnit : NetworkBehaviour
 
         // Here we passed all checks:
 
+
         List<Vector3> path = new List<Vector3>();
         List<Orientation> dir = new List<Orientation>();
         Vector3Int next = Vector3Int.zero;
@@ -370,12 +430,21 @@ public class ShipUnit : NetworkBehaviour
             next = step.Position;
         }
 
+
         SetDirection(ShapeLogic.Instance.ComputeDirection(_currentPosition.Value.GetValues(), next));
 
         transform.DOPath(path.ToArray(), pathLenght * 1.0f, PathType.Linear)
                  .OnStart(() => Engines(true))
-                 .OnComplete(() => Engines(false))
+                 .OnComplete(() => {
+                 Engines(false);
+                 _isMoving = false;
+                 RefreshMovementClientRpc();
+                 })
                  .OnWaypointChange((int index) => SetDirection(dir[index]));
+
+
+        _isMoving = true;
+
 
         // Update this ship position and the _currentPosition.onValueChanged event will trigger both on server and on client
         _movementLeft.Value -= pathLenght;
@@ -394,11 +463,21 @@ public class ShipUnit : NetworkBehaviour
         {
             treasureInstance.SetCurGridPosition(destination);
 
+            ulong senderId = serverRpcParams.Receive.SenderClientId;
+
+            Debug.Log("WINNING POSITION: " + NetworkManager.Singleton.ConnectedClients[senderId].PlayerObject.GetComponent<Player>().GetWinningTreasurePosition());
+
             if (destination == NetworkManager.Singleton.ConnectedClients[senderId].PlayerObject.GetComponent<Player>().GetWinningTreasurePosition())
             {
                 ShipRetrievedTheTreasureAndWonGame?.Invoke(this);
             }
         }
+    }
+
+    [ClientRpc]
+    private void RefreshMovementClientRpc()
+    {
+        MovementCompleted?.Invoke(this);
     }
 
 
@@ -631,6 +710,11 @@ public class ShipUnit : NetworkBehaviour
         return _shipSO.isFlagship;
     }
 
+    public string GetName()
+    {
+        return "TODO";
+    }
+
 
     public bool IsMyShip()
     {
@@ -638,6 +722,16 @@ public class ShipUnit : NetworkBehaviour
 
         return _ownerUsername == NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().GetUsername();
     }
+
+    [ClientRpc]
+    public void PlayAnimationClientRpc(AnimationToShow animationToShow, Vector3Int casterPosition)
+    {
+        ShipUnit target = this;
+
+        AnimationManager.Instance.PlayAnimation(animationToShow);
+    }
+}
+
 
     //----------------------------------- ART:
 

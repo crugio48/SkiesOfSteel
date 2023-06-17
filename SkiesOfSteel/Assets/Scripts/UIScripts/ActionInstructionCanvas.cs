@@ -124,6 +124,7 @@ public class ActionInstructionCanvas : MonoBehaviour
         _canvas.enabled = false;
         _selectedAction = null;
         _selectedShip = null;
+        _errorText.text = string.Empty;
         ResetOverlayMap();
         inputManager.StartReceivingInput();
     }

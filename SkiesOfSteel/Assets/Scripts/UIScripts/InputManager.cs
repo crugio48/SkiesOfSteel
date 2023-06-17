@@ -27,16 +27,10 @@ public class InputManager : MonoBehaviour
     private ShipUnit _selectedShip;
 
     private bool _receiveInput = false;
-
-    private int indexAction;
-
-    private int cyclingTargeting = 0;
-
-    private int targetAmount;
     
     private bool targetingShips = false;
     
-    private List<ShipUnit> targetList;
+
 
     void Start()
     {
@@ -46,11 +40,15 @@ public class InputManager : MonoBehaviour
     private void OnEnable()
     {
         GameManager.Instance.StartGameEvent += StartReceivingInput;
+        ShipUnit.MovementCompleted += RefreshMovementTiles;
+
     }
 
     private void OnDisable()
     {
         GameManager.Instance.StartGameEvent -= StartReceivingInput;
+        ShipUnit.MovementCompleted -= RefreshMovementTiles;
+
     }
 
     public void StartReceivingInput()
@@ -63,6 +61,19 @@ public class InputManager : MonoBehaviour
         _receiveInput = false;
     }
 
+    private void RefreshMovementTiles(ShipUnit shipModifiedMovementLeft)
+    {
+        if (shipModifiedMovementLeft == _selectedShip && shipModifiedMovementLeft.IsMyShip())
+        {
+            ResetOverlayMap();
+
+            if (_selectedShip.GetMovementLeft() > 0)
+            {
+                List<Vector3Int> possibleDestinationTiles = Pathfinding.Instance.GetPossibleDestinations(_selectedShip.GetCurrentPosition(), _selectedShip.GetMovementLeft(), _selectedShip);
+                DisplayMovementOverlayTiles(possibleDestinationTiles);
+            }
+        }
+    }
 
 
     private void Update()
@@ -86,43 +97,6 @@ public class InputManager : MonoBehaviour
                 if (_selectedShip != null && _selectedShip.IsMyShip() && _selectedShip.GetMovementLeft() > 0) TryToMove();
             }
         }
-
-        /*
-
-        if (targetingShips)
-        {
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                targetingShips = false;
-                actionInstructionCanvas.DisableCanvas();
-            }
-            if (Input.GetMouseButtonDown(0))
-            {
-                
-                Vector2 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
-                selectedtile = overlayMap.WorldToCell(mousePosition);
-                if (ShipsPositions.Instance.GetShip(selectedtile) != null)
-                {
-                    targetList.Add(ShipsPositions.Instance.GetShip(selectedtile));
-                    cyclingTargeting = +1;
-                    if (cyclingTargeting == targetAmount)
-                    {
-                        actionInstructionCanvas.ChangeTextDescription("Select " + (targetAmount-cyclingTargeting) + " More Target");
-                        playerShipUI.ReceiveTargets(indexAction, casterShip,targetList);
-                        targetingShips = false;
-                    }
-
-                }
-                else
-                {
-                    playerShipUI.NoShipClicked();
-                    Debug.Log("No Ship Found to Target");
-                }
-
-
-            }
-        }
-        */
 
     }
 
@@ -176,19 +150,6 @@ public class InputManager : MonoBehaviour
     }
 
 
-    /*
-    public void startLookingForTarget(ShipUnit _casterShip, int _indexAction, int _targetAmount)
-    {
-        targetingShips = true;
-        targetAmount = _targetAmount;
-        cyclingTargeting = 0;
-        indexAction = _indexAction;
-        casterShip = _casterShip;
-    }
-
-    */
-
-
     private void DisplayMovementOverlayTiles(List<Vector3Int> possibleDestinationTiles)
     {
         Color color = Color.yellow;
@@ -201,17 +162,9 @@ public class InputManager : MonoBehaviour
     }
 
 
-    private void ResetOverlayMap()
+    public void ResetOverlayMap()
     {
         overlayMap.ClearAllTiles();
-    }
-    
-
-    private bool IsMyTurn()
-    {
-        string myUsername = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().GetUsername();
-
-        return myUsername == GameManager.Instance.GetCurrentPlayer();
     }
     
 }
