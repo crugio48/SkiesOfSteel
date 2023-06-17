@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: 50D 80A 3R
   m_EditorClassIdentifier: 
   name: Longshot
+  description: Long range shot with good damage and decent accuracy
   sprite: {fileID: 0}
   fuelCost: 6
   range: 3
