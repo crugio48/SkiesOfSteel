@@ -33,12 +33,14 @@ public class ModifyStats : Action
 
                 if (modifyDefense)
                     target.ModifyDefense(defenseModification, isDefenseOneTurnTemporary);
+                
 
-
+                target.PlayAnimationClientRpc(AnimationToShow.HIT_STATS_CHANGE, thisShip.GetCurrentPosition());
                 Debug.Log(thisShip.name + " modified the stats of " + target.name);
             }
             else
             {
+                target.PlayAnimationClientRpc(AnimationToShow.MISSED_STATS_CHANGE, thisShip.GetCurrentPosition());
                 Debug.Log(thisShip.name + " missed the roll to modify the stats of " + target.name);
             }
         }

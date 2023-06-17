@@ -1,6 +1,5 @@
 
 using System.Collections.Generic;
-using System.Linq;
 using System;
 using UnityEngine;
 
@@ -28,7 +27,6 @@ public class Action : ScriptableObject
     [Space]
     public bool needsCustomParameter;
     public string stringToDisplayWhenAskingForCustomParam;
-
 
     public virtual bool Activate(ShipUnit thisShip, List<ShipUnit> targets, List<Vector3Int> positions, List<Orientation> orientations, int customParam)
     {

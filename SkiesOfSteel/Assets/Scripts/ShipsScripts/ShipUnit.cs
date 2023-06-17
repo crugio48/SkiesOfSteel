@@ -43,7 +43,6 @@ public class ShipUnit : NetworkBehaviour
     [CanBeNull] public static event System.Action<ShipUnit> MovementCompleted;
 
 
-
     private void RegisterCallBacks()
     {
         // Run both on server and on clients the callbacks that update the info databases classes
@@ -694,6 +693,14 @@ public class ShipUnit : NetworkBehaviour
         if (IsServer) return false; // This is a local client check method only
 
         return _ownerUsername == NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().GetUsername();
+    }
+
+    [ClientRpc]
+    public void PlayAnimationClientRpc(AnimationToShow animationToShow, Vector3Int casterPosition)
+    {
+        ShipUnit target = this;
+
+        AnimationManager.Instance.PlayAnimation(animationToShow);
     }
 }
 

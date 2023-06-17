@@ -57,10 +57,10 @@ public class CameraManagement : MonoBehaviour
 
     private void Move()
     {
-        float reducerValue = 0.02f;
+        float multiplierValue = 5f;
 
-        float xAxisValue = Input.GetAxis("Horizontal") * reducerValue;
-        float yAxisValue = Input.GetAxis("Vertical") * reducerValue;
+        float xAxisValue = Input.GetAxis("Horizontal") * multiplierValue * Time.deltaTime;
+        float yAxisValue = Input.GetAxis("Vertical") * multiplierValue * Time.deltaTime;
 
         Vector3 position = _camera.transform.position;
 
