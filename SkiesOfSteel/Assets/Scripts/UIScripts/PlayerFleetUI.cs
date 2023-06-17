@@ -10,7 +10,7 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Canvas))]
 public class PlayerFleetUI : MonoBehaviour
 {
-    [SerializeField] private ShipSelectedUI shipSelectedUI;
+    [SerializeField] private InputManager inputManager;
 
     [SerializeField] private CameraManagement cameraManagement;
 
@@ -31,13 +31,13 @@ public class PlayerFleetUI : MonoBehaviour
     private void OnEnable()
     {
         GameManager.Instance.StartGameEvent += EnableCanvas;
-        ShipUnit.ShipIsDestroyed += ShipGotDestroyed;
+        ShipUnit.StatsGotModified += CheckIfShipGotDestroyed;
     }
 
     private void OnDisable()
     {
         GameManager.Instance.StartGameEvent -= EnableCanvas;
-        ShipUnit.ShipIsDestroyed -= ShipGotDestroyed;
+        ShipUnit.StatsGotModified -= CheckIfShipGotDestroyed;
     }
 
     private void EnableCanvas()
@@ -55,9 +55,13 @@ public class PlayerFleetUI : MonoBehaviour
     }
 
 
-    private void ShipGotDestroyed(ShipUnit shipUnit)
+    private void CheckIfShipGotDestroyed(ShipUnit shipUnit)
     {
+        if (_shipsOfLocalPlayer == null) return;
+
         if (!_shipsOfLocalPlayer.Contains(shipUnit)) return;
+
+        if (!shipUnit.IsDestroyed()) return;
 
         int index = _shipsOfLocalPlayer.IndexOf(shipUnit);
 
@@ -70,10 +74,12 @@ public class PlayerFleetUI : MonoBehaviour
 
     public void ClickedButtonOfShipChange(int index)
     {
+        if (_shipsOfLocalPlayer[index].IsDestroyed()) return;
+
         Vector3 globalPositionOfShip = tilemap.GetCellCenterWorld(_shipsOfLocalPlayer[index].GetCurrentPosition());
         cameraManagement.MoveToShipPosition(globalPositionOfShip);
         
-        shipSelectedUI.ShipClicked(_shipsOfLocalPlayer[index]);
+        inputManager.Click(_shipsOfLocalPlayer[index]);
     }
 
 }

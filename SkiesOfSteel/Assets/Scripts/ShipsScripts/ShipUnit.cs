@@ -43,6 +43,7 @@ public class ShipUnit : NetworkBehaviour
     [CanBeNull] public static event System.Action<ShipUnit> ShipRetrievedTheTreasureAndWonGame;
     [CanBeNull] public static event System.Action<ShipUnit> StatsGotModified;
     [CanBeNull] public static event System.Action<ShipUnit> MovementCompleted;
+    [CanBeNull] public static event System.Action<ShipUnit> ShipRegainedMovement;
 
 
     private void RegisterCallBacks()
@@ -59,6 +60,8 @@ public class ShipUnit : NetworkBehaviour
             _defenseStage.OnValueChanged += GeneralIntInvokeStatsChanged;
             _oneTurnTemporaryAttackStage.OnValueChanged += GeneralIntInvokeStatsChanged;
             _oneTurnTemporaryDefenseStage.OnValueChanged += GeneralIntInvokeStatsChanged;
+
+            _movementLeft.OnValueChanged += CheckIfMovementGotRegained;
 
             _canDoAction.OnValueChanged += GeneralBoolInvokeStatsChanged;
             _isDestroyed.OnValueChanged += GeneralBoolInvokeStatsChanged;
@@ -80,6 +83,8 @@ public class ShipUnit : NetworkBehaviour
             _defenseStage.OnValueChanged -= GeneralIntInvokeStatsChanged;
             _oneTurnTemporaryAttackStage.OnValueChanged -= GeneralIntInvokeStatsChanged;
             _oneTurnTemporaryDefenseStage.OnValueChanged -= GeneralIntInvokeStatsChanged;
+
+            _movementLeft.OnValueChanged -= CheckIfMovementGotRegained;
 
             _canDoAction.OnValueChanged -= GeneralBoolInvokeStatsChanged;
             _isDestroyed.OnValueChanged -= GeneralBoolInvokeStatsChanged;
@@ -120,6 +125,14 @@ public class ShipUnit : NetworkBehaviour
     private void GeneralVec3IntInvokeStatsChanged(Vector3IntSerializable previousValue, Vector3IntSerializable newValue)
     {
         StatsGotModified?.Invoke(this);
+    }
+
+    private void CheckIfMovementGotRegained(int previousValue, int newValue)
+    {
+        if (previousValue == 0 && newValue > 0)
+        {
+            ShipRegainedMovement?.Invoke(this);
+        }
     }
 
     // Callback of _currentPosition.OnValueChanged
@@ -342,8 +355,13 @@ public class ShipUnit : NetworkBehaviour
             return;
         }
 
-        float healPercentage = 0.05f;
-        if (Pathfinding.Instance.IsPosOnTopOfAPortOrAdjacent(_currentPosition.Value.GetValues())) healPercentage = 0.15f; // If is on top of a port then it heals more
+        if (!Pathfinding.Instance.IsOnTopOfAPort(_currentPosition.Value.GetValues()))
+        {
+            Debug.LogError("A client tried to call a refuel at port action without being near a port");
+            return;
+        }
+
+        float healPercentage = 0.2f;
 
         _currentHealth.Value = Mathf.Min(_shipSO.maxHealth, _currentHealth.Value + (int) Mathf.Floor(_shipSO.maxHealth * healPercentage));
 
@@ -384,7 +402,11 @@ public class ShipUnit : NetworkBehaviour
 
         bool actionDoneCorrectly = _shipSO.actionList[actionIndex].Activate(this, targets, positionsList, orientationsList, customParam);
 
-        if (actionDoneCorrectly) _canDoAction.Value = false;
+        if (actionDoneCorrectly)
+        {
+            _canDoAction.Value = false;
+            _currentFuel.Value -= _shipSO.actionList[actionIndex].fuelCost;
+        }
     }
 
     private bool _isMoving = false;
@@ -393,6 +415,8 @@ public class ShipUnit : NetworkBehaviour
     public void MoveServerRpc(Vector3Int destination, ServerRpcParams serverRpcParams = default)
     {
         if (_isMoving) return;
+
+        if (_currentFuel.Value == 0) return;
 
         if (!PassedInitialChecks(serverRpcParams)) return;
 
@@ -451,6 +475,7 @@ public class ShipUnit : NetworkBehaviour
         // Update this ship position and the _currentPosition.onValueChanged event will trigger both on server and on client
         _movementLeft.Value -= pathLenght;
         _currentPosition.Value = destination;
+        _currentFuel.Value -= 1;
 
 
         // Check if this ship won the game by retrieving the treasure back to the base
@@ -730,7 +755,7 @@ public class ShipUnit : NetworkBehaviour
     {
         ShipUnit target = this;
 
-        AnimationManager.Instance.PlayAnimation(animationToShow);
+        //AnimationManager.Instance.PlayAnimation(animationToShow);
     }
 
 

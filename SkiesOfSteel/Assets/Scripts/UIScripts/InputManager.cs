@@ -35,14 +35,14 @@ public class InputManager : MonoBehaviour
     {
         GameManager.Instance.StartGameEvent += StartReceivingInput;
         ShipUnit.MovementCompleted += RefreshMovementTiles;
-
+        ShipUnit.ShipRegainedMovement += RefreshMovementTiles;
     }
 
     private void OnDisable()
     {
         GameManager.Instance.StartGameEvent -= StartReceivingInput;
         ShipUnit.MovementCompleted -= RefreshMovementTiles;
-
+        ShipUnit.ShipRegainedMovement -= RefreshMovementTiles;
     }
 
     public void StartReceivingInput()
@@ -55,9 +55,9 @@ public class InputManager : MonoBehaviour
         _receiveInput = false;
     }
 
-    private void RefreshMovementTiles(ShipUnit shipModifiedMovementLeft)
+    private void RefreshMovementTiles(ShipUnit ship)
     {
-        if (shipModifiedMovementLeft == _selectedShip && shipModifiedMovementLeft.IsMyShip())
+        if (ship == _selectedShip && ship.IsMyShip())
         {
             ResetOverlayMap();
 
@@ -160,6 +160,24 @@ public class InputManager : MonoBehaviour
     {
         overlayMap.ClearAllTiles();
     }
+
     
+
+    public void Click(ShipUnit shipUnit)
+    {
+        ResetOverlayMap();
+
+        _selectedShip = shipUnit;
+
+        shipSelectedUI.ShipClicked(_selectedShip);
+
+        Debug.Log("Selected ship: " + _selectedShip.name);
+
+        if (_selectedShip.IsMyShip() && _selectedShip.GetMovementLeft() > 0)
+        {
+            List<Vector3Int> possibleDestinationTiles = Pathfinding.Instance.GetPossibleDestinations(_selectedShip.GetCurrentPosition(), _selectedShip.GetMovementLeft(), _selectedShip);
+            DisplayMovementOverlayTiles(possibleDestinationTiles);
+        }
+    }
 }
 

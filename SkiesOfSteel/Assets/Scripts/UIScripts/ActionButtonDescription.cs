@@ -22,14 +22,13 @@ public class ActionButtonDescription : MonoBehaviour, IPointerEnterHandler, IPoi
     {
         if (isHealButton)
         {
-            _textToDisplay = "Heal action that can be used everywhere.\n" +
-                "If in a port heals by 20% at no fuel cost.\n" +
-                "If outside a port heals by 10% at 2 fuel cost";
+            _textToDisplay = "Heal action that can be used inside of a port.\n" +
+                "It heals 20% of the ship max HP.";
         }
         else if (isRefuelButton)
         {
             _textToDisplay = "Refuel action that can be used inside of a port or adjacent to it.\n" +
-                "It refuels the entire ship fuel tank.";
+                "It fills up the entire ship fuel tank.";
         }
         else _textToDisplay = "";
     }

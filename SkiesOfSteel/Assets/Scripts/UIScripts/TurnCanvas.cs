@@ -47,10 +47,6 @@ public class TurnCanvas : MonoBehaviour
 
         string myUsername = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().GetUsername();
 
-        Debug.Log("My username is: " + myUsername);
-
-        Debug.Log(GameManager.Instance.GetCurrentPlayer());
-
         if (myUsername == GameManager.Instance.GetCurrentPlayer())
         {
             passTurnButton.interactable = true;

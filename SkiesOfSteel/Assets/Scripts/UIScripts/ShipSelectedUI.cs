@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -12,19 +13,21 @@ public class ShipSelectedUI : MonoBehaviour
     [SerializeField]
     private ActionCastingUI actionCastingUI;
 
+    [SerializeField] private Toggle toggle;
+
+    [SerializeField] private Image captainCardFace;
+    [SerializeField] private Image shipCardFace;
+
     [SerializeField] private TextMeshProUGUI _selectedShipStatsText;
 
     [SerializeField] private Button healButton;
     [SerializeField] private Button refuelButton;
-    [SerializeField] private Button action0Button;
-    [SerializeField] private Button action1Button;
-    [SerializeField] private Button action2Button;
+
+    [SerializeField] private List<Button> actionsButtons;
 
     private Canvas canvas;
 
     ShipUnit _shipSelected;
-
-    List<ShipUnit> _shipList;
 
     private string _playerName;
 
@@ -36,78 +39,81 @@ public class ShipSelectedUI : MonoBehaviour
 
     private void OnEnable()
     {
-        ShipUnit.StatsGotModified += RefreshUI;
+        ShipUnit.StatsGotModified += CheckRefreshUI;
     }
 
     private void OnDisable()
     {
-        ShipUnit.StatsGotModified -= RefreshUI;
+        ShipUnit.StatsGotModified -= CheckRefreshUI;
     }
 
-    public void RefreshUI(ShipUnit shipModified)
+    public void CheckRefreshUI(ShipUnit shipModified)
     {
         if (shipModified == _shipSelected)
         {
             ShipClicked(_shipSelected);
-        }
-
-        if (_shipList != null && _shipList.Contains(shipModified))
-        {
-            // TODO logic of swapping sprite of other ships button 
         }
     }
 
 
     public void ShipClicked(ShipUnit selectedShip)
     {
+        if (selectedShip.IsDestroyed()) NoShipClicked();
+
         if (_shipSelected != null) _shipSelected.RemoveHighlight();
 
-        //TODO Add to ShipUnit the splashart for the ship and the captain
         _shipSelected = selectedShip;
 
         _shipSelected.SetHighlight();
 
         _playerName = _shipSelected.GetOwnerUsername();
-        _shipList = PlayersShips.Instance.GetShips(_playerName);
-
-        _shipList.Remove(_shipSelected);
 
         EnableCanvas();
     }
 
     public void NoShipClicked()
     {
-        if (_shipSelected != null) _shipSelected.RemoveHighlight();
+        if (_shipSelected != null && !_shipSelected.IsDestroyed()) _shipSelected.RemoveHighlight();
         _shipSelected = null;
-        _shipList = null;
         DisableCanvas();
     }
 
     private void EnableCanvas()
     {
+        captainCardFace.sprite = _shipSelected.GetShipGraphics().captainCardFace;
+        shipCardFace.sprite = _shipSelected.GetShipGraphics().shipCardFace;
+
         _selectedShipStatsText.text = "Health = " + _shipSelected.GetCurrentHealth() + " / " + _shipSelected.GetMaxHealth() +
-                                                                                            "\nFuel = " + _shipSelected.GetCurrentFuel() + " / " + _shipSelected.GetMaxFuel() +
-                                                                                            "\nCurrent Bonus Attack Stage = " + _shipSelected.GetAttackStage() +
-                                                                                            "\nCurrent Bonus Defence Stage = " + _shipSelected.GetDefenseStage() +
-                                                                                            "\nMovements Left = " + _shipSelected.GetMovementLeft();
-
-        action0Button.GetComponentInChildren<TextMeshProUGUI>().text = _shipSelected.GetActions()[0].name;
-        action1Button.GetComponentInChildren<TextMeshProUGUI>().text = _shipSelected.GetActions()[1].name;
-        action2Button.GetComponentInChildren<TextMeshProUGUI>().text = _shipSelected.GetActions()[2].name;
+                                    "\nFuel = " + _shipSelected.GetCurrentFuel() + " / " + _shipSelected.GetMaxFuel() +
+                                    "\nBase Attack = " + _shipSelected.GetBaseAttack() +
+                                    "\nAttack stage: " + (_shipSelected.GetAttackStage() + _shipSelected.GetOneTurnTemporaryAttackStage()) +
+                                    "\nBase Defense = " + _shipSelected.GetBaseDefense() +
+                                    "\nDefense stage: " + (_shipSelected.GetDefenseStage() + _shipSelected.GetOneTurnTemporaryDefenseStage()) +
+                                    "\nMovements Left = " + _shipSelected.GetMovementLeft();
 
 
-        action0Button.GetComponent<ActionButtonDescription>().SetSelectedShip(_shipSelected);
-        action1Button.GetComponent<ActionButtonDescription>().SetSelectedShip(_shipSelected);
-        action2Button.GetComponent<ActionButtonDescription>().SetSelectedShip(_shipSelected);
+
+        // MAYBE TODO spawn actions buttons dinamically based on ships actions list lenght
+
+        for (int i = 0; i < actionsButtons.Count; i++)
+        {
+            actionsButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = _shipSelected.GetActions()[i].name;
+
+            actionsButtons[i].GetComponent<ActionButtonDescription>().SetSelectedShip(_shipSelected);
+
+            if (_shipSelected.IsMyShip() && _shipSelected.CanDoAction() && _shipSelected.GetCurrentFuel() >= _shipSelected.GetActions()[i].fuelCost)
+            {
+                actionsButtons[i].interactable = true;
+            }
+            else
+            {
+                actionsButtons[i].interactable = false;
+            }
+        }
 
 
         if (_shipSelected.IsMyShip() && _shipSelected.CanDoAction())
         {
-            healButton.interactable = true;
-            action0Button.interactable = true;
-            action1Button.interactable = true;
-            action2Button.interactable = true;
-
             if (Pathfinding.Instance.IsPosOnTopOfAPortOrAdjacent(_shipSelected.GetCurrentPosition()))
             {
                 refuelButton.interactable = true;
@@ -116,14 +122,22 @@ public class ShipSelectedUI : MonoBehaviour
             {
                 refuelButton.interactable = false;
             }
+
+
+
+            if (Pathfinding.Instance.IsOnTopOfAPort(_shipSelected.GetCurrentPosition()))
+            {
+                healButton.interactable = true;
+            }
+            else
+            {
+                healButton.interactable = false;
+            }
         }
         else
         {
             healButton.interactable = false;
             refuelButton.interactable = false;
-            action0Button.interactable = false;
-            action1Button.interactable = false;
-            action2Button.interactable = false;
         }
 
         canvas.enabled = true;
@@ -135,10 +149,9 @@ public class ShipSelectedUI : MonoBehaviour
     }
 
 
-    //FLASHIP METHODS  (Change Selected Ship)
     public void ToggleImage()
     {
-        //TODO change sprite to Captain
+        _selectedShipStatsText.enabled = toggle.isOn;
     }
 
     public void HealShip()

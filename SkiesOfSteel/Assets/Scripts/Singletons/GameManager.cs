@@ -209,6 +209,7 @@ public class GameManager : SingletonNetwork<GameManager>
         foreach (ShipUnit shipUnit in PlayersShips.Instance.GetShips(playerToDisable))
         {
             shipUnit.DisableShip();
+            if (shipUnit.GetCurrentFuel() > 0) shipUnit.RemoveFuel(1);
         }
     }
 

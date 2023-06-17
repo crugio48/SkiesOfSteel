@@ -263,7 +263,10 @@ public class Pathfinding : Singleton<Pathfinding>
         }
     }
 
-
+    public bool IsOnTopOfAPort(Vector3Int pos)
+    {
+        return portsMap.HasTile(pos);
+    }
 
 
     public bool IsPosOnTopOfAPortOrAdjacent(Vector3Int pos)
