@@ -14,4 +14,6 @@ public class DemoPositionsSO : ScriptableObject
     public Vector3Int treasureStartingGridPosition;
 
     public List<Vector3Int> playersWinningTreasurePositions;
+
+    public List<Color> playersColors;
 }

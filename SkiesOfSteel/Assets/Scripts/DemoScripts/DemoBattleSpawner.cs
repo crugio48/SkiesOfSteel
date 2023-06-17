@@ -17,16 +17,9 @@ public class DemoBattleSpawner : NetworkBehaviour
             return;
         }
 
-        List<Color> playersColors = new List<Color>()
-        {
-            Color.red,
-            Color.green, 
-            Color.blue, 
-            Color.yellow,
-        };
-
-
         DemoPositionsSO demoPositions = Resources.Load<DemoPositionsSO>("DemoPositions");
+
+        List<Color> playersColors = demoPositions.playersColors;
 
         //Setup ships for demo match
         for (int i = 0; i < numOfPlayers; i++)

@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -12,6 +13,8 @@ public enum BattleState { START, PLAYERTURN, END };
 public class GameManager : SingletonNetwork<GameManager>
 {
     [SerializeField] private ConnectionApprovalHandler connectionApprovalHandler;
+
+    [SerializeField] private TurnCanvas turnCanvas;
 
     private List<string> _playerUsernames;
 
@@ -30,7 +33,6 @@ public class GameManager : SingletonNetwork<GameManager>
     [CanBeNull] public event System.Action StartGameEvent;
     [CanBeNull] public event System.Action LostGameEvent;
     [CanBeNull] public event System.Action WonGameEvent;
-    [CanBeNull] public event System.Action EndTurnEvent;
 
 
     // This will be used by the server only script to spawn and intialize the ships
@@ -172,6 +174,9 @@ public class GameManager : SingletonNetwork<GameManager>
     // This will be executd only by the server once to setup the game
     private void SetupGame()
     {
+        UpdateNumOfPlayersClientRpc(_numOfPlayers);
+        SetPlayerUsernamesClientRpc(new NetworkStringArray(_playerUsernames));
+
         // Spawn the ships
         _demoBattleSpawner.SpawnDemoShips(_playerUsernames, _numOfPlayers, _usernameToClientIds);
 
@@ -196,8 +201,6 @@ public class GameManager : SingletonNetwork<GameManager>
 
             shipUnit.EnableShip();
         }
-
-        CallEndTurnEventClientRpc();
     }
 
     private void DisableCurrentPlayer()
@@ -213,11 +216,6 @@ public class GameManager : SingletonNetwork<GameManager>
         }
     }
 
-    [ClientRpc]
-    private void CallEndTurnEventClientRpc()
-    {
-        EndTurnEvent?.Invoke();
-    }
 
     // Called by the client
     public void PassTurn()
@@ -267,8 +265,6 @@ public class GameManager : SingletonNetwork<GameManager>
         // At the start of the game, when the lobby is complete and everyone chose a username, the server setups the game
         if (_battleState == BattleState.START && _numOfPlayers == NetworkManager.ConnectedClients.Count && _playerUsernames.Count == _numOfPlayers)
         {
-            UpdateNumOfPlayersClientRpc(_numOfPlayers);
-            UpdatePlayerUsernamesClientRpc(new NetworkStringArray(_playerUsernames));
             SetupGame();
 
             StartGameClientRpc();
@@ -344,14 +340,11 @@ public class GameManager : SingletonNetwork<GameManager>
 
         _playerUsernames.Remove(player); // This maintains the relative order of the remaining usernames
 
-        UpdatePlayerUsernamesClientRpc(new NetworkStringArray(_playerUsernames));
-
         // 3 cases based on this distinction:
         if (turnOrderOfPlayer > _currentPlayer)
         {
             // Easy case
             _numOfPlayers -= 1;
-            UpdateNumOfPlayersClientRpc(_numOfPlayers);
         }
         else if (turnOrderOfPlayer == _currentPlayer)
         {
@@ -362,8 +355,6 @@ public class GameManager : SingletonNetwork<GameManager>
             _currentPlayer = (_currentPlayer) % _numOfPlayers;
             _lastPlayer = -1;
 
-            UpdateNumOfPlayersAndCurrentPlayerClientRpc(_numOfPlayers, _currentPlayer);
-
         }
         else // turnOrderOfPlayer < _currentPlayer.Value
         {
@@ -372,10 +363,11 @@ public class GameManager : SingletonNetwork<GameManager>
             // We want the current player to keep playing
             _currentPlayer -= 1;
             _lastPlayer = _currentPlayer;
-
-            UpdateNumOfPlayersAndCurrentPlayerClientRpc(_numOfPlayers, _currentPlayer);
         }
 
+        UpdateNumOfPlayersClientRpc(_numOfPlayers);
+
+        RemovePlayerAndUpdateCurrentPlayerClientRpc(player, _currentPlayer);
     }
 
 
@@ -444,6 +436,8 @@ public class GameManager : SingletonNetwork<GameManager>
     private void UpdateCurrentPlayerClientRpc(int newCurrentPlayer)
     {
         _currentPlayer = newCurrentPlayer;
+
+        turnCanvas.CurrentPlayerChanged(newCurrentPlayer);
     }
 
     [ClientRpc]
@@ -452,15 +446,9 @@ public class GameManager : SingletonNetwork<GameManager>
         _numOfPlayers = newNumOfPlayers;
     }
 
-    [ClientRpc]
-    private void UpdateNumOfPlayersAndCurrentPlayerClientRpc(int newNumOfPlayers, int newCurrentPlayer)
-    {
-        _numOfPlayers = newNumOfPlayers;
-        _currentPlayer = newCurrentPlayer;
-    }
 
     [ClientRpc]
-    private void UpdatePlayerUsernamesClientRpc(NetworkStringArray newUsernames)
+    private void SetPlayerUsernamesClientRpc(NetworkStringArray newUsernames)
     {
         _playerUsernames = new List<string>(new string[newUsernames.GetLenght()]);
         
@@ -470,6 +458,17 @@ public class GameManager : SingletonNetwork<GameManager>
             Debug.Log(_playerUsernames[i]);
         }
 
+        turnCanvas.SetPlayerNames(_playerUsernames);
+    }
+
+    [ClientRpc]
+    private void RemovePlayerAndUpdateCurrentPlayerClientRpc(string playerUsername, int newCurrentPlayer)
+    {
+        _playerUsernames.Remove(playerUsername);
+
+        _currentPlayer = newCurrentPlayer;
+
+        turnCanvas.RemovePlayerAndUpdateCanvas(playerUsername, newCurrentPlayer);
     }
 
     //----------------------------------- Custom methods:
@@ -505,13 +504,6 @@ public class GameManager : SingletonNetwork<GameManager>
     public string GetCurrentPlayer()
     {
         return _playerUsernames[_currentPlayer];
-    }
-
-    public string GetNextPlayer()
-    {
-        int nextPlayerIndex = (_currentPlayer + 1) % _numOfPlayers;
-
-        return _playerUsernames[nextPlayerIndex];
     }
 }
 
