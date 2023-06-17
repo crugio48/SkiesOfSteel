@@ -358,29 +358,24 @@ public class ShipUnit : NetworkBehaviour
 
         // Here we passed all checks:
 
-        Vector3Int nextPosition = destination;
-
-        Sequence moveSequence = DOTween.Sequence();
-
-        moveSequence.PrependCallback(()=>Engines(false));
+        List<Vector3> path = new List<Vector3>();
+        List<Orientation> dir = new List<Orientation>();
+        Vector3Int next = Vector3Int.zero;
 
         for (Node step = destinationNode; step.Parent != null; step = step.Parent)
         {
-            Vector3 worldPos = _tilemap.GetCellCenterWorld(step.Position);
+            path.Insert(0, _tilemap.GetCellCenterWorld(step.Position));
+            dir.Insert(0, ShapeLogic.Instance.ComputeDirection(step.Parent.Position, step.Position));
 
-            moveSequence.Prepend(transform.DOMove(worldPos, 0.5f).SetEase(Ease.Linear));
-
-
-            if (step.Position == destination) continue;
-
-            Orientation direction = ShapeLogic.Instance.ComputeDirection(step.Position, nextPosition);
-
-            if(direction != 0) moveSequence.PrependCallback(() => SetDirection(direction));
-
-            nextPosition = step.Position;
+            next = step.Position;
         }
 
-        moveSequence.PrependCallback(()=>Engines(true));
+        SetDirection(ShapeLogic.Instance.ComputeDirection(_currentPosition.Value.GetValues(), next));
+
+        transform.DOPath(path.ToArray(), pathLenght * 1.0f, PathType.Linear)
+                 .OnStart(() => Engines(true))
+                 .OnComplete(() => Engines(false))
+                 .OnWaypointChange((int index) => SetDirection(dir[index]));
 
         // Update this ship position and the _currentPosition.onValueChanged event will trigger both on server and on client
         _movementLeft.Value -= pathLenght;
@@ -663,7 +658,13 @@ public class ShipUnit : NetworkBehaviour
 
     private void UpdateSprite()
     {
-        _spriteRenderer.sprite = _shipSO.graphics.GetSprite(_direction, _engines);
+        UpdateSpriteClientRpc(_direction, _engines);
+    }
+
+    [ClientRpc]
+    private void UpdateSpriteClientRpc(Orientation orientation, bool engines)
+    {
+        _spriteRenderer.sprite = _shipSO.graphics.GetSprite(orientation, engines);
     }
 }
 

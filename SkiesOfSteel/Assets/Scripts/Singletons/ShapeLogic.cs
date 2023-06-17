@@ -61,9 +61,9 @@ public class ShapeLogic : Singleton<ShapeLogic>
 
         if (diff.y == 0) return diff.x > 0 ? Orientation.TOP : Orientation.BOTTOM;
 
-        else if (diff.y < 0) return diff.x < (from.x % 2) ? Orientation.BOTTOM_LEFT : Orientation.TOP_LEFT;
+        else if (diff.y < 0) return diff.x < (from.y & 1) ? Orientation.BOTTOM_LEFT : Orientation.TOP_LEFT;
 
-        else return diff.x < (from.x % 2) ? Orientation.BOTTOM_RIGHT : Orientation.TOP_RIGHT;
+        else return diff.x < (from.y & 1) ? Orientation.BOTTOM_RIGHT : Orientation.TOP_RIGHT;
     }
 
 
