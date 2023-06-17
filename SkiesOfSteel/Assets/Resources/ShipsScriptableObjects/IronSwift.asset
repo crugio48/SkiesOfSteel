@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 825764f48ec72ab4a9c3131c35df11b3, type: 3}
   m_Name: IronSwift
   m_EditorClassIdentifier: 
+  shipName: IronSwift
   _Engine:
   - {fileID: 21300000, guid: 8b35aaefad75e7e45ba550d2d45a4a2d, type: 3}
   - {fileID: 21300000, guid: bdf80bc217dbe1241abf3487eeeab363, type: 3}
@@ -26,3 +27,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 11e0167ea1238de4da7f9d67aeb23228, type: 3}
   - {fileID: 21300000, guid: c7fd9ee5a533ca24e968fd6324e0c9b6, type: 3}
   - {fileID: 21300000, guid: b057074608a24bc499ba954e66715e11, type: 3}
+  captainCardFace: {fileID: 21300000, guid: 99f29bcaf3c6c9640a831c0e45da3466, type: 3}
+  shipCardFace: {fileID: 21300000, guid: 8e79f9afeb29759468dcef4629c52be7, type: 3}
+  buttonShipAlive: {fileID: 21300000, guid: 69e93ec6884627541857807b8d0c47e9, type: 3}
+  buttonShipDead: {fileID: 21300000, guid: cd2a04d02a0f3f64185cffeebcfbafc6, type: 3}

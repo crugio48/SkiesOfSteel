@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -47,6 +48,7 @@ public class CameraManagement : MonoBehaviour
 
         if (NetworkManager.Singleton.IsServer) return;
 
+        if (_isMoving) return;
 
         Move();
 
@@ -84,5 +86,22 @@ public class CameraManagement : MonoBehaviour
             for (int sensitivityOfScrolling = 1; sensitivityOfScrolling > 0; sensitivityOfScrolling--)
                 _camera.orthographicSize++;
         }
+    }
+
+    private bool _isMoving = false;
+
+    public void MoveToShipPosition(Vector3 position)
+    {
+        position.z = _camera.transform.position.z;
+
+        Sequence mySequence = DOTween.Sequence();
+
+        mySequence.Append(_camera.transform.DOMove(position, 0.5f));
+
+        mySequence.Join(DOTween.To(() => _camera.orthographicSize, x => _camera.orthographicSize = x, minSize, 0.5f));
+
+        mySequence.OnComplete(() => { _isMoving = false; });
+
+        _isMoving = true;
     }
 }

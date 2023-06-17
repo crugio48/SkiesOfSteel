@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -18,6 +17,14 @@ public class DemoBattleSpawner : NetworkBehaviour
             return;
         }
 
+        List<Color> playersColors = new List<Color>()
+        {
+            Color.red,
+            Color.green, 
+            Color.blue, 
+            Color.yellow,
+        };
+
 
         DemoPositionsSO demoPositions = Resources.Load<DemoPositionsSO>("DemoPositions");
 
@@ -27,16 +34,16 @@ public class DemoBattleSpawner : NetworkBehaviour
             Debug.Log("Spawning ships for player = " + playerUsernames[i]);
 
             // Spawning Flagship
-            SpawnShip(demoPositions.flagshipsPositions[i], "ShipsScriptableObjects/DefenseFlagship", playerUsernames[i], "Flagship");
+            SpawnShip(demoPositions.flagshipsPositions[i], "ShipsScriptableObjects/DefenseFlagship", playerUsernames[i], "Flagship", playersColors[i]);
 
             // Spawning AttackShip
-            SpawnShip(demoPositions.attackShipsPositions[i], "ShipsScriptableObjects/AttackShip", playerUsernames[i], "AttackShip");
+            SpawnShip(demoPositions.attackShipsPositions[i], "ShipsScriptableObjects/AttackShip", playerUsernames[i], "AttackShip", playersColors[i]);
 
             // Spawning FastShip
-            SpawnShip(demoPositions.fastShipsPositions[i], "ShipsScriptableObjects/CargoShip", playerUsernames[i], "CargoShip");
+            SpawnShip(demoPositions.fastShipsPositions[i], "ShipsScriptableObjects/CargoShip", playerUsernames[i], "CargoShip", playersColors[i]);
 
             // Spawning CargoShip
-            SpawnShip(demoPositions.cargoShipsPositions[i], "ShipsScriptableObjects/FastShip", playerUsernames[i], "FastShip");
+            SpawnShip(demoPositions.cargoShipsPositions[i], "ShipsScriptableObjects/FastShip", playerUsernames[i], "FastShip", playersColors[i]);
 
             ulong clientId = _usernameToClientIds[playerUsernames[i]];
             NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.GetComponent<Player>().SetWinningTreasurePosition(demoPositions.playersWinningTreasurePositions[i]);
@@ -45,7 +52,7 @@ public class DemoBattleSpawner : NetworkBehaviour
     }
 
 
-    private void SpawnShip(Vector3Int gridPosition, string scriptableObjectPath, string playerUsername, string typeOfShip)
+    private void SpawnShip(Vector3Int gridPosition, string scriptableObjectPath, string playerUsername, string typeOfShip, Color color)
     {
         GameObject newShip = Instantiate(shipUnitPrefab, tilemap.GetCellCenterWorld(gridPosition), Quaternion.identity);
         newShip.name = typeOfShip + " of " + playerUsername; // Server only 
@@ -54,5 +61,6 @@ public class DemoBattleSpawner : NetworkBehaviour
         shipUnit.SetShipScriptableObject(scriptableObjectPath);
         shipUnit.SetInitialGridPosition(gridPosition);
         shipUnit.SetOwnerUsername(playerUsername);
+        shipUnit.SetOutlineAndColorClientRpc(color);
     }
 }

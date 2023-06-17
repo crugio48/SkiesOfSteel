@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -168,12 +169,6 @@ public class GameManager : SingletonNetwork<GameManager>
 
     //----------------------------------- Game setup after every player setup their username:
 
-    [ClientRpc]
-    private void StartGameClientRpc()
-    {
-        StartGameEvent?.Invoke();
-    }
-
     // This will be executd only by the server once to setup the game
     private void SetupGame()
     {
@@ -247,6 +242,19 @@ public class GameManager : SingletonNetwork<GameManager>
         UpdateCurrentPlayerClientRpc(_currentPlayer);
     }
 
+    [ClientRpc]
+    private void StartGameClientRpc()
+    {
+        StartCoroutine(InvokeStartGameAfterDelay());
+    }
+
+    private IEnumerator InvokeStartGameAfterDelay()
+    {
+        yield return new WaitForSeconds(2f);
+
+        StartGameEvent?.Invoke();
+    }
+
     //----------------------------------- Update method:
 
     private void Update()
@@ -261,6 +269,7 @@ public class GameManager : SingletonNetwork<GameManager>
             UpdateNumOfPlayersClientRpc(_numOfPlayers);
             UpdatePlayerUsernamesClientRpc(new NetworkStringArray(_playerUsernames));
             SetupGame();
+
             StartGameClientRpc();
         }
 

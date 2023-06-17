@@ -8,7 +8,7 @@ using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Canvas))]
-public class ActionInstructionCanvas : MonoBehaviour
+public class ActionCastingUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI _actionDescriptionText;
 

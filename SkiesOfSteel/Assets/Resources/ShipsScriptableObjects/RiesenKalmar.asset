@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 825764f48ec72ab4a9c3131c35df11b3, type: 3}
   m_Name: RiesenKalmar
   m_EditorClassIdentifier: 
+  shipName: RiesenKalmar
   _Engine:
   - {fileID: 21300000, guid: 32696a8d3e9602d4caedef65a5ab2ad2, type: 3}
   - {fileID: 21300000, guid: f7c33dbd30e0ba140a621a0f5afe71ed, type: 3}
@@ -26,3 +27,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: d4e884c68c18a2a42b5407cb79018d2a, type: 3}
   - {fileID: 21300000, guid: 540e23f6d2e9f79408373877ab889e09, type: 3}
   - {fileID: 21300000, guid: 94d536aabfb509f49b4992bf70d79dc2, type: 3}
+  captainCardFace: {fileID: 21300000, guid: 5e357ce0cb2628d4bb91b78b6aa1fd1d, type: 3}
+  shipCardFace: {fileID: 21300000, guid: efd184a36f4131d4e86da9b67465d8a3, type: 3}
+  buttonShipAlive: {fileID: 21300000, guid: daa6b498f8627154cb79c33a56264b76, type: 3}
+  buttonShipDead: {fileID: 21300000, guid: 3f3357c8f20219d4392e42219146a68a, type: 3}

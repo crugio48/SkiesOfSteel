@@ -11,16 +11,10 @@ public class InputManager : MonoBehaviour
     private Tilemap overlayMap;
 
     [SerializeField]
-    private LayerMask layerMask;
-
-    [SerializeField]
     private Tile overlayTile;
 
     [SerializeField]
-    private PlayerShipUI playerShipUI;
-
-    [SerializeField]
-    private ActionInstructionCanvas actionInstructionCanvas;
+    private ShipSelectedUI shipSelectedUI;
 
     private Camera _mainCamera;
 
@@ -109,7 +103,7 @@ public class InputManager : MonoBehaviour
         {
             _selectedShip = ShipsPositions.Instance.GetShip(selectedTile);
 
-            playerShipUI.ShipClicked(_selectedShip);
+            shipSelectedUI.ShipClicked(_selectedShip);
 
             Debug.Log("Selected ship: " + _selectedShip.name);
 
@@ -121,7 +115,7 @@ public class InputManager : MonoBehaviour
         }
         else
         {
-            playerShipUI.NoShipClicked();
+            shipSelectedUI.NoShipClicked();
             Debug.Log("No Ship Found");
         }
     }

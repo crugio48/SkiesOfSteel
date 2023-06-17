@@ -4,13 +4,13 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PlayerShipUI : MonoBehaviour
+public class ShipSelectedUI : MonoBehaviour
 {
     [SerializeField]
     private InputManager inputManager;
 
     [SerializeField]
-    private ActionInstructionCanvas actionInstructionCanvas;
+    private ActionCastingUI actionCastingUI;
 
     [SerializeField] private TextMeshProUGUI _selectedShipStatsText;
 
@@ -60,9 +60,12 @@ public class PlayerShipUI : MonoBehaviour
 
     public void ShipClicked(ShipUnit selectedShip)
     {
+        if (_shipSelected != null) _shipSelected.RemoveHighlight();
+
         //TODO Add to ShipUnit the splashart for the ship and the captain
         _shipSelected = selectedShip;
 
+        _shipSelected.SetHighlight();
 
         _playerName = _shipSelected.GetOwnerUsername();
         _shipList = PlayersShips.Instance.GetShips(_playerName);
@@ -74,6 +77,7 @@ public class PlayerShipUI : MonoBehaviour
 
     public void NoShipClicked()
     {
+        if (_shipSelected != null) _shipSelected.RemoveHighlight();
         _shipSelected = null;
         _shipList = null;
         DisableCanvas();
@@ -90,6 +94,12 @@ public class PlayerShipUI : MonoBehaviour
         action0Button.GetComponentInChildren<TextMeshProUGUI>().text = _shipSelected.GetActions()[0].name;
         action1Button.GetComponentInChildren<TextMeshProUGUI>().text = _shipSelected.GetActions()[1].name;
         action2Button.GetComponentInChildren<TextMeshProUGUI>().text = _shipSelected.GetActions()[2].name;
+
+
+        action0Button.GetComponent<ActionButtonDescription>().SetSelectedShip(_shipSelected);
+        action1Button.GetComponent<ActionButtonDescription>().SetSelectedShip(_shipSelected);
+        action2Button.GetComponent<ActionButtonDescription>().SetSelectedShip(_shipSelected);
+
 
         if (_shipSelected.IsMyShip() && _shipSelected.CanDoAction())
         {
@@ -115,10 +125,6 @@ public class PlayerShipUI : MonoBehaviour
             action1Button.interactable = false;
             action2Button.interactable = false;
         }
-
-        action0Button.GetComponent<ActionButtonDescription>().SetSelectedShip(_shipSelected);
-        action1Button.GetComponent<ActionButtonDescription>().SetSelectedShip(_shipSelected);
-        action2Button.GetComponent<ActionButtonDescription>().SetSelectedShip(_shipSelected);
 
         canvas.enabled = true;
     }
@@ -147,12 +153,7 @@ public class PlayerShipUI : MonoBehaviour
 
     public void StartActionOfShipAtIndex(int index)
     {
-        actionInstructionCanvas.ActionOfShipSelected(_shipSelected, index);
+        actionCastingUI.ActionOfShipSelected(_shipSelected, index);
     }
-    
-
-    public void ClickedButtonOfShipChange(int index)
-    {
-        ShipClicked(_shipList[index]);
-    }
+   
 }

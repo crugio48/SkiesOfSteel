@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 825764f48ec72ab4a9c3131c35df11b3, type: 3}
   m_Name: Leviathan
   m_EditorClassIdentifier: 
+  shipName: Leviathan
   _Engine:
   - {fileID: 21300000, guid: 0f97a4e79e821774f88661315168c47c, type: 3}
   - {fileID: 21300000, guid: ee7cf9828509a464282858c2bba0c0be, type: 3}
@@ -26,3 +27,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e618f0e202e4269448a87316069b436b, type: 3}
   - {fileID: 21300000, guid: 76a5db4a53b0c6543aa18dd50e1ee122, type: 3}
   - {fileID: 21300000, guid: 0c3e6568a229e7643865aee4ffa54804, type: 3}
+  captainCardFace: {fileID: 21300000, guid: 17a30b0b6912c9246afd89aac80da568, type: 3}
+  shipCardFace: {fileID: 21300000, guid: b82a11fa31956364e85655903037b938, type: 3}
+  buttonShipAlive: {fileID: 21300000, guid: c36400c37434d854c8b5bbbb0deda2b7, type: 3}
+  buttonShipDead: {fileID: 21300000, guid: 62445b1b8183216478b62ed6f48cca31, type: 3}

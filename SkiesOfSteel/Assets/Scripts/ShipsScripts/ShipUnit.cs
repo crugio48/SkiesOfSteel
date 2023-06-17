@@ -11,6 +11,8 @@ using UnityEngine.Tilemaps;
 [RequireComponent(typeof(SpriteRenderer))]
 public class ShipUnit : NetworkBehaviour
 {
+    [SerializeField] private Shader shader;
+
     private ShipScriptableObject _shipSO;
 
     private string _ownerUsername;
@@ -185,7 +187,7 @@ public class ShipUnit : NetworkBehaviour
             _currentFuel.Value = _shipSO.maxFuel;
         }
 
-        UpdateSprite();
+        _spriteRenderer.sprite = _shipSO.graphics.GetSprite(_direction, _engines);
     }
 
 
@@ -712,7 +714,7 @@ public class ShipUnit : NetworkBehaviour
 
     public string GetName()
     {
-        return "TODO";
+        return _shipSO.graphics.shipName;
     }
 
 
@@ -759,6 +761,38 @@ public class ShipUnit : NetworkBehaviour
     private void UpdateSpriteClientRpc(Orientation orientation, bool engines)
     {
         _spriteRenderer.sprite = _shipSO.graphics.GetSprite(orientation, engines);
+    }
+
+    public void SetHighlight()
+    {
+        Color color = _spriteRenderer.material.GetColor("_OutlineColor");
+        color.a = 1;
+        _spriteRenderer.material.SetColor("_OutlineColor", color);
+        _spriteRenderer.material.SetFloat("_OutlineThickness", 20f);
+    }
+
+    public void RemoveHighlight()
+    {
+        Color color = _spriteRenderer.material.GetColor("_OutlineColor");
+        color.a = 0.3f;
+        _spriteRenderer.material.SetColor("_OutlineColor", color);
+        _spriteRenderer.material.SetFloat("_OutlineThickness", 10f);
+    }
+
+    [ClientRpc]
+    public void SetOutlineAndColorClientRpc(Color color)
+    {
+        color.a = 0.3f;
+
+        _spriteRenderer.material = new Material(shader);
+        _spriteRenderer.material.SetFloat("_OutlineThickness", 10f);
+        _spriteRenderer.material.SetColor("_OutlineColor", color);
+    }
+
+
+    public ShipGraphics GetShipGraphics()
+    {
+        return _shipSO.graphics;
     }
 }
 
