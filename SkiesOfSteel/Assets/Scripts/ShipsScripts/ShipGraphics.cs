@@ -8,8 +8,8 @@ public class ShipGraphics : ScriptableObject
     public Sprite[] _Engine = new Sprite[6];
     public Sprite[] _NoEngine = new Sprite[6];
 
-    public Sprite GetSprite(int direction, bool engines)
+    public Sprite GetSprite(Orientation direction, bool engines)
     {
-        return engines ? _Engine[(direction - 1)] : _NoEngine[(direction - 1)];
+        return engines ? _Engine[(int)direction] : _NoEngine[(int)direction];
     }
 }

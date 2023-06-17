@@ -370,7 +370,11 @@ public class ShipUnit : NetworkBehaviour
 
             moveSequence.Prepend(transform.DOMove(worldPos, 0.5f).SetEase(Ease.Linear));
 
-            int direction = ComputeDirection(step.Position, nextPosition);
+
+            if (step.Position == destination) continue;
+
+            Orientation direction = ShapeLogic.Instance.ComputeDirection(step.Position, nextPosition);
+
             if(direction != 0) moveSequence.PrependCallback(() => SetDirection(direction));
 
             nextPosition = step.Position;
@@ -643,7 +647,7 @@ public class ShipUnit : NetworkBehaviour
     //----------------------------------- ART:
 
     private bool _engines = false;
-    private int _direction = 5;
+    private Orientation _direction = Orientation.BOTTOM_LEFT;
 
     private void Engines(bool enginesOn)
     {
@@ -651,21 +655,10 @@ public class ShipUnit : NetworkBehaviour
         UpdateSprite();
     }
 
-    private void SetDirection(int direction)
+    private void SetDirection(Orientation direction)
     {
         _direction = direction;
         UpdateSprite();
-    }
-
-    private int ComputeDirection(Vector3Int from, Vector3Int to)
-    {
-        Vector3Int diff = to - from;
-
-        if (diff == Vector3Int.zero) return 0;
-
-        if (diff.y == 0) return diff.x > 0 ? 1 : 4;
-        else if(diff.y < 0) return diff.x < (from.x % 2) ? 5 : 6;
-        else return diff.x < (from.x % 2) ? 3 : 2;
     }
 
     private void UpdateSprite()

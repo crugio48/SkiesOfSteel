@@ -55,6 +55,17 @@ public class ShapeLogic : Singleton<ShapeLogic>
         return (Orientation)(((int)orientation + 1) % 6);
     }
 
+    public Orientation ComputeDirection(Vector3Int from, Vector3Int to)
+    {
+        Vector3Int diff = to - from;
+
+        if (diff.y == 0) return diff.x > 0 ? Orientation.TOP : Orientation.BOTTOM;
+
+        else if (diff.y < 0) return diff.x < (from.x % 2) ? Orientation.BOTTOM_LEFT : Orientation.TOP_LEFT;
+
+        else return diff.x < (from.x % 2) ? Orientation.BOTTOM_RIGHT : Orientation.TOP_RIGHT;
+    }
+
 
     // Get list of positions under this triangle shape
     private List<Vector3Int> TrianglePositions(Orientation shapeOrientation, Vector3Int position)
