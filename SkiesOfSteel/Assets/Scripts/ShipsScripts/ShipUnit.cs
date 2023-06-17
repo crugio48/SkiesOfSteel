@@ -60,6 +60,8 @@ public class ShipUnit : NetworkBehaviour
 
             _canDoAction.OnValueChanged += GeneralBoolInvokeStatsChanged;
             _isDestroyed.OnValueChanged += GeneralBoolInvokeStatsChanged;
+
+            _currentPosition.OnValueChanged += GeneralVec3IntInvokeStatsChanged;
         }
     }
 
@@ -79,6 +81,8 @@ public class ShipUnit : NetworkBehaviour
 
             _canDoAction.OnValueChanged -= GeneralBoolInvokeStatsChanged;
             _isDestroyed.OnValueChanged -= GeneralBoolInvokeStatsChanged;
+
+            _currentPosition.OnValueChanged -= GeneralVec3IntInvokeStatsChanged;
         }
     }
 
@@ -107,6 +111,11 @@ public class ShipUnit : NetworkBehaviour
         StatsGotModified?.Invoke(this);
     }
     private void GeneralBoolInvokeStatsChanged(bool previousValue, bool newValue)
+    {
+        StatsGotModified?.Invoke(this);
+    }
+
+    private void GeneralVec3IntInvokeStatsChanged(Vector3IntSerializable previousValue, Vector3IntSerializable newValue)
     {
         StatsGotModified?.Invoke(this);
     }
@@ -331,8 +340,8 @@ public class ShipUnit : NetworkBehaviour
             return;
         }
 
-        float healPercentage = 0.1f;
-        if (Pathfinding.Instance.IsPosOnTopOfAPortOrAdjacent(_currentPosition.Value.GetValues())) healPercentage = 0.2f; // If is on top of a port then it heals more
+        float healPercentage = 0.05f;
+        if (Pathfinding.Instance.IsPosOnTopOfAPortOrAdjacent(_currentPosition.Value.GetValues())) healPercentage = 0.15f; // If is on top of a port then it heals more
 
         _currentHealth.Value = Mathf.Min(_shipSO.maxHealth, _currentHealth.Value + (int) Mathf.Floor(_shipSO.maxHealth * healPercentage));
 
@@ -685,6 +694,11 @@ public class ShipUnit : NetworkBehaviour
     public bool IsFlagship()
     {
         return _shipSO.isFlagship;
+    }
+
+    public string GetName()
+    {
+        return "TODO";
     }
 
 

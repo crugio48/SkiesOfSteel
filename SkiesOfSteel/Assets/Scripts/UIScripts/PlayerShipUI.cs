@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using Unity.Collections;
-using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -117,6 +115,10 @@ public class PlayerShipUI : MonoBehaviour
             action1Button.interactable = false;
             action2Button.interactable = false;
         }
+
+        action0Button.GetComponent<ActionButtonDescription>().SetSelectedShip(_shipSelected);
+        action1Button.GetComponent<ActionButtonDescription>().SetSelectedShip(_shipSelected);
+        action2Button.GetComponent<ActionButtonDescription>().SetSelectedShip(_shipSelected);
 
         canvas.enabled = true;
     }
