@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: 50D 100A 1R
   m_EditorClassIdentifier: 
   name: Ram attack
+  description: Strong short range attack.               Damage = 50 Accuracy=100%     
+    Range=1                           Fuel Cost=4
   sprite: {fileID: 0}
   fuelCost: 4
   range: 1

@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c5b7b7f0faea304ca3879de94048d61, type: 3}
   m_Name: RefuelOtherShip1Range
   m_EditorClassIdentifier: 
-  name: Refuel ally ship
-  description: 'Refill the fuel of one of your ally ships '
+  name: Refuel ally
+  description: Refill the fuel of one of your ally ships.       Range=1
   sprite: {fileID: 0}
   fuelCost: 0
   range: 1
