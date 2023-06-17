@@ -436,9 +436,9 @@ public class ShipUnit : NetworkBehaviour
         transform.DOPath(path.ToArray(), pathLenght * 1.0f, PathType.Linear)
                  .OnStart(() => Engines(true))
                  .OnComplete(() => {
-                 Engines(false);
-                 _isMoving = false;
-                 RefreshMovementClientRpc();
+                    Engines(false);
+                    _isMoving = false;
+                    RefreshMovementClientRpc();
                  })
                  .OnWaypointChange((int index) => SetDirection(dir[index]));
 
@@ -730,7 +730,7 @@ public class ShipUnit : NetworkBehaviour
 
         AnimationManager.Instance.PlayAnimation(animationToShow);
     }
-}
+
 
 
     //----------------------------------- ART:
