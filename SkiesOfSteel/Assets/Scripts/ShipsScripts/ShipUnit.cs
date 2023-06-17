@@ -127,7 +127,7 @@ public class ShipUnit : NetworkBehaviour
             _currentFuel.Value = _shipSO.maxFuel;
         }
 
-        _spriteRenderer.sprite = _shipSO.sprite; // TODO implement logic for more sprites
+        UpdateSprite();
     }
 
 
@@ -352,20 +352,31 @@ public class ShipUnit : NetworkBehaviour
 
         if (pathLenght > _movementLeft.Value)
         {
-            Debug.LogError("A client tried to move a ship too far than the movement it had left");
+            Debug.LogError("A client tried to move a ship further than the movement it had left.");
             return;
         }
 
         // Here we passed all checks:
 
+        Vector3Int nextPosition = destination;
+
         Sequence moveSequence = DOTween.Sequence();
+
+        moveSequence.PrependCallback(()=>Engines(false));
 
         for (Node step = destinationNode; step.Parent != null; step = step.Parent)
         {
             Vector3 worldPos = _tilemap.GetCellCenterWorld(step.Position);
 
             moveSequence.Prepend(transform.DOMove(worldPos, 0.5f).SetEase(Ease.Linear));
+
+            int direction = ComputeDirection(step.Position, nextPosition);
+            if(direction != 0) moveSequence.PrependCallback(() => SetDirection(direction));
+
+            nextPosition = step.Position;
         }
+
+        moveSequence.PrependCallback(()=>Engines(true));
 
         // Update this ship position and the _currentPosition.onValueChanged event will trigger both on server and on client
         _movementLeft.Value -= pathLenght;
@@ -628,8 +639,40 @@ public class ShipUnit : NetworkBehaviour
 
         return _ownerUsername == NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().GetUsername();
     }
-}
 
+    //----------------------------------- ART:
+
+    private bool _engines = false;
+    private int _direction = 5;
+
+    private void Engines(bool enginesOn)
+    {
+        _engines = enginesOn;
+        UpdateSprite();
+    }
+
+    private void SetDirection(int direction)
+    {
+        _direction = direction;
+        UpdateSprite();
+    }
+
+    private int ComputeDirection(Vector3Int from, Vector3Int to)
+    {
+        Vector3Int diff = to - from;
+
+        if (diff == Vector3Int.zero) return 0;
+
+        if (diff.y == 0) return diff.x > 0 ? 1 : 4;
+        else if(diff.y < 0) return diff.x < (from.x % 2) ? 5 : 6;
+        else return diff.x < (from.x % 2) ? 3 : 2;
+    }
+
+    private void UpdateSprite()
+    {
+        _spriteRenderer.sprite = _shipSO.graphics.GetSprite(_direction, _engines);
+    }
+}
 
 
 public struct Vector3IntSerializable : INetworkSerializable
@@ -650,7 +693,6 @@ public struct Vector3IntSerializable : INetworkSerializable
         return new Vector3IntSerializable(newValue);
     }
 
-
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref x);
@@ -658,8 +700,6 @@ public struct Vector3IntSerializable : INetworkSerializable
         serializer.SerializeValue(ref z);
 
     }
-
-
 
     public Vector3Int GetValues()
     {

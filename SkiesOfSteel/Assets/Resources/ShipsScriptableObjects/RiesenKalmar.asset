@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 825764f48ec72ab4a9c3131c35df11b3, type: 3}
+  m_Name: RiesenKalmar
+  m_EditorClassIdentifier: 
+  _Engine:
+  - {fileID: 21300000, guid: 32696a8d3e9602d4caedef65a5ab2ad2, type: 3}
+  - {fileID: 21300000, guid: f7c33dbd30e0ba140a621a0f5afe71ed, type: 3}
+  - {fileID: 21300000, guid: 675d882212100774eb1ff90879d682d9, type: 3}
+  - {fileID: 21300000, guid: e350eca159874004a812ddf5c98356f9, type: 3}
+  - {fileID: 21300000, guid: 7e08b5408df6283429aab8e57ed9453a, type: 3}
+  - {fileID: 21300000, guid: 7d5e360211fabdf429102cde2caeedb5, type: 3}
+  _NoEngine:
+  - {fileID: 21300000, guid: f0ecd6be4f1fa954184e293b03e0a1c0, type: 3}
+  - {fileID: 21300000, guid: e7375b1329ebdf744b443d474c61d986, type: 3}
+  - {fileID: 21300000, guid: c689516fca69fad41934b4720f95e515, type: 3}
+  - {fileID: 21300000, guid: d4e884c68c18a2a42b5407cb79018d2a, type: 3}
+  - {fileID: 21300000, guid: 540e23f6d2e9f79408373877ab889e09, type: 3}
+  - {fileID: 21300000, guid: 94d536aabfb509f49b4992bf70d79dc2, type: 3}
