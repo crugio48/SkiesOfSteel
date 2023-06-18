@@ -44,3 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4444db815ff225d4c8bcc76f376b1724, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  explosion: {fileID: 6656952830295769748, guid: a8eebaf57a44a434e81157248cc5099e, type: 3}
+  magicShield: {fileID: 2351995286285620645, guid: 042beefa02841ac4cb6e46038b37bf42, type: 3}
+  missText: {fileID: 2124075316019290788, guid: 03e0b328c16e6db4d9ffe7ae629e1e4b, type: 3}
+  critText: {fileID: 3773520783815437978, guid: 58a66b570993f1c4eb967cd5eab8c3ba, type: 3}
+  simpleLightExplosion: {fileID: 3165005562450959721, guid: b08ba783e618aba4bb01a40e980d31f2, type: 3}
