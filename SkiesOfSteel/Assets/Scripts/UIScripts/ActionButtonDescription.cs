@@ -22,7 +22,7 @@ public class ActionButtonDescription : MonoBehaviour, IPointerEnterHandler, IPoi
     {
         if (isHealButton)
         {
-            _textToDisplay = "Heal action that can be used inside of a port.\n" +
+            _textToDisplay = "Heal action that can be used inside of a port or adjacent to it.\n" +
                 "It heals 20% of the ship max HP.";
         }
         else if (isRefuelButton)
