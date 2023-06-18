@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,10 +10,30 @@ public class InstructionButton : MonoBehaviour
 
     [SerializeField] private Button showInstructionsButton;
 
-    void Start()
+
+    private Canvas _canvas;
+
+
+    private void Start()
     {
-        
+        _canvas = GetComponent<Canvas>();
     }
+
+    private void OnEnable()
+    {
+        GameManager.Instance.StartGameEvent += EnableCanvas;
+    }
+
+    private void OnDisable()
+    {
+        GameManager.Instance.StartGameEvent -= EnableCanvas;
+    }
+
+    private void EnableCanvas()
+    {
+        _canvas.enabled = true;
+    }
+
 
     // Update is called once per frame
     public void ShowInstructions()
