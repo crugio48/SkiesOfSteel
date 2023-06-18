@@ -1,5 +1,6 @@
 
 using System.Collections.Generic;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
@@ -67,7 +68,8 @@ public class TurnCanvas : MonoBehaviour
     {
         for (int i = 0; i < _playersNames.Count; i++)
         {
-            playersLogos[i].enabled = true;
+            playersLogos[i].gameObject.SetActive(true);
+            playersLogos[i].GetComponentInChildren<TextMeshProUGUI>().text = _playersNames[i];
             playersLogos[i].color = Color.gray;
         }
 
@@ -82,7 +84,7 @@ public class TurnCanvas : MonoBehaviour
 
         _playersNames.Remove(playerName);
 
-        playersLogos[index].enabled = false;
+        playersLogos[index].gameObject.SetActive(false);
 
         playersLogos.RemoveAt(index);
 

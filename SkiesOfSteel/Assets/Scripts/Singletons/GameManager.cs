@@ -140,7 +140,7 @@ public class GameManager : SingletonNetwork<GameManager>
 
         Debug.Log("Received: " + username);
 
-        if (!_playerUsernames.Contains(username) && username.Length < 30)
+        if (!_playerUsernames.Contains(username) && username.Length <= 15)
         {
             _playerUsernames.Add(username);
 

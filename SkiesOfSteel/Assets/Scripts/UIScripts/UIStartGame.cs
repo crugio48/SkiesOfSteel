@@ -56,9 +56,9 @@ public class UIStartGame : MonoBehaviour
             inputField.text = "Cannot be empty or null!";
             return;
         }
-        if (username.Length > 30)
+        if (username.Length > 15)
         {
-            inputField.text = "Max 30 characters!";
+            inputField.text = "Max 15 characters!";
             return;
         }
 
