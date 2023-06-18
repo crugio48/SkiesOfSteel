@@ -144,14 +144,24 @@ public class ActionCastingUI : MonoBehaviour
 
         if (action.needsTarget)
         {
-            _inputRequiredText.text = "Select " + action.amountOfTargets + " targets";
-
+            if (!action.isTargetAnArea)
+            {
+                _inputRequiredText.text = "Select " + action.amountOfTargets + " target ship" + (action.amountOfTargets > 1 ? "s" : "");
+            }
+            else
+            {
+                _inputRequiredText.text = "Select " + action.amountOfTargets + " target area" + (action.amountOfTargets > 1 ? "s" : "") +
+                                           ", Press R to rotate area";
+            }
+            
             _isSelectingTargets = true;
             targetsSelectedButton.gameObject.SetActive(true);
             customParameterUI.SetActive(false);
         }
         else if (action.needsCustomParameter)
         {
+            _inputRequiredText.text = action.stringToDisplayWhenAskingForCustomParam;
+
             _isSelectingTargets = false;
             targetsSelectedButton.gameObject.SetActive(false);
             customParameterUI.SetActive(true);
@@ -159,6 +169,7 @@ public class ActionCastingUI : MonoBehaviour
         else
         {
             _inputRequiredText.text = "When ready click confirm";
+
             _isSelectingTargets = false;
             targetsSelectedButton.gameObject.SetActive(false);
             customParameterUI.SetActive(false);
@@ -175,9 +186,9 @@ public class ActionCastingUI : MonoBehaviour
 
     public void ClickedTargetsConfirmButton()
     {
-        if (_targets.Count == 0 && _selectedAction.needsTarget && !_selectedAction.isTargetAnArea)
+        if (_targets.Count == 0 && !_selectedAction.isTargetAnArea)
         {
-            _errorText.text = "You have to select at least one target";
+            _errorText.text = "You have to select at least one target ship";
             return;
         }
         else if (_positions.Count == 0 && _selectedAction.isTargetAnArea)
@@ -207,14 +218,34 @@ public class ActionCastingUI : MonoBehaviour
 
     public void ClickedSelectedCustomParameterButton()
     {
-        if (string.IsNullOrEmpty(customParameterInput.text)) return;
+        if (string.IsNullOrEmpty(customParameterInput.text))
+        {
+            _errorText.text = "You must insert a value";
+
+            return;
+        }
 
         int value;
-        if (!int.TryParse(customParameterInput.text, out value)) return;
+
+        if (!int.TryParse(customParameterInput.text, out value))
+        {
+            _errorText.text = "The value must be an integer";
+
+            return;
+        }
+
+        if (_selectedAction.GetMaxAmountForCustomParam(_selectedShip, _targets, _positions, _orientations) < 
+            _selectedAction.GetMinAmountForCustomParam(_selectedShip, _targets, _positions, _orientations))
+        {
+            _errorText.text = "You cannot use this action on those targets now";
+
+            return;
+        }
+
 
         if (!_selectedAction.IsCustomParamRangeRespected(_selectedShip, _targets, _positions, _orientations, value))
         {
-            _errorText.text = "the value must be greater than " + _selectedAction.GetMinAmountForCustomParam(_selectedShip, _targets, _positions, _orientations) +
+            _errorText.text = "The value must be greater than " + _selectedAction.GetMinAmountForCustomParam(_selectedShip, _targets, _positions, _orientations) +
                                " and lower than " + _selectedAction.GetMaxAmountForCustomParam(_selectedShip, _targets, _positions, _orientations);
             return;
         }
@@ -251,12 +282,16 @@ public class ActionCastingUI : MonoBehaviour
 
         if (!_selectedAction.IsSingleRangeRespected(_selectedShip, selectedTile))
         {
+            _errorText.text = "Selected target is too far for the selected action range";
+
             Debug.Log("Not enough range");
             return;
         }
 
         if (_selectedAction.needsLineOfSight && !_selectedAction.HasLineOfSight(_selectedShip, selectedTile))
         {
+            _errorText.text = "This action needs line of sight to the target, you don't have it";
+
             Debug.Log("No line of sight");
             return;
         }
@@ -272,11 +307,15 @@ public class ActionCastingUI : MonoBehaviour
 
                 if (!_selectedAction.canTargetSelf && clickedShip == _selectedShip)
                 {
+                    _errorText.text = "This action cannot target the casting ship";
+
                     Debug.Log("Can't target self");
                     return;
                 }
                 if (_selectedAction.isSelfOnly && clickedShip != _selectedShip)
                 {
+                    _errorText.text = "You can only target the casting ship with this action";
+
                     Debug.Log("Can't target other");
                     return;
                 }
@@ -298,12 +337,24 @@ public class ActionCastingUI : MonoBehaviour
         }
         else
         {
-            if (!_selectedAction.canTargetSelf && selectedTile == _selectedShip.GetCurrentPosition()) return;
+            if (!_selectedAction.canTargetSelf && selectedTile == _selectedShip.GetCurrentPosition())
+            {
+                _errorText.text = "This action cannot target the casting ship";
 
-            if (_selectedAction.isSelfOnly && selectedTile != _selectedShip.GetCurrentPosition()) return;
+                return;
+            }
+            if (_selectedAction.isSelfOnly && selectedTile != _selectedShip.GetCurrentPosition())
+            {
+                _errorText.text = "You can only target the casting ship with this action";
 
-            if (_selectedAction.isAffectingOnlyEmptyPositions && ShipsPositions.Instance.IsThereAShip(selectedTile)) return;
+                return;
+            }
+            if (_selectedAction.isAffectingOnlyEmptyPositions && ShipsPositions.Instance.IsThereAShip(selectedTile))
+            {
+                _errorText.text = "You can only target empty positions with this action";
 
+                return;
+            }
 
             if (_positions.Count < _selectedAction.amountOfTargets && !_positions.Contains(selectedTile))
             {
