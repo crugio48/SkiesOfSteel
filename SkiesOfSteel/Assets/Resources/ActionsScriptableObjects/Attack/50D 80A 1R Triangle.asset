@@ -13,9 +13,20 @@ MonoBehaviour:
   m_Name: 50D 80A 1R Triangle
   m_EditorClassIdentifier: 
   name: Tentacle slash
-  description: Use one of the Ship's tentacle to slash the enemy dealing heavy damage.                
-    Damage = 50 Accuracy=80%      Range=1                           Fuel Cost=6
-  sprite: {fileID: 0}
+  description: 'Use one of the Ship''s tentacle to slash the enemy dealing heavy
+    damage.
+
+    Damage = 50
+
+    Accuracy = 80% per ship hit
+
+    Range = 1
+
+    Area
+    attack: Triangle
+
+    Fuel Cost = 6'
+  sprite: {fileID: 21300000, guid: 6848ccea45d26b241a4b7849c5e5ecd9, type: 3}
   fuelCost: 6
   range: 1
   needsTarget: 1

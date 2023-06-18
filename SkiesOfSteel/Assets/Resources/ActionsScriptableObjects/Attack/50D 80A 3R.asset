@@ -13,10 +13,17 @@ MonoBehaviour:
   m_Name: 50D 80A 3R
   m_EditorClassIdentifier: 
   name: Longshot
-  description: Long range shot with good damage and decent accuracy.                     
-    Damage = 50            Accuracy=80%      Range=3                           Fuel
-    Cost=6
-  sprite: {fileID: 0}
+  description: 'Long range shot with good damage and decent accuracy.
+
+    Damage
+    = 50
+
+    Accuracy = 85%
+
+    Range = 3
+
+    Fuel Cost = 6'
+  sprite: {fileID: 21300000, guid: 99cc0f760cfe4904981b996dfeb87436, type: 3}
   fuelCost: 6
   range: 3
   needsTarget: 1
@@ -30,4 +37,4 @@ MonoBehaviour:
   needsCustomParameter: 0
   stringToDisplayWhenAskingForCustomParam: 
   power: 50
-  accuracy: 80
+  accuracy: 85

@@ -10,7 +10,9 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Canvas))]
 public class ActionCastingUI : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI _actionDescriptionText;
+    [SerializeField] private TextMeshProUGUI _myActionDescription;
+
+    [SerializeField] private TextMeshProUGUI _selectedShipActionDescription;
 
     [SerializeField] private TextMeshProUGUI _inputRequiredText;
 
@@ -121,10 +123,10 @@ public class ActionCastingUI : MonoBehaviour
 
     private void DisableCanvas()
     {
+        _selectedShipActionDescription.enabled = true;
         _canvas.enabled = false;
         _selectedAction = null;
         _selectedShip = null;
-        _errorText.text = string.Empty;
         ResetOverlayMap();
         inputManager.StartReceivingInput();
     }
@@ -132,9 +134,13 @@ public class ActionCastingUI : MonoBehaviour
 
     public void ActionOfShipSelected(ShipUnit shipUnit, int actionIndex)
     {
-        Action action = shipUnit.GetActions()[actionIndex];
+        _myActionDescription.text = _selectedShipActionDescription.text;
 
-        _actionDescriptionText.text = action.description;
+        _selectedShipActionDescription.enabled = false;
+
+        _errorText.text = string.Empty;
+
+        Action action = shipUnit.GetActions()[actionIndex];
 
         if (action.needsTarget)
         {

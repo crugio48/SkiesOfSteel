@@ -13,9 +13,17 @@ MonoBehaviour:
   m_Name: Base Attack 20D 100A 2R
   m_EditorClassIdentifier: 
   name: Base attack
-  description: Base attack of the ship. Damage = 20 Accuracy=100%      Range=2                          
-    Fuel Cost=1
-  sprite: {fileID: 0}
+  description: 'Base attack of the ship.
+
+    Damage = 20
+
+    Accuracy = 100%
+
+    Range
+    = 2
+
+    Fuel Cost = 1'
+  sprite: {fileID: 21300000, guid: 46f3c0066fc94d64fbf9dc4161d4c3c9, type: 3}
   fuelCost: 1
   range: 2
   needsTarget: 1

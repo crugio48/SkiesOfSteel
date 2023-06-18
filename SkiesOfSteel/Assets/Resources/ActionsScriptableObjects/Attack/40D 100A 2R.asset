@@ -13,9 +13,17 @@ MonoBehaviour:
   m_Name: 40D 100A 2R
   m_EditorClassIdentifier: 
   name: Cannon attack
-  description: Strong single target cannon shot.                       Damage = 40
-    Accuracy=100%      Range=2                           Fuel Cost=4
-  sprite: {fileID: 0}
+  description: 'Strong single target cannon shot.
+
+    Damage = 40
+
+    Accuracy
+    = 100%
+
+    Range = 2
+
+    Fuel Cost = 4'
+  sprite: {fileID: 21300000, guid: a30ede1822161c44b841adc3cac678c8, type: 3}
   fuelCost: 4
   range: 2
   needsTarget: 1

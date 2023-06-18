@@ -73,8 +73,8 @@ public class TurnCanvas : MonoBehaviour
             playersLogos[i].color = Color.gray;
         }
 
-        // Highlight player aka first player
-        playersLogos[0].color = Color.white;
+        // Highlight player 0 aka first player
+        CurrentPlayerChanged(0);
     }
 
 

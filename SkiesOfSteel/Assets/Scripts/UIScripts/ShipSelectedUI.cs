@@ -20,6 +20,11 @@ public class ShipSelectedUI : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI _selectedShipStatsText;
 
+    [SerializeField] private Slider healthBar;
+
+    [SerializeField] private Slider fuelBar;
+
+
     [SerializeField] private Button healButton;
     [SerializeField] private Button refuelButton;
 
@@ -83,23 +88,31 @@ public class ShipSelectedUI : MonoBehaviour
         captainCardFace.sprite = _shipSelected.GetShipGraphics().captainCardFace;
         shipCardFace.sprite = _shipSelected.GetShipGraphics().shipCardFace;
 
-        _selectedShipStatsText.text = "Health = " + _shipSelected.GetCurrentHealth() + " / " + _shipSelected.GetMaxHealth() +
-                                    "\nFuel = " + _shipSelected.GetCurrentFuel() + " / " + _shipSelected.GetMaxFuel() +
-                                    "\nBase Attack = " + _shipSelected.GetBaseAttack() +
+        _selectedShipStatsText.text = "Base Attack = " + _shipSelected.GetBaseAttack() +
                                     "\nAttack stage: " + (_shipSelected.GetAttackStage() + _shipSelected.GetOneTurnTemporaryAttackStage()) +
                                     "\nBase Defense = " + _shipSelected.GetBaseDefense() +
                                     "\nDefense stage: " + (_shipSelected.GetDefenseStage() + _shipSelected.GetOneTurnTemporaryDefenseStage()) +
-                                    "\nMovements Left = " + _shipSelected.GetMovementLeft();
+                                    "\nMovements Left = " + _shipSelected.GetMovementLeft() +
+                                    "\nHas Action Left: " + (_shipSelected.CanDoAction() ? "yes" : "no");
 
+        healthBar.maxValue = _shipSelected.GetMaxHealth();
+        healthBar.value = _shipSelected.GetCurrentHealth();
+
+        healthBar.GetComponentInChildren<TextMeshProUGUI>().text = "Health  " + healthBar.value + " / " + healthBar.maxValue;
+
+        fuelBar.maxValue = _shipSelected.GetMaxFuel();
+        fuelBar.value = _shipSelected.GetCurrentFuel();
+
+        fuelBar.GetComponentInChildren<TextMeshProUGUI>().text = "Fuel  " + fuelBar.value + " / " + fuelBar.maxValue;
 
 
         // MAYBE TODO spawn actions buttons dinamically based on ships actions list lenght
 
         for (int i = 0; i < actionsButtons.Count; i++)
         {
-            actionsButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = _shipSelected.GetActions()[i].name;
-
             actionsButtons[i].GetComponent<ActionButtonDescription>().SetSelectedShip(_shipSelected);
+
+            actionsButtons[i].GetComponent<Image>().sprite = _shipSelected.GetActions()[i].sprite;
 
             if (_shipSelected.IsMyShip() && _shipSelected.CanDoAction() && _shipSelected.GetCurrentFuel() >= _shipSelected.GetActions()[i].fuelCost)
             {

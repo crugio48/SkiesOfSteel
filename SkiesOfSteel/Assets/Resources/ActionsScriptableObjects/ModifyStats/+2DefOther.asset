@@ -13,9 +13,20 @@ MonoBehaviour:
   m_Name: +2DefOther
   m_EditorClassIdentifier: 
   name: Shield Up
-  description: Boost the defence stat of one of your ships.            Fuel Cost=10      
+  description: 'Boost the defence stat of another ship until your next turn.
+
+    Fuel
+    Cost = 10
+
+    Accuracy = 100%
+
     Range=1
-  sprite: {fileID: 0}
+
+    Defense stage boost = +2
+
+    Is
+    boost temporary = yes'
+  sprite: {fileID: 21300000, guid: 07ad12e63ff4cac4b82c8ab5825ff4b5, type: 3}
   fuelCost: 10
   range: 1
   needsTarget: 1

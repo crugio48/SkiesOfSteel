@@ -13,8 +13,13 @@ MonoBehaviour:
   m_Name: RefuelOtherShip1Range
   m_EditorClassIdentifier: 
   name: Refuel ally
-  description: Refill the fuel of one of your ally ships.       Range=1
-  sprite: {fileID: 0}
+  description: 'Trasfer your fuel to another ship.
+
+    Accuracy = 100%
+
+    Range
+    = 1'
+  sprite: {fileID: 21300000, guid: b1a3833d136a42741b3d9be28355c1cd, type: 3}
   fuelCost: 0
   range: 1
   needsTarget: 1

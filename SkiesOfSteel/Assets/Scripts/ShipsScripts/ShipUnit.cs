@@ -191,7 +191,7 @@ public class ShipUnit : NetworkBehaviour
 
     // Actual method that sets the ships scriptable value object
     private void SetInitialValuesFromSO(string shipSOpath)
-    {       
+    {
         _shipSO = Resources.Load<ShipScriptableObject>(shipSOpath);
 
         if (IsServer)
@@ -280,7 +280,7 @@ public class ShipUnit : NetworkBehaviour
 
 
     //----------------------------------- ServerRpc of Actions and movements logic:
-    
+
     private bool IsItThisPlayersTurn()
     {
         if (GameManager.Instance.GetCurrentPlayer() != _ownerUsername)
@@ -363,7 +363,7 @@ public class ShipUnit : NetworkBehaviour
 
         float healPercentage = 0.2f;
 
-        _currentHealth.Value = Mathf.Min(_shipSO.maxHealth, _currentHealth.Value + (int) Mathf.Floor(_shipSO.maxHealth * healPercentage));
+        _currentHealth.Value = Mathf.Min(_shipSO.maxHealth, _currentHealth.Value + (int)Mathf.Floor(_shipSO.maxHealth * healPercentage));
 
         _canDoAction.Value = false;
     }
@@ -414,6 +414,8 @@ public class ShipUnit : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void MoveServerRpc(Vector3Int destination, ServerRpcParams serverRpcParams = default)
     {
+        ulong senderId = serverRpcParams.Receive.SenderClientId;
+
         if (_isMoving) return;
 
         if (_currentFuel.Value == 0) return;
@@ -462,9 +464,10 @@ public class ShipUnit : NetworkBehaviour
         transform.DOPath(path.ToArray(), pathLenght * 1.0f, PathType.Linear)
                  .OnStart(() => Engines(true))
                  .OnComplete(() => {
-                    Engines(false);
-                    _isMoving = false;
-                    RefreshMovementClientRpc();
+                     Engines(false);
+                     _isMoving = false;
+                     RefreshMovementClientRpc();
+                     TreasureCheckEndMovementCallback(destination, senderId);
                  })
                  .OnWaypointChange((int index) => SetDirection(dir[index]));
 
@@ -476,8 +479,17 @@ public class ShipUnit : NetworkBehaviour
         _movementLeft.Value -= pathLenght;
         _currentPosition.Value = destination;
         _currentFuel.Value -= 1;
+    }
+
+    [ClientRpc]
+    private void RefreshMovementClientRpc()
+    {
+        MovementCompleted?.Invoke(this);
+    }
 
 
+    private void TreasureCheckEndMovementCallback(Vector3Int destination, ulong senderId)
+    {
         // Check if this ship won the game by retrieving the treasure back to the base
         Treasure treasureInstance = Treasure.Instance;
 
@@ -490,8 +502,6 @@ public class ShipUnit : NetworkBehaviour
         {
             treasureInstance.SetCurGridPosition(destination);
 
-            ulong senderId = serverRpcParams.Receive.SenderClientId;
-
             Debug.Log("WINNING POSITION: " + NetworkManager.Singleton.ConnectedClients[senderId].PlayerObject.GetComponent<Player>().GetWinningTreasurePosition());
 
             if (destination == NetworkManager.Singleton.ConnectedClients[senderId].PlayerObject.GetComponent<Player>().GetWinningTreasurePosition())
@@ -501,11 +511,6 @@ public class ShipUnit : NetworkBehaviour
         }
     }
 
-    [ClientRpc]
-    private void RefreshMovementClientRpc()
-    {
-        MovementCompleted?.Invoke(this);
-    }
 
 
     //----------------------------------- Server only methods of logic that modifies ship values:

@@ -13,9 +13,17 @@ MonoBehaviour:
   m_Name: 50D 100A 1R
   m_EditorClassIdentifier: 
   name: Ram attack
-  description: Strong short range attack.               Damage = 50 Accuracy=100%     
-    Range=1                           Fuel Cost=4
-  sprite: {fileID: 0}
+  description: 'Charge your ship into your enemies side.
+
+    Damage = 50
+
+    Accuracy
+    = 100%
+
+    Range = 1
+
+    Fuel Cost = 4'
+  sprite: {fileID: 21300000, guid: 69a36a2dbd428f0438841b8c14ecefc6, type: 3}
   fuelCost: 4
   range: 1
   needsTarget: 1
