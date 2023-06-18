@@ -588,11 +588,16 @@ public class ShipUnit : NetworkBehaviour
         if (!IsServer) return;
 
         float divisorValue = 2.0f;
-        int critChance = 24;
+        int critChance = 16;
 
         float damage = (power * (attackingShip.GetAttack / GetDefense) / divisorValue) * Random.Range(0.9f, 1.0f);
 
         float critMultiplier = Random.Range(0, critChance) == 0 ? 1.5f : 1.0f;
+
+        if (critMultiplier > 1.2f)
+        {
+            PlayAnimationClientRpc(AnimationToShow.CRIT, attackingShip.GetCurrentPosition());
+        }
 
         damage *= critMultiplier;
 
@@ -758,9 +763,7 @@ public class ShipUnit : NetworkBehaviour
     [ClientRpc]
     public void PlayAnimationClientRpc(AnimationToShow animationToShow, Vector3Int casterPosition)
     {
-        ShipUnit target = this;
-
-        //AnimationManager.Instance.PlayAnimation(animationToShow);
+        AnimationManager.Instance.PlayAnimation(animationToShow, transform);
     }
 
 
