@@ -63,6 +63,8 @@ public class InputManager : MonoBehaviour
 
             if (_selectedShip.GetMovementLeft() > 0)
             {
+                if (!_selectedShip.HasAlreadyMovedThisTurn() && _selectedShip.GetCurrentFuel() == 0) return;
+
                 List<Vector3Int> possibleDestinationTiles = Pathfinding.Instance.GetPossibleDestinations(_selectedShip.GetCurrentPosition(), _selectedShip.GetMovementLeft(), _selectedShip);
                 DisplayMovementOverlayTiles(possibleDestinationTiles);
             }
@@ -109,6 +111,8 @@ public class InputManager : MonoBehaviour
 
             if (_selectedShip.IsMyShip() && _selectedShip.GetMovementLeft() > 0)
             {
+                if (!_selectedShip.HasAlreadyMovedThisTurn() && _selectedShip.GetCurrentFuel() == 0) return;
+
                 List<Vector3Int> possibleDestinationTiles = Pathfinding.Instance.GetPossibleDestinations(_selectedShip.GetCurrentPosition(), _selectedShip.GetMovementLeft(), _selectedShip);
                 DisplayMovementOverlayTiles(possibleDestinationTiles);
             }
@@ -175,6 +179,8 @@ public class InputManager : MonoBehaviour
 
         if (_selectedShip.IsMyShip() && _selectedShip.GetMovementLeft() > 0)
         {
+            if (!_selectedShip.HasAlreadyMovedThisTurn() && _selectedShip.GetCurrentFuel() == 0) return;
+
             List<Vector3Int> possibleDestinationTiles = Pathfinding.Instance.GetPossibleDestinations(_selectedShip.GetCurrentPosition(), _selectedShip.GetMovementLeft(), _selectedShip);
             DisplayMovementOverlayTiles(possibleDestinationTiles);
         }

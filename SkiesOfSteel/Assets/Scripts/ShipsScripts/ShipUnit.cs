@@ -418,7 +418,7 @@ public class ShipUnit : NetworkBehaviour
 
         if (_isMoving) return;
 
-        if (_currentFuel.Value == 0) return;
+        if (_currentFuel.Value == 0 && !HasAlreadyMovedThisTurn()) return;
 
         if (!PassedInitialChecks(serverRpcParams)) return;
 
@@ -476,9 +476,13 @@ public class ShipUnit : NetworkBehaviour
 
 
         // Update this ship position and the _currentPosition.onValueChanged event will trigger both on server and on client
+        if (!HasAlreadyMovedThisTurn())
+        {
+            _currentFuel.Value -= 1;
+        }
+
         _movementLeft.Value -= pathLenght;
         _currentPosition.Value = destination;
-        _currentFuel.Value -= 1;
     }
 
     [ClientRpc]
@@ -758,6 +762,11 @@ public class ShipUnit : NetworkBehaviour
         if (IsServer) return false; // This is a local client check method only
 
         return _ownerUsername == NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().GetUsername();
+    }
+
+    public bool HasAlreadyMovedThisTurn()
+    {
+        return _movementLeft.Value < _shipSO.speed;
     }
 
     [ClientRpc]

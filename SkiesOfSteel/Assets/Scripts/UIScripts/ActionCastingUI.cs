@@ -164,6 +164,7 @@ public class ActionCastingUI : MonoBehaviour
 
             _isSelectingTargets = false;
             targetsSelectedButton.gameObject.SetActive(false);
+            customParameterInput.text = string.Empty;
             customParameterUI.SetActive(true);
         }
         else
@@ -204,6 +205,7 @@ public class ActionCastingUI : MonoBehaviour
         if (_selectedAction.needsCustomParameter)
         {
             _inputRequiredText.text = _selectedAction.stringToDisplayWhenAskingForCustomParam;
+            customParameterInput.text = string.Empty;
             customParameterUI.SetActive(true);
         }
         else
