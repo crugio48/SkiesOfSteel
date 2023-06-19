@@ -25,6 +25,30 @@ public class StartNetwork : MonoBehaviour
 
     public void StartServer(int numOfPlayers)
     {
+        string ip = "127.0.0.1";
+        ushort port = 7777;
+
+        if (!string.IsNullOrEmpty(inputIP.text))
+        {
+            if (IPAddress.TryParse(inputIP.text, out IPAddress address))
+            {
+                ip = address.ToString();
+            }
+            else
+            {
+                errorTextField.text = "Not a real IP address!";
+                return;
+            }
+        }
+
+
+        // TODO get inputfield to change the ip address to connect to
+        NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(
+            ip,  // The IP address is a string
+            port // The port number is an unsigned short
+        );
+
+
         NetworkManager.Singleton.StartServer();
 
         GameManager.Instance.SetNumOfPlayers(numOfPlayers);

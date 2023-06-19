@@ -16,7 +16,7 @@ MonoBehaviour:
   maxHealth: 100
   maxFuel: 20
   speed: 2
-  attack: 80
+  attack: 70
   defense: 50
   battleCost: 0
   graphics: {fileID: 11400000, guid: cf873798d44e1ff43aaa5db81a6509bd, type: 2}

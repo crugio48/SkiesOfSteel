@@ -121,7 +121,7 @@ public class ActionCastingUI : MonoBehaviour
     }
 
 
-    private void DisableCanvas()
+    public void DisableCanvas()
     {
         _selectedShipActionDescription.enabled = true;
         _canvas.enabled = false;
@@ -186,6 +186,8 @@ public class ActionCastingUI : MonoBehaviour
 
     public void ClickedTargetsConfirmButton()
     {
+        _errorText.text = string.Empty;
+
         if (_targets.Count == 0 && !_selectedAction.isTargetAnArea)
         {
             _errorText.text = "You have to select at least one target ship";
@@ -218,6 +220,8 @@ public class ActionCastingUI : MonoBehaviour
 
     public void ClickedSelectedCustomParameterButton()
     {
+        _errorText.text = string.Empty;
+
         if (string.IsNullOrEmpty(customParameterInput.text))
         {
             _errorText.text = "You must insert a value";
@@ -278,6 +282,8 @@ public class ActionCastingUI : MonoBehaviour
 
     private void TryAddClick()
     {
+        _errorText.text = string.Empty;
+
         Vector3Int selectedTile = GetTileUnderMouse();
 
         if (!_selectedAction.IsSingleRangeRespected(_selectedShip, selectedTile))

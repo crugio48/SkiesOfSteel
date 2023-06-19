@@ -249,7 +249,7 @@ public class GameManager : SingletonNetwork<GameManager>
 
     private IEnumerator InvokeStartGameAfterDelay()
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(0.5f);
 
         StartGameEvent?.Invoke();
     }
