@@ -89,7 +89,11 @@ public class ActionCastingUI : MonoBehaviour
                     _currentTileUnderMouse = newTileUnderMouse;
                     List<Vector3Int> tilesInCurrentArea = ShapeLogic.Instance.GetPositionsInThisShape(_selectedAction.shape, _curRotation, _currentTileUnderMouse);
                     ResetOverlayMap();
-                    DisplayTargetAreaTiles(tilesInCurrentArea);
+
+                    if (_positions.Count < _selectedAction.amountOfTargets)
+                    {
+                        DisplayTargetAreaTiles(tilesInCurrentArea);
+                    }
                 }
             }
         }
@@ -290,6 +294,23 @@ public class ActionCastingUI : MonoBehaviour
 
         if (!_selectedAction.IsSingleRangeRespected(_selectedShip, selectedTile))
         {
+            if (_selectedAction.isTargetAnArea)
+            {
+                bool hasAtLeastOneAreaBeenRemoved = false;
+                for (int i = 0; i < _positions.Count; i++)
+                {
+                    List<Vector3Int> areaTiles = ShapeLogic.Instance.GetPositionsInThisShape(_selectedAction.shape, _orientations[i], _positions[i]);
+
+                    if (areaTiles.Contains(selectedTile))
+                    {
+                        _positions.RemoveAt(i);
+                        _orientations.RemoveAt(i);
+                        hasAtLeastOneAreaBeenRemoved = true;
+                    }
+                }
+                if (hasAtLeastOneAreaBeenRemoved) return;
+            }
+
             _errorText.text = "Selected target is too far for the selected action range";
 
             Debug.Log("Not enough range");
@@ -341,6 +362,13 @@ public class ActionCastingUI : MonoBehaviour
                     _targets.Remove(clickedShip);
                     RemoveOverlayTileAtPos(selectedTile);
                 }
+
+                else if (_targets.Count >= _selectedAction.amountOfTargets && !_targets.Contains(clickedShip))
+                {
+                    _errorText.text = "You already selected the maximum amount of targets";
+
+                    return;
+                }
             }
         }
         else
@@ -364,17 +392,31 @@ public class ActionCastingUI : MonoBehaviour
                 return;
             }
 
-            if (_positions.Count < _selectedAction.amountOfTargets && !_positions.Contains(selectedTile))
+            bool hasAtLeastOneAreaBeenRemoved = false;
+
+            for (int i = 0; i < _positions.Count; i++)
+            {
+                List<Vector3Int> areaTiles = ShapeLogic.Instance.GetPositionsInThisShape(_selectedAction.shape, _orientations[i], _positions[i]);
+
+                if (areaTiles.Contains(selectedTile))
+                {
+                    _positions.RemoveAt(i);
+                    _orientations.RemoveAt(i);
+                    hasAtLeastOneAreaBeenRemoved = true;
+                }
+            }
+
+            if (!hasAtLeastOneAreaBeenRemoved && _positions.Count < _selectedAction.amountOfTargets)
             {
                 _positions.Add(selectedTile);
                 _orientations.Add(_curRotation);
             }
-            else if(_positions.Contains(selectedTile))
-            {
-                int index = _positions.IndexOf(selectedTile);
 
-                _positions.RemoveAt(index);
-                _orientations.RemoveAt(index);
+            else if (!hasAtLeastOneAreaBeenRemoved && _positions.Count >= _selectedAction.amountOfTargets)
+            {
+                _errorText.text = "You already selected the maximum amount of target areas";
+
+                return;
             }
         }
     }
