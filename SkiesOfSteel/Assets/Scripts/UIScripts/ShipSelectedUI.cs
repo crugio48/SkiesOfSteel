@@ -34,8 +34,6 @@ public class ShipSelectedUI : MonoBehaviour
 
     ShipUnit _shipSelected;
 
-    private string _playerName;
-
 
     private void Start()
     {
@@ -65,20 +63,18 @@ public class ShipSelectedUI : MonoBehaviour
     {
         if (selectedShip.IsDestroyed()) NoShipClicked();
 
-        if (_shipSelected != null) _shipSelected.RemoveHighlight();
+        //if (_shipSelected != null) _shipSelected.RemoveHighlight();   TODO new way of highlighting target
 
         _shipSelected = selectedShip;
 
-        _shipSelected.SetHighlight();
-
-        _playerName = _shipSelected.GetOwnerUsername();
+        //_shipSelected.SetHighlight();         TODO new way of highlighting target
 
         EnableCanvas();
     }
 
     public void NoShipClicked()
     {
-        if (_shipSelected != null && !_shipSelected.IsDestroyed()) _shipSelected.RemoveHighlight();
+        //if (_shipSelected != null && !_shipSelected.IsDestroyed()) _shipSelected.RemoveHighlight();      TODO new way of highlighting target
         _shipSelected = null;
         DisableCanvas();
     }
