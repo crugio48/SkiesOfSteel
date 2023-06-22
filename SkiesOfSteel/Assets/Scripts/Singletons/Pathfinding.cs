@@ -171,6 +171,52 @@ public class Pathfinding : Singleton<Pathfinding>
     }
 
 
+    public List<Vector3Int> GetRangeTiles(Vector3Int center, int attackRange)
+    {
+        List<Vector3Int> visited = new List<Vector3Int>();
+
+        visited.Add(center);
+
+        List<Vector3Int>[] fringes = new List<Vector3Int>[attackRange + 1]; // fringes[k] is the set of cells that can be reached in k steps
+
+        for (int k = 0; k <= attackRange; k++)
+        {
+            fringes[k] = new List<Vector3Int>();
+        }
+
+        fringes[0].Add(center);
+
+        for (int k = 1; k <= attackRange; k++)
+        {
+            foreach (Vector3Int reachable in fringes[k - 1])
+            {
+                foreach (Vector3Int pos in Node.GetAdjacents(reachable))
+                {
+                    // Checks if tile is a good tile:
+
+                    if (visited.Contains(pos)) continue;
+
+                    if (!tilemap.HasTile(pos)) continue;
+
+                    if (!(tilemap.GetTile(pos) as MapTile).IsWalkable) continue; // For now this method is for ships that can travel on walkable tiles only
+
+                    // Checks passed
+                    visited.Add(pos);
+                    fringes[k].Add(pos);
+                }
+            }
+        }
+
+        return visited;
+    }
+
+
+    public bool IsTileWalkable(Vector3Int position)
+    {
+        return tilemap.HasTile(position) && (tilemap.GetTile(position) as MapTile).IsWalkable;
+    }
+
+
 
     private List<Vector3Int> GetLine(Vector3 start, Vector3 goal)
     {
