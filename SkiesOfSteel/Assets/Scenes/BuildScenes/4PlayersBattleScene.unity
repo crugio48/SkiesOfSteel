@@ -15500,7 +15500,7 @@ PrefabInstance:
       objectReference: {fileID: 610269839}
     - target: {fileID: 5361222104045381727, guid: 3c59d977fd3c78b48a6d6615367185a7, type: 3}
       propertyPath: demoPositionsSOPath
-      value: DemoPositions
+      value: DemoPositions/4PlayersMap
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3c59d977fd3c78b48a6d6615367185a7, type: 3}

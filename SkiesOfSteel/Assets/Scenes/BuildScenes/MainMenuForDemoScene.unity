@@ -1305,7 +1305,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: BattleScene
+          m_StringArgument: 4PlayersBattleScene
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &273910032
