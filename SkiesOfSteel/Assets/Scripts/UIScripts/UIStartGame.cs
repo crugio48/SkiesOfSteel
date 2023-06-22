@@ -24,21 +24,14 @@ public class UIStartGame : MonoBehaviour
 
     private void OnEnable()
     {
-        StartNetwork.ClientConnectedCorrectly += EnableCanvas;
         GameManager.Instance.StartGameEvent += DisableCanvas;
         GameManager.Instance.UsernameSelected += UsernameSelected;
     }
 
     private void OnDisable()
     {
-        StartNetwork.ClientConnectedCorrectly -= EnableCanvas;
         GameManager.Instance.StartGameEvent -= DisableCanvas;
         GameManager.Instance.UsernameSelected -= UsernameSelected;
-    }
-
-    private void EnableCanvas()
-    {
-        _waitingStartCanvas.enabled = true;
     }
 
     private void DisableCanvas()

@@ -6,6 +6,7 @@ using UnityEngine.Tilemaps;
 
 public class DemoBattleSpawner : NetworkBehaviour
 {
+    [SerializeField] private string demoPositionsSOPath;
     [SerializeField] private GameObject shipUnitPrefab;
     [SerializeField] private Tilemap tilemap;
 
@@ -17,7 +18,7 @@ public class DemoBattleSpawner : NetworkBehaviour
             return;
         }
 
-        DemoPositionsSO demoPositions = Resources.Load<DemoPositionsSO>("DemoPositions");
+        DemoPositionsSO demoPositions = Resources.Load<DemoPositionsSO>(demoPositionsSOPath);
 
         List<Color> playersColors = demoPositions.playersColors;
 
