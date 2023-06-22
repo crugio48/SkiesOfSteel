@@ -805,6 +805,7 @@ public class ShipUnit : NetworkBehaviour
         _spriteRenderer.sprite = _shipSO.graphics.GetSprite(orientation, engines);
     }
 
+    /*                              TODO new way of highlighting target
     public void SetHighlight()
     {
         Color color = _spriteRenderer.material.GetColor("_OutlineColor");
@@ -820,14 +821,14 @@ public class ShipUnit : NetworkBehaviour
         _spriteRenderer.material.SetColor("_OutlineColor", color);
         _spriteRenderer.material.SetFloat("_OutlineThickness", 10f);
     }
+    */
 
     [ClientRpc]
     public void SetOutlineAndColorClientRpc(Color color)
     {
-        color.a = 0.3f;
-
+        color.a = 1;
         _spriteRenderer.material = new Material(shader);
-        _spriteRenderer.material.SetFloat("_OutlineThickness", 10f);
+        _spriteRenderer.material.SetFloat("_OutlineThickness", 20f);
         _spriteRenderer.material.SetColor("_OutlineColor", color);
     }
 

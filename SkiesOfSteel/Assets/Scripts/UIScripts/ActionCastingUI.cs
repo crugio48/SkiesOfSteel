@@ -49,6 +49,8 @@ public class ActionCastingUI : MonoBehaviour
     private List<Orientation> _orientations;
 
 
+    private List<Vector3Int> _rangeTiles;
+
     private void Start()
     {
         _canvas = GetComponent<Canvas>();
@@ -77,9 +79,8 @@ public class ActionCastingUI : MonoBehaviour
                 if (Input.GetKeyDown(KeyCode.R))
                 {
                     _curRotation = ShapeLogic.Instance.GetNextClockwiseOrientation(_curRotation);
-                    List<Vector3Int> tilesInCurrentArea = ShapeLogic.Instance.GetPositionsInThisShape(_selectedAction.shape, _curRotation, _currentTileUnderMouse);
-                    ResetOverlayMap();
-                    DisplayTargetAreaTiles(tilesInCurrentArea);
+
+                    UpdateAreaOverlayIfNeeded();
                 }
 
                 Vector3Int newTileUnderMouse = GetTileUnderMouse();
@@ -87,9 +88,8 @@ public class ActionCastingUI : MonoBehaviour
                 if (_currentTileUnderMouse != newTileUnderMouse)
                 {
                     _currentTileUnderMouse = newTileUnderMouse;
-                    List<Vector3Int> tilesInCurrentArea = ShapeLogic.Instance.GetPositionsInThisShape(_selectedAction.shape, _curRotation, _currentTileUnderMouse);
-                    ResetOverlayMap();
-                    DisplayTargetAreaTiles(tilesInCurrentArea);
+
+                    UpdateAreaOverlayIfNeeded();
                 }
             }
         }
@@ -110,12 +110,10 @@ public class ActionCastingUI : MonoBehaviour
         _orientations.Clear();
         _curRotation = Orientation.TOP;
         _currentTileUnderMouse = GetTileUnderMouse();
+
+        _rangeTiles = Pathfinding.Instance.GetRangeTiles(_selectedShip.GetCurrentPosition(), _selectedAction.range);
+
         ResetOverlayMap();
-        if (_selectedAction.isTargetAnArea)
-        {
-            List<Vector3Int> tilesInCurrentArea = ShapeLogic.Instance.GetPositionsInThisShape(_selectedAction.shape, _curRotation, _currentTileUnderMouse);
-            DisplayTargetAreaTiles(tilesInCurrentArea);
-        }
 
         inputManager.StopReceivingInput();
     }
@@ -127,7 +125,7 @@ public class ActionCastingUI : MonoBehaviour
         _canvas.enabled = false;
         _selectedAction = null;
         _selectedShip = null;
-        ResetOverlayMap();
+        EmptyOverlayTilemap();
         inputManager.StartReceivingInput();
     }
 
@@ -290,6 +288,27 @@ public class ActionCastingUI : MonoBehaviour
 
         if (!_selectedAction.IsSingleRangeRespected(_selectedShip, selectedTile))
         {
+            if (_selectedAction.isTargetAnArea)
+            {
+                bool hasAtLeastOneAreaBeenRemoved = false;
+                for (int i = 0; i < _positions.Count; i++)
+                {
+                    List<Vector3Int> areaTiles = ShapeLogic.Instance.GetPositionsInThisShape(_selectedAction.shape, _orientations[i], _positions[i]);
+
+                    if (areaTiles.Contains(selectedTile))
+                    {
+                        _positions.RemoveAt(i);
+                        _orientations.RemoveAt(i);
+                        hasAtLeastOneAreaBeenRemoved = true;
+                    }
+                }
+                if (hasAtLeastOneAreaBeenRemoved)
+                {
+                    UpdateAreaOverlayIfNeeded();
+                    return;
+                }
+            }
+
             _errorText.text = "Selected target is too far for the selected action range";
 
             Debug.Log("Not enough range");
@@ -301,6 +320,12 @@ public class ActionCastingUI : MonoBehaviour
             _errorText.text = "This action needs line of sight to the target, you don't have it";
 
             Debug.Log("No line of sight");
+            return;
+        }
+
+        if (!Pathfinding.Instance.IsTileWalkable(selectedTile))
+        {
+            _errorText.text = "You cannot directly target a non walkable tile";
             return;
         }
 
@@ -332,14 +357,21 @@ public class ActionCastingUI : MonoBehaviour
                 {
                     Debug.Log("Selected target: " + clickedShip.name);
                     _targets.Add(clickedShip);
-                    AddOverlayTileAtPos(selectedTile);
+                    ResetOverlayMap();
                 }
 
                 else if (_targets.Contains(clickedShip))
                 {
                     Debug.Log("Removed target: " + clickedShip.name);
                     _targets.Remove(clickedShip);
-                    RemoveOverlayTileAtPos(selectedTile);
+                    ResetOverlayMap();
+                }
+
+                else if (_targets.Count >= _selectedAction.amountOfTargets && !_targets.Contains(clickedShip))
+                {
+                    _errorText.text = "You already selected the maximum amount of targets";
+
+                    return;
                 }
             }
         }
@@ -364,37 +396,99 @@ public class ActionCastingUI : MonoBehaviour
                 return;
             }
 
-            if (_positions.Count < _selectedAction.amountOfTargets && !_positions.Contains(selectedTile))
+            bool hasAtLeastOneAreaBeenRemoved = false;
+
+            for (int i = 0; i < _positions.Count; i++)
+            {
+                List<Vector3Int> areaTiles = ShapeLogic.Instance.GetPositionsInThisShape(_selectedAction.shape, _orientations[i], _positions[i]);
+
+                if (areaTiles.Contains(selectedTile))
+                {
+                    _positions.RemoveAt(i);
+                    _orientations.RemoveAt(i);
+                    hasAtLeastOneAreaBeenRemoved = true;
+                }
+            }
+
+            if (hasAtLeastOneAreaBeenRemoved)
+            {
+                UpdateAreaOverlayIfNeeded();
+            }
+
+            else if (!hasAtLeastOneAreaBeenRemoved && _positions.Count < _selectedAction.amountOfTargets)
             {
                 _positions.Add(selectedTile);
                 _orientations.Add(_curRotation);
+                ResetOverlayMap();
             }
-            else if(_positions.Contains(selectedTile))
-            {
-                int index = _positions.IndexOf(selectedTile);
 
-                _positions.RemoveAt(index);
-                _orientations.RemoveAt(index);
+            else if (!hasAtLeastOneAreaBeenRemoved && _positions.Count >= _selectedAction.amountOfTargets)
+            {
+                _errorText.text = "You already selected the maximum amount of target areas";
+
+                return;
+            }
+
+        }
+    }
+
+    private void EmptyOverlayTilemap()
+    {
+        overlayMap.ClearAllTiles();
+    }
+
+
+
+    private void ResetOverlayMap()
+    {
+        overlayMap.ClearAllTiles();
+
+        ShowRangeTiles();
+
+        if (_selectedAction != null && !_selectedAction.isTargetAnArea)
+        {
+            for (int i = 0; i < _targets.Count; i++)
+            {
+                ShowTargetAreaTiles(_targets[i].GetCurrentPosition());
+            }
+        }
+
+        else if (_selectedAction != null && _selectedAction.isTargetAnArea)
+        {
+            for (int i = 0; i < _positions.Count; i++)
+            {
+                List<Vector3Int> confirmedPositions = ShapeLogic.Instance.GetPositionsInThisShape(_selectedAction.shape, _orientations[i], _positions[i]);
+                ShowTargetAreaTiles(confirmedPositions);
             }
         }
     }
 
-
-    private void AddOverlayTileAtPos(Vector3Int pos)
+    private void UpdateAreaOverlayIfNeeded()
     {
-        Color color = Color.red;
-        overlayMap.SetTile(pos, overlayTile);
-        overlayMap.SetTileFlags(pos, TileFlags.None);
-        overlayMap.SetColor(pos, color);
-    }
+        if (_positions.Count < _selectedAction.amountOfTargets)
+        {
+            ResetOverlayMap();
 
-    private void RemoveOverlayTileAtPos(Vector3Int pos)
-    {
-        overlayMap.SetTile(pos, null);
+            List<Vector3Int> tilesInCurrentArea = ShapeLogic.Instance.GetPositionsInThisShape(_selectedAction.shape, _curRotation, _currentTileUnderMouse);
+            ShowTargetAreaTiles(tilesInCurrentArea);
+        }
     }
 
 
-    private void DisplayTargetAreaTiles(List<Vector3Int> targetAreaTiles)
+    private void ShowRangeTiles()
+    {
+        Color color = new Color(1f, 0.5f, 0f, 1f);
+
+        foreach (Vector3Int pos in _rangeTiles)
+        {
+            overlayMap.SetTile(pos, overlayTile);
+            overlayMap.SetTileFlags(pos, TileFlags.None);
+            overlayMap.SetColor(pos, color);
+        }
+    }
+
+
+    private void ShowTargetAreaTiles(List<Vector3Int> targetAreaTiles)
     {
         Color color = Color.red;
 
@@ -406,19 +500,13 @@ public class ActionCastingUI : MonoBehaviour
         }
     }
 
-
-    private void ResetOverlayMap()
+    private void ShowTargetAreaTiles(Vector3Int targetAreaTile)
     {
-        overlayMap.ClearAllTiles();
+        Color color = Color.red;
 
-        if (_selectedAction != null && _selectedAction.isTargetAnArea)
-        {
-            for (int i = 0; i < _positions.Count; i++)
-            {
-                List<Vector3Int> confirmedPositions = ShapeLogic.Instance.GetPositionsInThisShape(_selectedAction.shape, _orientations[i], _positions[i]);
-                DisplayTargetAreaTiles(confirmedPositions);
-            }
-        }
+        overlayMap.SetTile(targetAreaTile, overlayTile);
+        overlayMap.SetTileFlags(targetAreaTile, TileFlags.None);
+        overlayMap.SetColor(targetAreaTile, color);
     }
 
 
