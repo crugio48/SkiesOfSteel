@@ -2,7 +2,7 @@
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(Canvas))]
 public class UIEndGame : MonoBehaviour
@@ -42,4 +42,9 @@ public class UIEndGame : MonoBehaviour
         _endGameCanvas.enabled = true;
     }
 
+
+    public void BackToMainMenu()
+    {
+        SceneManager.LoadScene(0);
+    }
 }

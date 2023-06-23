@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-[RequireComponent(typeof(Canvas))]
+
 public class UIStartGame : MonoBehaviour
 {
     [SerializeField] private GameObject waitingPlayersText;
@@ -12,13 +12,17 @@ public class UIStartGame : MonoBehaviour
 
     [SerializeField] private TMP_InputField inputField;
 
-    private Canvas _waitingStartCanvas;
+    [SerializeField] private Canvas thisCanvas;
 
     private void Start()
     {
-        _waitingStartCanvas = GetComponent<Canvas>();
         waitingPlayersText.SetActive(false);
         selectUsernameMenu.SetActive(true);
+    }
+
+    public void EnableCanvas()
+    {
+        thisCanvas.enabled = true;
     }
 
 
@@ -36,7 +40,7 @@ public class UIStartGame : MonoBehaviour
 
     private void DisableCanvas()
     {
-        _waitingStartCanvas.enabled = false;
+        thisCanvas.enabled = false;
     }
 
 

@@ -14,9 +14,9 @@ public class GameManager : SingletonNetwork<GameManager>
 {
     [SerializeField] private TurnCanvas turnCanvas;
 
-    [SerializeField] private Canvas serverCanvas;
+    [SerializeField] private ServerCanvasUI serverCanvasUI;
 
-    [SerializeField] private Canvas playerUsernameSelectionCanvas;
+    [SerializeField] private UIStartGame uiStartGame;
 
     [SerializeField] private int mapNumOfPlayers;
 
@@ -61,7 +61,7 @@ public class GameManager : SingletonNetwork<GameManager>
         {
             SetNumOfPlayers(mapNumOfPlayers);
 
-            serverCanvas.enabled = true;
+            serverCanvasUI.EnableCanvas();
 
             _demoBattleSpawner = GetComponent<DemoBattleSpawner>();
             _usernameToClientIds = new Dictionary<string, ulong>();
@@ -74,7 +74,7 @@ public class GameManager : SingletonNetwork<GameManager>
 
         else if (IsClient)
         {
-            playerUsernameSelectionCanvas.enabled = true;
+            uiStartGame.EnableCanvas();
         }
     }
 
@@ -418,6 +418,8 @@ public class GameManager : SingletonNetwork<GameManager>
         GameWonClientRpc(clientRpcParams);
 
         _battleState = BattleState.END;
+
+        serverCanvasUI.EnableBackToMainMenuButton();
     }
 
 
@@ -428,9 +430,9 @@ public class GameManager : SingletonNetwork<GameManager>
     {
         Debug.Log("You lose!");
 
-        LostGameEvent?.Invoke();
-
         NetworkManager.Singleton.Shutdown();
+
+        LostGameEvent?.Invoke();
     }
 
     // ClientRpc of winning the game
@@ -439,9 +441,9 @@ public class GameManager : SingletonNetwork<GameManager>
     {
         Debug.Log("You won!");
 
-        WonGameEvent?.Invoke();
-
         NetworkManager.Singleton.Shutdown();
+
+        WonGameEvent?.Invoke();
     }
 
 

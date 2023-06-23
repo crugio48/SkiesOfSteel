@@ -43,6 +43,8 @@ public class DemoBattleSpawner : NetworkBehaviour
             NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.GetComponent<Player>().SetWinningTreasurePosition(demoPositions.playersWinningTreasurePositions[i]);
 
         }
+
+        Treasure.Instance.SetInitialPosition(demoPositions.treasureStartingGridPosition);
     }
 
 
