@@ -13,18 +13,10 @@ public class Treasure : SingletonNetwork<Treasure>
 
     private Vector3Int _curGridPosition;
 
-
-    public override void OnNetworkSpawn()
+    public void SetInitialPosition(Vector3Int startGridPosition)
     {
-        base.OnNetworkSpawn();
-
-        if (IsServer)
-        {
-            Vector3Int startGridPosition = Resources.Load<DemoPositionsSO>("DemoPositions").treasureStartingGridPosition;
-
-            _curGridPosition = startGridPosition;
-            transform.position = tilemap.GetCellCenterWorld(startGridPosition);
-        }
+        _curGridPosition = startGridPosition;
+        transform.position = tilemap.GetCellCenterWorld(startGridPosition);
     }
 
     public void SetCurGridPosition(Vector3Int curGridPosition)

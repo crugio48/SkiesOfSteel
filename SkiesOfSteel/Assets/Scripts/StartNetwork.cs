@@ -51,7 +51,7 @@ public class StartNetwork : MonoBehaviour
 
         NetworkManager.Singleton.StartServer();
 
-        GameManager.Instance.SetNumOfPlayers(numOfPlayers);
+        //GameManager.Instance.SetNumOfPlayers(numOfPlayers);
     }
 
     public void StartClient()

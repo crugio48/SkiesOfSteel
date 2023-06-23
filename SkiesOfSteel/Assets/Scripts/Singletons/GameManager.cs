@@ -12,9 +12,13 @@ public enum BattleState { START, PLAYERTURN, END };
 [RequireComponent(typeof(DemoBattleSpawner))]
 public class GameManager : SingletonNetwork<GameManager>
 {
-    [SerializeField] private ConnectionApprovalHandler connectionApprovalHandler;
-
     [SerializeField] private TurnCanvas turnCanvas;
+
+    [SerializeField] private ServerCanvasUI serverCanvasUI;
+
+    [SerializeField] private UIStartGame uiStartGame;
+
+    [SerializeField] private int mapNumOfPlayers;
 
     private List<string> _playerUsernames;
 
@@ -55,6 +59,10 @@ public class GameManager : SingletonNetwork<GameManager>
 
         if (IsServer)
         {
+            SetNumOfPlayers(mapNumOfPlayers);
+
+            serverCanvasUI.EnableCanvas();
+
             _demoBattleSpawner = GetComponent<DemoBattleSpawner>();
             _usernameToClientIds = new Dictionary<string, ulong>();
 
@@ -62,6 +70,11 @@ public class GameManager : SingletonNetwork<GameManager>
 
             ShipUnit.ShipIsDestroyed += ShipGotDestroyed;
             ShipUnit.ShipRetrievedTheTreasureAndWonGame += ShipRetrievedTreasure;
+        }
+
+        else if (IsClient)
+        {
+            uiStartGame.EnableCanvas();
         }
     }
 
@@ -124,10 +137,10 @@ public class GameManager : SingletonNetwork<GameManager>
 
 
     // Server only method to setup the number of players of the match
-    public void SetNumOfPlayers(int numOfPlayers)
+    private void SetNumOfPlayers(int numOfPlayers)
     {
         _numOfPlayers = numOfPlayers;
-        connectionApprovalHandler.SetMaxPlayers(numOfPlayers);
+        NetworkManager.Singleton.GetComponent<ConnectionApprovalHandler>().SetMaxPlayers(numOfPlayers);
     }
 
     // A connected client calls this to try to register a username, the server will answer in a clientRpc with a response
@@ -405,6 +418,8 @@ public class GameManager : SingletonNetwork<GameManager>
         GameWonClientRpc(clientRpcParams);
 
         _battleState = BattleState.END;
+
+        serverCanvasUI.EnableBackToMainMenuButton();
     }
 
 
@@ -415,9 +430,9 @@ public class GameManager : SingletonNetwork<GameManager>
     {
         Debug.Log("You lose!");
 
-        LostGameEvent?.Invoke();
-
         NetworkManager.Singleton.Shutdown();
+
+        LostGameEvent?.Invoke();
     }
 
     // ClientRpc of winning the game
@@ -426,9 +441,9 @@ public class GameManager : SingletonNetwork<GameManager>
     {
         Debug.Log("You won!");
 
-        WonGameEvent?.Invoke();
-
         NetworkManager.Singleton.Shutdown();
+
+        WonGameEvent?.Invoke();
     }
 
 
