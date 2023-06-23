@@ -238,7 +238,7 @@ public class GameManager : SingletonNetwork<GameManager>
 
 
     [ServerRpc(RequireOwnership = false)]
-    public void EndTurnServerRpc(ServerRpcParams serverRpcParams = default)
+    private void EndTurnServerRpc(ServerRpcParams serverRpcParams = default)
     {
         ulong senderId = serverRpcParams.Receive.SenderClientId;
 
