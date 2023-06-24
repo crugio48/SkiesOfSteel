@@ -10,30 +10,13 @@ using UnityEngine.SceneManagement;
 
 public class MatchSelectionUI : MonoBehaviour
 {
-    [SerializeField] private GameObject matchSelectionUI;
-    [SerializeField] private GameObject serverClientSelectionUI;
-
     [SerializeField] private TextMeshProUGUI errorTextField;
     [SerializeField] private TMP_InputField inputIP;
 
-    private string _matchSelectedSceneName;
 
-
-    public void PlayButtonClickedRefresh()
+    public void ResetErrorText()
     {
-        matchSelectionUI.SetActive(true);
-        serverClientSelectionUI.SetActive(false);
-    }
-
-
-    public void MatchTypeSelected(string sceneName)
-    {
-        _matchSelectedSceneName = sceneName;
-
         errorTextField.text = "";
-
-        matchSelectionUI.SetActive(false);
-        serverClientSelectionUI.SetActive(true);
     }
 
 
@@ -66,19 +49,23 @@ public class MatchSelectionUI : MonoBehaviour
     }
 
 
-    public void ServerSelected()
+    public void ServerSelected(string sceneName)
     {
+        errorTextField.text = "";
+
         if (CheckAndSetIpAndPort() == false) return;
 
         NetworkManager.Singleton.StartServer();
 
 
-        NetworkManager.Singleton.SceneManager.LoadScene(_matchSelectedSceneName, LoadSceneMode.Single);
+        NetworkManager.Singleton.SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
     }
 
 
     public void ClientSelected()
     {
+        errorTextField.text = "";
+
         if (CheckAndSetIpAndPort() == false) return;
 
         NetworkManager.Singleton.OnClientDisconnectCallback += ConnectionFailed;
@@ -90,6 +77,8 @@ public class MatchSelectionUI : MonoBehaviour
             errorTextField.text = "No server found at that IP address!";
 
             NetworkManager.Singleton.OnClientDisconnectCallback -= ConnectionFailed;
+
+            NetworkManager.Singleton.Shutdown();
         }
     }
 
