@@ -48,8 +48,9 @@ public class ActionCastingUI : MonoBehaviour
     private List<Vector3Int> _positions;
     private List<Orientation> _orientations;
 
-
     private List<Vector3Int> _rangeTiles;
+
+    private bool _isCastingAction = false;
 
     private void Start()
     {
@@ -104,6 +105,7 @@ public class ActionCastingUI : MonoBehaviour
 
     private void EnableCanvas()
     {
+        _isCastingAction = true;
         _canvas.enabled = true;
         _targets.Clear();
         _positions.Clear();
@@ -121,6 +123,7 @@ public class ActionCastingUI : MonoBehaviour
 
     public void DisableCanvas()
     {
+        _isCastingAction = false;
         _selectedShipActionDescription.enabled = true;
         _canvas.enabled = false;
         _selectedAction = null;
@@ -520,5 +523,11 @@ public class ActionCastingUI : MonoBehaviour
     private bool IsUIPresent()
     {
         return EventSystem.current.IsPointerOverGameObject();
+    }
+
+
+    public bool IsCastingAction()
+    {
+        return _isCastingAction;
     }
 }
