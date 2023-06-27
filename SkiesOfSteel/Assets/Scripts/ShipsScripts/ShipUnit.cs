@@ -14,6 +14,7 @@ public class ShipUnit : NetworkBehaviour
 {
     [SerializeField] private Shader shader;
     [SerializeField] private GameObject actionCastText;
+    [SerializeField] private GameObject selectionGears;
 
     private ShipScriptableObject _shipSO;
 
@@ -822,23 +823,17 @@ public class ShipUnit : NetworkBehaviour
         _spriteRenderer.sprite = _shipSO.graphics.GetSprite(orientation, engines);
     }
 
-    /*                              TODO new way of highlighting target
+
     public void SetHighlight()
     {
-        Color color = _spriteRenderer.material.GetColor("_OutlineColor");
-        color.a = 1;
-        _spriteRenderer.material.SetColor("_OutlineColor", color);
-        _spriteRenderer.material.SetFloat("_OutlineThickness", 20f);
+        selectionGears.SetActive(true);
     }
 
     public void RemoveHighlight()
     {
-        Color color = _spriteRenderer.material.GetColor("_OutlineColor");
-        color.a = 0.3f;
-        _spriteRenderer.material.SetColor("_OutlineColor", color);
-        _spriteRenderer.material.SetFloat("_OutlineThickness", 10f);
+        selectionGears.SetActive(false);
     }
-    */
+
 
     [ClientRpc]
     public void SetOutlineAndColorClientRpc(Color color)

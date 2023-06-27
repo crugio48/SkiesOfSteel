@@ -63,18 +63,18 @@ public class ShipSelectedUI : MonoBehaviour
     {
         if (selectedShip.IsDestroyed()) NoShipClicked();
 
-        //if (_shipSelected != null) _shipSelected.RemoveHighlight();   TODO new way of highlighting target
+        if (_shipSelected != null) _shipSelected.RemoveHighlight();
 
         _shipSelected = selectedShip;
 
-        //_shipSelected.SetHighlight();         TODO new way of highlighting target
+        _shipSelected.SetHighlight();
 
         EnableCanvas();
     }
 
     public void NoShipClicked()
     {
-        //if (_shipSelected != null && !_shipSelected.IsDestroyed()) _shipSelected.RemoveHighlight();      TODO new way of highlighting target
+        if (_shipSelected != null && !_shipSelected.IsDestroyed()) _shipSelected.RemoveHighlight();
         _shipSelected = null;
         DisableCanvas();
     }
