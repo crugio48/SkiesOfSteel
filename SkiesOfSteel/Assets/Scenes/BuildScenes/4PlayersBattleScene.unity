@@ -443,6 +443,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 744968334}
     - target: {fileID: 5784188371943705268, guid: 01bd699ce0bfe4d4ebccf5c9b8f8dccf, type: 3}
+      propertyPath: actionCastingUI
+      value: 
+      objectReference: {fileID: 444085990}
+    - target: {fileID: 5784188371943705268, guid: 01bd699ce0bfe4d4ebccf5c9b8f8dccf, type: 3}
       propertyPath: layerMask.m_Bits
       value: 32
       objectReference: {fileID: 0}

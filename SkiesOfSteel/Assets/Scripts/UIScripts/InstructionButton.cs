@@ -6,20 +6,14 @@ using UnityEngine.UI;
 
 public class InstructionButton : MonoBehaviour
 {
-    [SerializeField] private Image instructionBackground;
-    [SerializeField] private TextMeshProUGUI instructionText;
-
-    [SerializeField] private Button showInstructionsButton;
+    [SerializeField] private GameObject fatherPanel;
+    [SerializeField] private List<GameObject> instuctionsPanels;
     [SerializeField] private Button nextButton;
     [SerializeField] private Button previousButton;
 
-    private int currentPage;
-    Dictionary<int, string> Pages = new Dictionary<int, string>()
-        {
-            {0,"Press Left Click to select a ship. Once a ship is selected you can cycle between the ships of the same fleet by clicking on the other ships in the map or on its icon in the left of the screen (this works for both for your fleet and for the enemies).This is usefull to see ships stats and abilities.The menu on the rights displays the selected ship.By clicking on the Captain art you will see the ship's art which contains all the important attributes. By hovering over the buttons abilities you can see their effects and stats. By clickcing on them and selecting a target (if necessary) you will be able to use the ability. Click the right button once a ship is selected to move." },
-            {1, "The triangles in the map are ports, in which you can use the refuel and heal up abilities. You can use the ports both inside its tiles and in all adjacent ones.The objective is to obtain the treasure in the middle of the map and bringing it back to the port you spawned from.You can also eliminate all enemies ships."},
+    private int _currentPanel;
 
-        };
+    private bool _isEnabled = false;
 
     private Canvas _canvas;
 
@@ -43,47 +37,81 @@ public class InstructionButton : MonoBehaviour
 
     private void EnableCanvas()
     {
+        fatherPanel.SetActive(false);
+
+        _currentPanel = 0;
+
+        for (int i = 0; i < instuctionsPanels.Count; i++)
+        {
+            if (i == _currentPanel)
+            {
+                instuctionsPanels[i].SetActive(true);
+            }
+            else
+            {
+                instuctionsPanels[i].SetActive(false);
+            }
+        }
+
+        UpdateButtonsInteractions();
+
         _canvas.enabled = true;
     }
 
 
     public void ShowInstructions()
     {
-        if (!instructionBackground.enabled)
+        _isEnabled = !_isEnabled;
+
+        fatherPanel.SetActive(_isEnabled);
+    }
+
+
+    public void NextButton()
+    {
+        if (_currentPanel >= instuctionsPanels.Count - 1) return;
+
+        instuctionsPanels[_currentPanel].SetActive(false);
+
+        _currentPanel++;
+
+        instuctionsPanels[_currentPanel].SetActive(true);
+
+
+        UpdateButtonsInteractions();
+    }
+
+
+    public void PreviousButton()
+    {
+        if (_currentPanel <= 0) return;
+
+        instuctionsPanels[_currentPanel].SetActive(false);
+
+        _currentPanel--;
+
+        instuctionsPanels[_currentPanel].SetActive(true);
+
+        UpdateButtonsInteractions();
+    }
+
+
+    private void UpdateButtonsInteractions()
+    {
+        if (_currentPanel <= 0)
         {
-            instructionBackground.enabled = true;
-            instructionText.enabled = true;
-            nextButton.enabled = true;
-            previousButton.enabled = true;
-            currentPage = 0;
+            nextButton.interactable = true;
+            previousButton.interactable = false;
+        }
+        else if (_currentPanel >= instuctionsPanels.Count - 1)
+        {
+            nextButton.interactable = false;
+            previousButton.interactable = true;
         }
         else
         {
-            instructionBackground.enabled = false;
-            instructionText.enabled = false;
-            nextButton.enabled = false;
-            previousButton.enabled = false;
+            nextButton.interactable = true;
+            previousButton.interactable = true;
         }
-    }
-    public void NextButton()
-    {
-        if (currentPage != Pages.Count)
-        {
-            currentPage += 1;
-            instructionText.text = Pages[currentPage];
-
-        }
-
-
-    }
-    public void PreviousButton()
-    {
-        if (currentPage != 0)
-        {
-            currentPage -= 1;
-            instructionText.text = Pages[currentPage];
-        }
-
-
     }
 }
