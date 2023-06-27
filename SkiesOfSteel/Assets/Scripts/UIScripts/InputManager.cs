@@ -16,13 +16,14 @@ public class InputManager : MonoBehaviour
     [SerializeField]
     private ShipSelectedUI shipSelectedUI;
 
+    [SerializeField]
+    private ActionCastingUI actionCastingUI;
+
     private Camera _mainCamera;
 
     private ShipUnit _selectedShip;
 
     private bool _receiveInput = false;
-    
-    private bool targetingShips = false;
     
 
 
@@ -57,6 +58,8 @@ public class InputManager : MonoBehaviour
 
     private void RefreshMovementTiles(ShipUnit ship)
     {
+        if (actionCastingUI.IsCastingAction()) return;
+
         if (ship == _selectedShip && ship.IsMyShip())
         {
             ResetOverlayMap();
@@ -78,21 +81,19 @@ public class InputManager : MonoBehaviour
 
         if (NetworkManager.Singleton.IsServer) return;
 
-        if (!targetingShips)
+       
+        if (Input.GetMouseButtonDown(0) && !IsUIPresent())
         {
-            if (Input.GetMouseButtonDown(0) && !IsUIPresent())
-            {
+            ResetOverlayMap();
 
-                ResetOverlayMap();
-
-                SelectShip();
-            }
-
-            if (Input.GetMouseButtonDown(1) && !IsUIPresent())
-            {
-                if (_selectedShip != null && _selectedShip.IsMyShip() && _selectedShip.GetMovementLeft() > 0) TryToMove();
-            }
+            SelectShip();
         }
+
+        if (Input.GetMouseButtonDown(1) && !IsUIPresent())
+        {
+            if (_selectedShip != null && _selectedShip.IsMyShip() && _selectedShip.GetMovementLeft() > 0) TryToMove();
+        }
+        
 
     }
 

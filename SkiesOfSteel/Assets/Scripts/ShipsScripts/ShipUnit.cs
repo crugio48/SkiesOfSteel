@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
 using JetBrains.Annotations;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -12,6 +13,7 @@ using UnityEngine.Tilemaps;
 public class ShipUnit : NetworkBehaviour
 {
     [SerializeField] private Shader shader;
+    [SerializeField] private GameObject actionCastText;
 
     private ShipScriptableObject _shipSO;
 
@@ -404,6 +406,7 @@ public class ShipUnit : NetworkBehaviour
 
         if (actionDoneCorrectly)
         {
+            ShowActionCastClientRpc(actionIndex);
             _canDoAction.Value = false;
             _currentFuel.Value -= _shipSO.actionList[actionIndex].fuelCost;
         }
@@ -515,6 +518,20 @@ public class ShipUnit : NetworkBehaviour
         }
     }
 
+    [ClientRpc]
+    private void ShowActionCastClientRpc(int indexOfAction)
+    {
+        actionCastText.GetComponent<TextMeshPro>().text = _shipSO.actionList[indexOfAction].name;
+        actionCastText.SetActive(true);
+        StartCoroutine(RemoveActionCastText());
+    }
+
+    private IEnumerator RemoveActionCastText()
+    {
+        yield return new WaitForSeconds(2);
+
+        actionCastText.SetActive(false);
+    }
 
 
     //----------------------------------- Server only methods of logic that modifies ship values:
