@@ -56,6 +56,11 @@ public class MainMenuManager : MonoBehaviour
         _profileTransform.DOAnchorPosX(-320, 0.3f);
     }
 
+    public void HideProfileInstantaneous()
+    {
+        _profileTransform.anchoredPosition = new Vector2(-320, _profileTransform.anchoredPosition.y);
+    }
+
     private void AddCoins()
     {
         goldenCoins += 5000;
