@@ -34,10 +34,10 @@ public class DemoBattleSpawner : NetworkBehaviour
             SpawnShip(demoPositions.attackShipsPositions[i], "ShipsScriptableObjects/AttackShip", playerUsernames[i], "AttackShip", playersColors[i]);
 
             // Spawning FastShip
-            SpawnShip(demoPositions.fastShipsPositions[i], "ShipsScriptableObjects/CargoShip", playerUsernames[i], "CargoShip", playersColors[i]);
+            SpawnShip(demoPositions.fastShipsPositions[i], "ShipsScriptableObjects/FastShip", playerUsernames[i], "FastShip", playersColors[i]);
 
             // Spawning CargoShip
-            SpawnShip(demoPositions.cargoShipsPositions[i], "ShipsScriptableObjects/FastShip", playerUsernames[i], "FastShip", playersColors[i]);
+            SpawnShip(demoPositions.cargoShipsPositions[i], "ShipsScriptableObjects/CargoShip", playerUsernames[i], "CargoShip", playersColors[i]);
 
             ulong clientId = _usernameToClientIds[playerUsernames[i]];
             NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.GetComponent<Player>().SetWinningTreasurePosition(demoPositions.playersWinningTreasurePositions[i]);
