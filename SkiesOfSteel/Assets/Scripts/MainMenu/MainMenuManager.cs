@@ -25,7 +25,6 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private Button _closeProfileButton;
     private RectTransform _profileTransform;
 
-
     // Start is called before the first frame update
     void Start()
     {

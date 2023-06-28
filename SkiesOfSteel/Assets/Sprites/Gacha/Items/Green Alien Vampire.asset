@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d618768b32013174d8d0c301fb3202fc, type: 3}
+  m_Name: Green Alien Vampire
+  m_EditorClassIdentifier: 
+  stars: 3
+  image: {fileID: 21300000, guid: f4a327557763f874889c62c8b3c192cb, type: 3}
