@@ -22,6 +22,11 @@ public class GachaManager : MonoBehaviour
     [SerializeField] private Image _gachaResult;
     private RectTransform _gachaTransform;
 
+    // Pity System
+
+    private int no4Star = 0;
+    private int no5Star = 0;
+
     void Start()
     {
         _gachaTransform = _gachaResult.gameObject.GetComponent<RectTransform>();
@@ -31,11 +36,38 @@ public class GachaManager : MonoBehaviour
     {
         GachaPull wish;
 
-        float r = Random.Range(0f, 1.0f);
+        if (no5Star >= 6)
+        {
+            wish = gacha5stars[Random.Range(0, gacha5stars.Length)];
+            no5Star = 0;
+        }
+        else if (no4Star >= 4)
+        {
+            wish = gacha4stars[Random.Range(0, gacha4stars.Length)];
+            no4Star = 0;
+        }
+        else
+        {
+            float r = Random.Range(0f, 1.0f);
 
-        if (r < 0.75) wish = gacha3stars[Random.Range(0, gacha3stars.Length)];
-        else if (r < 0.9) wish = gacha4stars[Random.Range(0, gacha4stars.Length)];
-        else wish = gacha5stars[Random.Range(0, gacha5stars.Length)];
+            if (r < 0.75)
+            {
+                wish = gacha3stars[Random.Range(0, gacha3stars.Length)];
+                no4Star++;
+                no5Star++;
+            }
+            else if (r < 0.9)
+            {
+                wish = gacha4stars[Random.Range(0, gacha4stars.Length)];
+                no4Star = 0;
+                no5Star++;
+            }
+            else
+            {
+                wish = gacha5stars[Random.Range(0, gacha5stars.Length)];
+                no5Star = 0;
+            }
+        }
 
         SetVideo(wish.stars);
 
